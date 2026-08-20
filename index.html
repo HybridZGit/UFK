@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#08090d" />
+  <title>UFK — Undisputed Fight Kingdom</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="noise"></div>
+
+  <header class="topbar">
+    <a href="#home" class="brand" data-page="home" aria-label="UFK Home">
+      <img src="assets/ufk-logo.png" alt="UFK logo" />
+      <div><strong>UFK</strong><span>UNDISPUTED FIGHT KINGDOM</span></div>
+    </a>
+
+    <button class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
+    <nav id="nav">
+      <a class="active" href="#home" data-page="home">Home</a>
+      <a href="#rankings" data-page="rankings">Rankings</a>
+      <a href="#betting" data-page="betting">Betting</a>
+      <a href="#fights" data-page="fights">Fights</a>
+      <a href="#legacy" data-page="legacy">Legacy</a>
+      <a href="#account" data-page="account">Fighter Account</a>
+      <a href="#admin" data-page="admin">Admin</a>
+    </nav>
+
+    <div class="season-pill">SEASON 1</div>
+  </header>
+
+  <main>
+    <section class="page active" id="home">
+      <section class="hero shell">
+        <div class="hero-copy">
+          <div class="eyebrow">UFK • UNDISPUTED BOXING LEAGUE</div>
+          <h1>EVERY FIGHT.<br><em>EVERY LEGACY.</em></h1>
+          <p>The official home of UFK. Follow rankings, championship fights, results, contracts, rivalries and league history.</p>
+          <div class="hero-actions">
+            <button class="btn primary" data-jump="fights">VIEW FIGHT CARD →</button>
+            <button class="btn ghost" data-jump="rankings">FIGHTER RANKINGS</button>
+          </div>
+        </div>
+        <div class="hero-art">
+          <div class="red-glow"></div>
+          <img src="assets/ufk-logo.png" alt="UFK emblem" />
+        </div>
+      </section>
+
+      <div class="ticker"><div class="shell ticker-inner"><strong>UFK LIVE</strong><span>Official fight cards • Rankings • Results • Champions</span><b>POWERED BY UFK FIGHT KIT</b></div></div>
+
+      <section class="shell section-space">
+        <div class="section-kicker">NEXT EVENT</div>
+        <div class="section-title-row"><h2>FEATURED FIGHT CARD</h2><span class="live-dot">● LIVE EVENT</span></div>
+
+        <article class="fight-card mega-card">
+          <div class="fighter left">
+            <span>CHAMPION</span>
+            <h3 id="featuredChampion">TBA</h3>
+            <p id="featuredChampionMeta">No featured fight set</p>
+          </div>
+          <div class="versus">
+            <small>UFK</small><strong>VS</strong><span>MAIN EVENT</span>
+          </div>
+          <div class="fighter right">
+            <span>CHALLENGER</span>
+            <h3 id="featuredChallenger">TBA</h3>
+            <p id="featuredChallengerMeta">Waiting for admin update</p>
+          </div>
+        </article>
+
+        <div class="dashboard-grid">
+          <article class="panel"><header><h3>Recent results</h3><a href="#fights">All fights →</a></header><div id="recentResults"></div></article>
+          <article class="panel"><header><h3>Current Champions</h3><a href="#rankings">Rankings →</a></header><div id="championList"></div></article>
+          <article class="panel"><header><h3>Open betting</h3><a href="#betting">All fights →</a></header><div class="empty-state"><p>2 betting windows open.</p><button class="btn outline" data-jump="betting">Go to betting page →</button></div></article>
+          <article class="panel"><header><h3>Contract activity</h3><a href="#legacy">Archive →</a></header><div id="contractFeed"></div></article>
+        </div>
+      </section>
+    </section>
+
+    <section class="page shell section-space" id="rankings">
+      <div class="section-kicker">OFFICIAL UFK RATINGS</div>
+      <div class="section-title-row"><h2>FIGHTER RANKINGS</h2><span>Updated from UFK records</span></div>
+      <div class="tabs" id="rankingTabs">
+        <button class="active" data-div="world">UFK World</button><button data-div="rbc">RBC Top 15</button><button data-div="abc">ABC Top 15</button><button data-div="ic">UFK IC</button>
+      </div>
+      <input id="fighterSearch" class="search" placeholder="Search fighters..." />
+      <div class="champion-banner" id="worldChampionBanner"><small>UFK WORLD CHAMPION</small><strong>VACANT</strong><span>No champion assigned</span></div>
+      <div class="rank-table-wrap"><table class="rank-table"><thead><tr><th>#</th><th>Fighter</th><th>Resume</th><th>Momentum</th><th>Finishing</th><th>Activity</th><th>Big Fight</th><th>Score</th></tr></thead><tbody id="rankRows"></tbody></table></div>
+    </section>
+
+    <section class="page shell section-space" id="betting">
+      <div class="section-kicker">UFK CASH</div><div class="section-title-row"><h2>BETTING DESK</h2><span>Demo league currency</span></div>
+      <div class="wallet"><div><small>AVAILABLE BALANCE</small><strong>$5,000</strong><span>Season 1 balance</span></div><button class="btn ghost" id="resetWallet">Reset wallet</button></div>
+      <div class="bet-grid" id="betGrid"></div>
+    </section>
+
+    <section class="page shell section-space" id="fights">
+      <div class="section-kicker">UFK EVENTS</div><div class="section-title-row"><h2>FIGHT CARDS & RESULTS</h2><span>Season 1</span></div>
+      <div class="fight-list" id="fightList"></div>
+    </section>
+
+    <section class="page shell section-space" id="legacy">
+      <div class="section-kicker">THE RECORD BOOK</div><div class="section-title-row"><h2>UFK LEGACY</h2><span>Championship history</span></div>
+      <div class="legacy-hero"><img src="assets/ufk-logo.png" alt="UFK logo"><div><h3>Built for the undisputed.</h3><p>League history will appear here as your admins add fighters, results and championship records.</p></div></div>
+      <div class="records-grid" id="legacyRecords"><div class="empty-card">No legacy records yet.</div></div>
+    </section>
+
+
+    <section class="page shell section-space" id="account">
+      <div class="section-kicker">UFK FIGHTER PORTAL</div>
+      <div class="section-title-row"><h2>FIGHTER ACCOUNT</h2><span id="fighterAccountStatus">Create an account or sign in</span></div>
+
+      <div class="account-grid" id="accountGuest">
+        <form class="admin-card account-card" id="fighterSignupForm">
+          <h3>Create fighter account</h3><p>Register your UFK login. Your official fight record is controlled by league admins.</p>
+          <label>Fighter / gamer name<input name="fighter_name" required maxlength="40" placeholder="Your UFK name"></label>
+          <label>Region<input name="region" maxlength="30" placeholder="UK / EU / NA"></label>
+          <label>Email<input name="email" type="email" required autocomplete="email"></label>
+          <label>Password<input name="password" type="password" required minlength="8" autocomplete="new-password"></label>
+          <button class="btn primary" type="submit">CREATE ACCOUNT</button>
+          <small class="form-help">If email confirmation is enabled in Supabase, confirm the email before signing in.</small>
+        </form>
+        <form class="admin-card account-card" id="fighterLoginForm">
+          <h3>Fighter sign in</h3><p>Access your UFK profile and account.</p>
+          <label>Email<input name="email" type="email" required autocomplete="email"></label>
+          <label>Password<input name="password" type="password" required autocomplete="current-password"></label>
+          <button class="btn ghost" type="submit">SIGN IN</button>
+        </form>
+      </div>
+
+      <div id="accountMember" class="hidden">
+        <div class="account-summary">
+          <div><small>SIGNED IN AS</small><strong id="memberEmail">—</strong><span id="memberRole">Fighter</span></div>
+          <button class="btn ghost" id="fighterSignOutBtn" type="button">SIGN OUT</button>
+        </div>
+        <div class="account-grid">
+          <form class="admin-card account-card" id="profileForm">
+            <h3>My profile</h3><p>You can edit your public name and region. Records, ratings and championships remain admin-controlled.</p>
+            <label>Display name<input name="display_name" required maxlength="40"></label>
+            <label>Region<input name="region" maxlength="30"></label>
+            <button class="btn primary" type="submit">SAVE PROFILE</button>
+          </form>
+          <div class="admin-card account-card" id="myFighterCard">
+            <h3>Official fighter record</h3><p>Your live UFK database entry.</p>
+            <div id="myFighterDetails" class="fighter-profile-empty">No fighter profile linked yet.</div>
+            <button class="btn primary" id="createMyFighterBtn" type="button">CREATE MY FIGHTER PROFILE</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page shell section-space" id="admin">
+      <div class="section-kicker">LEAGUE CONTROL</div>
+      <div class="section-title-row"><h2>ADMIN DASHBOARD</h2><span id="connectionStatus">Supabase not configured</span></div>
+
+      <div class="admin-note" id="setupNotice">Connect <strong>config.js</strong> to your Supabase project, run <strong>supabase-schema.sql</strong>, then sign in with an admin account. Never put a Supabase service-role/secret key in this website.</div>
+
+      <div class="admin-auth" id="adminAuth">
+        <form id="loginForm" class="admin-login">
+          <label>Email<input type="email" name="email" required placeholder="admin@ufk.com"></label>
+          <label>Password<input type="password" name="password" required placeholder="••••••••"></label>
+          <button class="btn primary" type="submit">ADMIN SIGN IN</button>
+        </form>
+        <div class="admin-session hidden" id="adminSession"><span id="adminIdentity"></span><button class="btn ghost" id="signOutBtn" type="button">SIGN OUT</button></div>
+      </div>
+
+      <div id="adminLocked" class="admin-locked">Sign in with an account marked as an admin in Supabase to unlock league controls.</div>
+
+      <div id="adminControls" class="hidden">
+        <div class="admin-toolbar">
+          <strong>UFK LEAGUE OPERATIONS</strong>
+          <div><button class="btn ghost" type="button" id="refreshAdmin">REFRESH DATA</button><button class="btn danger-btn" type="button" id="clearLeagueData">CLEAR LEAGUE DATA</button></div>
+        </div>
+
+        <div class="admin-grid">
+          <form class="admin-card" id="fighterCreateForm">
+            <h3>Add fighter</h3><p>Create a new fighter profile.</p>
+            <label>Fighter name<input name="name" required></label>
+            <div class="split-3"><label>Wins<input name="wins" type="number" min="0" value="0" required></label><label>Losses<input name="losses" type="number" min="0" value="0" required></label><label>Draws<input name="draws" type="number" min="0" value="0" required></label></div>
+            <label>Region<input name="region" placeholder="EU / NA / UK"></label>
+            <button class="btn primary" type="submit">ADD FIGHTER</button>
+          </form>
+
+          <form class="admin-card" id="recordForm">
+            <h3>Update record</h3><p>Set a fighter's official W-L-D record.</p>
+            <label>Fighter<select name="fighter_id" class="fighter-select" required></select></label>
+            <div class="split-3"><label>Wins<input name="wins" type="number" min="0" required></label><label>Losses<input name="losses" type="number" min="0" required></label><label>Draws<input name="draws" type="number" min="0" required></label></div>
+            <button class="btn primary" type="submit">UPDATE RECORD</button>
+          </form>
+
+          <form class="admin-card" id="championForm">
+            <h3>Grant championship</h3><p>Assign or replace the champion for a division.</p>
+            <label>Division<select name="division"><option>UFK World</option><option>RBC</option><option>ABC</option><option>UFK IC</option></select></label>
+            <label>Champion<select name="fighter_id" class="fighter-select" required></select></label>
+            <label>Title defenses<input name="defenses" type="number" min="0" value="0"></label>
+            <div class="button-row"><button class="btn primary" type="submit">GRANT TITLE</button><button class="btn danger-btn" id="vacateTitleBtn" type="button">VACATE</button></div>
+          </form>
+
+          <form class="admin-card" id="resultForm">
+            <h3>Add fight result</h3><p>Publish a completed result.</p>
+            <label>Winner<select name="winner_id" class="fighter-select" required></select></label>
+            <label>Loser<select name="loser_id" class="fighter-select" required></select></label>
+            <label>Method<select name="method"><option>KO/TKO</option><option>Decision</option><option>Draw</option><option>DQ</option><option>No Contest</option></select></label>
+            <label>Date<input name="event_date" type="date" required></label>
+            <button class="btn primary" type="submit">PUBLISH RESULT</button>
+          </form>
+
+          <form class="admin-card" id="eventForm">
+            <h3>Create event</h3><p>Add an upcoming fight card or completed event.</p>
+            <label>Event name<input name="name" required placeholder="UFK 001"></label>
+            <label>Date<input name="event_date" type="date" required></label>
+            <label>Card / matchup<input name="details" placeholder="Main event TBA"></label>
+            <label>Status<select name="status"><option value="upcoming">Upcoming</option><option value="live">Live</option><option value="completed">Completed</option></select></label>
+            <button class="btn primary" type="submit">CREATE EVENT</button>
+          </form>
+
+          <form class="admin-card" id="contractForm">
+            <h3>Contract activity</h3><p>Post signing, renewal, offer or release activity.</p>
+            <label>Fighter<select name="fighter_id" class="fighter-select" required></select></label>
+            <label>Action<select name="action"><option>accepted a new contract</option><option>renewed a contract</option><option>received an offer</option><option>declined an offer</option><option>was released</option></select></label>
+            <button class="btn primary" type="submit">POST ACTIVITY</button>
+          </form>
+
+          <form class="admin-card" id="betForm">
+            <h3>Open betting</h3><p>Create a betting market using league/demo currency.</p>
+            <label>Fighter A<select name="fighter_a_id" class="fighter-select" required></select></label>
+            <label>Fighter B<select name="fighter_b_id" class="fighter-select" required></select></label>
+            <div class="split-2"><label>Odds A<input name="odds_a" placeholder="-110" required></label><label>Odds B<input name="odds_b" placeholder="-110" required></label></div>
+            <button class="btn primary" type="submit">OPEN MARKET</button>
+          </form>
+
+          <form class="admin-card" id="featureForm">
+            <h3>Featured main event</h3><p>Controls the large matchup on the home page.</p>
+            <label>Champion / left<select name="champion_id" class="fighter-select" required></select></label>
+            <label>Challenger / right<select name="challenger_id" class="fighter-select" required></select></label>
+            <label>Event label<input name="event_label" placeholder="UFK Main Event"></label>
+            <button class="btn primary" type="submit">UPDATE HOME CARD</button>
+          </form>
+        </div>
+
+        <section class="admin-data">
+          <div class="section-title-row"><h2>LIVE DATABASE</h2><span>Delete fighters or inspect current records</span></div>
+          <div class="rank-table-wrap"><table class="rank-table admin-table"><thead><tr><th>Fighter</th><th>Record</th><th>Region</th><th>Champion</th><th>Actions</th></tr></thead><tbody id="adminFighterRows"></tbody></table></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="shell"><div class="footer-brand"><img src="assets/ufk-logo.png" alt=""><strong>UFK</strong></div><span>UNDISPUTED FIGHT KINGDOM © 2026</span><span>Built as a custom league website starter.</span></div></footer>
+  <div class="toast" id="toast"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
