@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#08090d" />
-  <title>UFK — Undisputed Fight Kingdom</title>
+  <title>UCS — Undisputed Championship Series</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,9 +14,9 @@
   <div class="noise"></div>
 
   <header class="topbar">
-    <a href="#home" class="brand" data-page="home" aria-label="UFK Home">
-      <img src="assets/ufk-logo.png" alt="UFK logo" />
-      <div><strong>UFK</strong><span>UNDISPUTED FIGHT KINGDOM</span></div>
+    <a href="#home" class="brand" data-page="home" aria-label="UCS Home">
+      <img src="assets/ucs-logo.png" alt="UCS logo" />
+      <div><strong>UCS</strong><span>UNDISPUTED CHAMPIONSHIP SERIES</span></div>
     </a>
 
     <button class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
@@ -25,21 +25,19 @@
       <a href="#rankings" data-page="rankings">Rankings</a>
       <a href="#betting" data-page="betting">Betting</a>
       <a href="#fights" data-page="fights">Fights</a>
-      <a href="#legacy" data-page="legacy">Legacy</a>
       <a href="#account" data-page="account">Fighter Account</a>
       <a href="#admin" data-page="admin">Admin</a>
     </nav>
 
-    <div class="season-pill">SEASON 1</div>
   </header>
 
   <main>
     <section class="page active" id="home">
       <section class="hero shell">
         <div class="hero-copy">
-          <div class="eyebrow">UFK • UNDISPUTED BOXING LEAGUE</div>
+          <div class="eyebrow">UCS • UNDISPUTED BOXING LEAGUE</div>
           <h1>EVERY FIGHT.<br><em>EVERY LEGACY.</em></h1>
-          <p>The official home of UFK. Follow rankings, championship fights, results, contracts, rivalries and league history.</p>
+          <p>The official home of UCS. Follow rankings, championship fights, results, contracts, rivalries and live league activity.</p>
           <div class="hero-actions">
             <button class="btn primary" data-jump="fights">VIEW FIGHT CARD →</button>
             <button class="btn ghost" data-jump="rankings">FIGHTER RANKINGS</button>
@@ -47,11 +45,11 @@
         </div>
         <div class="hero-art">
           <div class="red-glow"></div>
-          <img src="assets/ufk-logo.png" alt="UFK emblem" />
+          <img src="assets/ucs-logo.png" alt="UCS emblem" />
         </div>
       </section>
 
-      <div class="ticker"><div class="shell ticker-inner"><strong>UFK LIVE</strong><span>Official fight cards • Rankings • Results • Champions</span><b>POWERED BY UFK FIGHT KIT</b></div></div>
+      <div class="ticker"><div class="shell ticker-inner"><strong>UCS LIVE</strong><span>Official fight cards • Rankings • Results • Champions</span><b>POWERED BY UFK FIGHT KIT</b></div></div>
 
       <section class="shell section-space">
         <div class="section-kicker">NEXT EVENT</div>
@@ -64,7 +62,7 @@
             <p id="featuredChampionMeta">No featured fight set</p>
           </div>
           <div class="versus">
-            <small>UFK</small><strong>VS</strong><span>MAIN EVENT</span>
+            <small>UCS</small><strong>VS</strong><span>MAIN EVENT</span>
           </div>
           <div class="fighter right">
             <span>CHALLENGER</span>
@@ -76,57 +74,80 @@
         <div class="dashboard-grid">
           <article class="panel"><header><h3>Recent results</h3><a href="#fights">All fights →</a></header><div id="recentResults"></div></article>
           <article class="panel"><header><h3>Current Champions</h3><a href="#rankings">Rankings →</a></header><div id="championList"></div></article>
-          <article class="panel"><header><h3>Open betting</h3><a href="#betting">All fights →</a></header><div class="empty-state"><p>2 betting windows open.</p><button class="btn outline" data-jump="betting">Go to betting page →</button></div></article>
-          <article class="panel"><header><h3>Contract activity</h3><a href="#legacy">Archive →</a></header><div id="contractFeed"></div></article>
+          <article class="panel"><header><h3>Open betting</h3><a href="#betting">Markets →</a></header><div class="empty-state"><p id="homeBettingSummary">No open markets.</p><button class="btn outline" data-jump="betting">OPEN UCS BETTING →</button></div></article>
+          <article class="panel"><header><h3>Contract activity</h3><a href="#rankings">Roster →</a></header><div id="contractFeed"></div></article>
         </div>
       </section>
     </section>
 
-    <section class="page shell section-space" id="rankings">
-      <div class="section-kicker">OFFICIAL UFK RATINGS</div>
-      <div class="section-title-row"><h2>FIGHTER RANKINGS</h2><span>Updated from UFK records</span></div>
+    <section class="page shell section-space rankings-page" id="rankings">
+      <div class="ranking-sponsor-bg" aria-hidden="true"><div class="sponsor-float one"></div><div class="sponsor-float two"></div><div class="sponsor-float three"></div></div>
+      <div class="ranking-head">
+        <div><div class="section-kicker">OFFICIAL UCS RATINGS</div><div class="section-title-row"><h2>FIGHTER RANKINGS</h2><span>Smart rankings update from official records and recent form</span></div></div>
+        <div class="presented-by"><span>PRESENTED BY</span><img src="assets/ufk-fight-kit.png" alt="UFK Fight Kit"></div>
+      </div>
       <div class="tabs" id="rankingTabs">
-        <button class="active" data-div="world">UFK World</button><button data-div="rbc">RBC Top 15</button><button data-div="abc">ABC Top 15</button><button data-div="ic">UFK IC</button>
+        <button class="active" data-div="UCS World">UCS WORLD</button><button data-div="UCS PS5">UCS PS5</button><button data-div="UCS PC">UCS PC</button><button data-div="UCS XBOX">UCS XBOX</button>
       </div>
       <input id="fighterSearch" class="search" placeholder="Search fighters..." />
-      <div class="champion-banner" id="worldChampionBanner"><small>UFK WORLD CHAMPION</small><strong>VACANT</strong><span>No champion assigned</span></div>
+      <div class="champion-banner" id="worldChampionBanner"><small>UCS WORLD CHAMPION</small><strong>VACANT</strong><span>No champion assigned</span></div>
       <div class="rank-table-wrap"><table class="rank-table"><thead><tr><th>#</th><th>Fighter</th><th>Resume</th><th>Momentum</th><th>Finishing</th><th>Activity</th><th>Big Fight</th><th>Score</th></tr></thead><tbody id="rankRows"></tbody></table></div>
     </section>
 
     <section class="page shell section-space" id="betting">
-      <div class="section-kicker">UFK CASH</div><div class="section-title-row"><h2>BETTING DESK</h2><span>Demo league currency</span></div>
-      <div class="wallet"><div><small>AVAILABLE BALANCE</small><strong>$5,000</strong><span>Season 1 balance</span></div><button class="btn ghost" id="resetWallet">Reset wallet</button></div>
-      <div class="bet-grid" id="betGrid"></div>
+      <div class="betting-heading">
+        <div><div class="section-kicker">UCS FIGHT VAULT</div><h2>BETTING</h2><p>Back your pick with UCS Credits. Balances and wagers are stored securely on your UCS account.</p></div>
+        <div class="betting-status"><span class="status-dot"></span><span id="marketCount">0 LIVE MARKETS</span></div>
+      </div>
+
+      <div class="betting-layout">
+        <div class="markets-column">
+          <div class="wallet-vault" id="walletVault">
+            <div class="wallet-icon">UC</div>
+            <div class="wallet-copy"><small>YOUR UCS WALLET</small><strong id="walletBalance">SIGN IN</strong><span id="walletSubtext">Sign in to access your account balance</span></div>
+            <button class="btn ghost" type="button" id="walletAccountBtn">FIGHTER ACCOUNT</button>
+          </div>
+          <div class="market-stack" id="betGrid"></div>
+        </div>
+
+        <aside class="bet-slip" id="betSlip">
+          <div class="slip-top"><span>BET SLIP</span><small id="slipMarketLabel">NO SELECTION</small></div>
+          <div class="slip-empty" id="slipEmpty"><strong>Pick a fighter</strong><p>Select odds from an open UCS market to build your wager.</p></div>
+          <form id="placeBetForm" class="hidden">
+            <div class="slip-pick"><small>YOUR PICK</small><strong id="slipFighter">—</strong><span id="slipOdds">—</span></div>
+            <label>Stake <div class="stake-field"><span>UC</span><input id="betStake" name="stake" type="number" min="1" step="1" placeholder="100" required></div></label>
+            <div class="quick-stakes"><button type="button" data-stake="100">+100</button><button type="button" data-stake="250">+250</button><button type="button" data-stake="500">+500</button></div>
+            <div class="return-row"><span>Potential return</span><strong id="potentialReturn">UC 0</strong></div>
+            <button class="btn primary place-bet-btn" type="submit">PLACE UCS BET</button>
+            <p class="slip-note">UCS Credits are virtual league currency only. No real-money wagering.</p>
+          </form>
+          <div class="my-bets" id="myBets"><div class="my-bets-title">MY OPEN BETS</div><div id="myBetRows" class="data-empty">Sign in to view your bets.</div></div>
+        </aside>
+      </div>
     </section>
 
     <section class="page shell section-space" id="fights">
-      <div class="section-kicker">UFK EVENTS</div><div class="section-title-row"><h2>FIGHT CARDS & RESULTS</h2><span>Season 1</span></div>
+      <div class="section-kicker">UCS EVENTS</div><div class="section-title-row"><h2>FIGHT CARDS & RESULTS</h2><span>Official UCS schedule</span></div>
       <div class="fight-list" id="fightList"></div>
     </section>
 
-    <section class="page shell section-space" id="legacy">
-      <div class="section-kicker">THE RECORD BOOK</div><div class="section-title-row"><h2>UFK LEGACY</h2><span>Championship history</span></div>
-      <div class="legacy-hero"><img src="assets/ufk-logo.png" alt="UFK logo"><div><h3>Built for the undisputed.</h3><p>League history will appear here as your admins add fighters, results and championship records.</p></div></div>
-      <div class="records-grid" id="legacyRecords"><div class="empty-card">No legacy records yet.</div></div>
-    </section>
-
-
     <section class="page shell section-space" id="account">
-      <div class="section-kicker">UFK FIGHTER PORTAL</div>
+      <div class="section-kicker">UCS FIGHTER PORTAL</div>
       <div class="section-title-row"><h2>FIGHTER ACCOUNT</h2><span id="fighterAccountStatus">Create an account or sign in</span></div>
 
       <div class="account-grid" id="accountGuest">
         <form class="admin-card account-card" id="fighterSignupForm">
-          <h3>Create fighter account</h3><p>Register your UFK login. Your official fight record is controlled by league admins.</p>
-          <label>Fighter / gamer name<input name="fighter_name" required maxlength="40" placeholder="Your UFK name"></label>
+          <h3>Create fighter account</h3><p>Register your UCS login. Your official fight record is controlled by league admins.</p>
+          <label>Fighter / gamer name<input name="fighter_name" required maxlength="40" placeholder="Your UCS name"></label>
           <label>Region<input name="region" maxlength="30" placeholder="UK / EU / NA"></label>
+          <label>Platform<select name="platform" required><option value="PS5">PS5</option><option value="PC">PC</option><option value="XBOX">XBOX</option></select></label>
           <label>Email<input name="email" type="email" required autocomplete="email"></label>
           <label>Password<input name="password" type="password" required minlength="8" autocomplete="new-password"></label>
           <button class="btn primary" type="submit">CREATE ACCOUNT</button>
           <small class="form-help">If email confirmation is enabled in Supabase, confirm the email before signing in.</small>
         </form>
         <form class="admin-card account-card" id="fighterLoginForm">
-          <h3>Fighter sign in</h3><p>Access your UFK profile and account.</p>
+          <h3>Fighter sign in</h3><p>Access your UCS profile and account.</p>
           <label>Email<input name="email" type="email" required autocomplete="email"></label>
           <label>Password<input name="password" type="password" required autocomplete="current-password"></label>
           <button class="btn ghost" type="submit">SIGN IN</button>
@@ -136,6 +157,7 @@
       <div id="accountMember" class="hidden">
         <div class="account-summary">
           <div><small>SIGNED IN AS</small><strong id="memberEmail">—</strong><span id="memberRole">Fighter</span></div>
+          <div class="account-wallet-mini"><small>UCS WALLET</small><strong id="memberWallet">UC 0</strong><span>Account balance</span></div>
           <button class="btn ghost" id="fighterSignOutBtn" type="button">SIGN OUT</button>
         </div>
         <div class="account-grid">
@@ -143,10 +165,16 @@
             <h3>My profile</h3><p>You can edit your public name and region. Records, ratings and championships remain admin-controlled.</p>
             <label>Display name<input name="display_name" required maxlength="40"></label>
             <label>Region<input name="region" maxlength="30"></label>
+            <label>Platform<select name="platform" required><option value="PS5">PS5</option><option value="PC">PC</option><option value="XBOX">XBOX</option></select></label>
+            <div class="avatar-upload-row">
+              <div class="avatar-preview" id="avatarPreview"><span>UCS</span></div>
+              <label class="avatar-file">Profile picture<input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp"></label>
+              <button class="btn ghost" id="uploadAvatarBtn" type="button">UPLOAD PFP</button>
+            </div>
             <button class="btn primary" type="submit">SAVE PROFILE</button>
           </form>
           <div class="admin-card account-card" id="myFighterCard">
-            <h3>Official fighter record</h3><p>Your live UFK database entry.</p>
+            <h3>Official fighter record</h3><p>Your live UCS database entry.</p>
             <div id="myFighterDetails" class="fighter-profile-empty">No fighter profile linked yet.</div>
             <button class="btn primary" id="createMyFighterBtn" type="button">CREATE MY FIGHTER PROFILE</button>
           </div>
@@ -173,8 +201,8 @@
 
       <div id="adminControls" class="hidden">
         <div class="admin-toolbar">
-          <strong>UFK LEAGUE OPERATIONS</strong>
-          <div><button class="btn ghost" type="button" id="refreshAdmin">REFRESH DATA</button><button class="btn danger-btn" type="button" id="clearLeagueData">CLEAR LEAGUE DATA</button></div>
+          <strong>UCS LEAGUE OPERATIONS</strong>
+          <div><button class="btn ghost" type="button" id="smartRankingsBtn">RECALCULATE RANKINGS</button><button class="btn ghost" type="button" id="refreshAdmin">REFRESH DATA</button><button class="btn danger-btn" type="button" id="clearLeagueData">CLEAR LEAGUE DATA</button></div>
         </div>
 
         <div class="admin-grid">
@@ -183,6 +211,7 @@
             <label>Fighter name<input name="name" required></label>
             <div class="split-3"><label>Wins<input name="wins" type="number" min="0" value="0" required></label><label>Losses<input name="losses" type="number" min="0" value="0" required></label><label>Draws<input name="draws" type="number" min="0" value="0" required></label></div>
             <label>Region<input name="region" placeholder="EU / NA / UK"></label>
+            <label>Platform<select name="platform" required><option value="PS5">PS5</option><option value="PC">PC</option><option value="XBOX">XBOX</option></select></label>
             <button class="btn primary" type="submit">ADD FIGHTER</button>
           </form>
 
@@ -195,7 +224,7 @@
 
           <form class="admin-card" id="championForm">
             <h3>Grant championship</h3><p>Assign or replace the champion for a division.</p>
-            <label>Division<select name="division"><option>UFK World</option><option>RBC</option><option>ABC</option><option>UFK IC</option></select></label>
+            <label>Division<select name="division"><option>UCS World</option><option>UCS PS5</option><option>UCS PC</option><option>UCS XBOX</option></select></label>
             <label>Champion<select name="fighter_id" class="fighter-select" required></select></label>
             <label>Title defenses<input name="defenses" type="number" min="0" value="0"></label>
             <div class="button-row"><button class="btn primary" type="submit">GRANT TITLE</button><button class="btn danger-btn" id="vacateTitleBtn" type="button">VACATE</button></div>
@@ -212,7 +241,7 @@
 
           <form class="admin-card" id="eventForm">
             <h3>Create event</h3><p>Add an upcoming fight card or completed event.</p>
-            <label>Event name<input name="name" required placeholder="UFK 001"></label>
+            <label>Event name<input name="name" required placeholder="UCS 001"></label>
             <label>Date<input name="event_date" type="date" required></label>
             <label>Card / matchup<input name="details" placeholder="Main event TBA"></label>
             <label>Status<select name="status"><option value="upcoming">Upcoming</option><option value="live">Live</option><option value="completed">Completed</option></select></label>
@@ -227,7 +256,7 @@
           </form>
 
           <form class="admin-card" id="betForm">
-            <h3>Open betting</h3><p>Create a betting market using league/demo currency.</p>
+            <h3>Open betting</h3><p>Create a UCS Credit betting market for signed-in accounts.</p>
             <label>Fighter A<select name="fighter_a_id" class="fighter-select" required></select></label>
             <label>Fighter B<select name="fighter_b_id" class="fighter-select" required></select></label>
             <div class="split-2"><label>Odds A<input name="odds_a" placeholder="-110" required></label><label>Odds B<input name="odds_b" placeholder="-110" required></label></div>
@@ -238,7 +267,7 @@
             <h3>Featured main event</h3><p>Controls the large matchup on the home page.</p>
             <label>Champion / left<select name="champion_id" class="fighter-select" required></select></label>
             <label>Challenger / right<select name="challenger_id" class="fighter-select" required></select></label>
-            <label>Event label<input name="event_label" placeholder="UFK Main Event"></label>
+            <label>Event label<input name="event_label" placeholder="UCS Main Event"></label>
             <button class="btn primary" type="submit">UPDATE HOME CARD</button>
           </form>
         </div>
@@ -251,7 +280,29 @@
     </section>
   </main>
 
-  <footer><div class="shell"><div class="footer-brand"><img src="assets/ufk-logo.png" alt=""><strong>UFK</strong></div><span>UNDISPUTED FIGHT KINGDOM © 2026</span><span>Built as a custom league website starter.</span></div></footer>
+  <div class="fighter-modal" id="fighterModal" aria-hidden="true">
+    <div class="fighter-modal-backdrop" data-close-profile></div>
+    <article class="fighter-profile-panel" role="dialog" aria-modal="true" aria-labelledby="profileName">
+      <button class="profile-close" type="button" data-close-profile aria-label="Close fighter profile">×</button>
+      <div class="profile-sponsor"><span>RANKINGS PRESENTED BY</span><img src="assets/ufk-fight-kit.png" alt="UFK Fight Kit"></div>
+      <header class="profile-hero">
+        <div class="profile-avatar" id="profileAvatar"><span>UCS</span></div>
+        <div class="profile-identity"><div class="profile-overline" id="profilePlatform">UCS WORLD</div><h2 id="profileName">FIGHTER</h2><p id="profileRegion">—</p></div>
+        <div class="profile-rank-badge"><small>WORLD RANK</small><strong id="profileRank">#—</strong></div>
+      </header>
+      <div class="profile-stat-grid">
+        <div><strong id="profileRecord">0-0-0</strong><span>RECORD</span></div>
+        <div><strong id="profileScore">0.0</strong><span>RATING</span></div>
+        <div><strong id="profileStreak">—</strong><span>FORM</span></div>
+        <div><strong id="profileTitles">0</strong><span>TITLES</span></div>
+        <div><strong id="profileFights">0</strong><span>CAREER FIGHTS</span></div>
+      </div>
+      <div class="profile-rating-bars" id="profileRatingBars"></div>
+      <section class="profile-history"><div class="profile-section-title"><span>RECENT FIGHTS</span><small>Official UCS results</small></div><div id="profileFightHistory"></div></section>
+    </article>
+  </div>
+
+  <footer><div class="shell"><div class="footer-brand"><img src="assets/ucs-logo.png" alt=""><strong>UCS</strong></div><span>UNDISPUTED CHAMPIONSHIP SERIES © 2026</span><span>Official UCS league platform.</span></div></footer>
   <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>

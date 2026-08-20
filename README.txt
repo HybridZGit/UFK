@@ -1,51 +1,44 @@
-UFK WEBSITE — SUPABASE + FIGHTER ACCOUNTS
+UCS WEBSITE v4 — SUPABASE + FIGHTER PROFILES + SMART RANKINGS
 
-WHAT IS INCLUDED
-- Empty league tables ready for your real UFK data.
-- Public Home, Rankings, Betting, Fights and Legacy pages.
-- Fighter Account page with email/password signup and sign-in.
-- Fighter profile: display name, region, official 0-0-0 fighter creation.
-- Fighters cannot edit wins/losses/draws, rankings, titles or ratings.
-- Admin dashboard can add/delete fighters, update records, grant/vacate titles,
-  publish results, create events, contract activity, betting and featured fights.
-- Supabase Auth + Postgres + Row Level Security.
+WHAT CHANGED
+- Correct UCS branding across the league site.
+- Rankings: UCS WORLD / UCS PS5 / UCS PC / UCS XBOX.
+- UFK Fight Kit is shown as the rankings sponsor with an animated background.
+- Fighter accounts can upload profile pictures (PNG/JPG/WebP, max 5 MB).
+- Profile pictures are stored in Supabase Storage and shown in rankings.
+- Click any fighter in Rankings to open a full fighter profile card with record, rating, form, titles, metrics and recent fights.
+- Automatic smart ranking model calculates Resume, Momentum, Finishing, Activity, Big Fight and overall Score.
+- Publishing a result through Admin automatically updates W/L records and recalculates rankings.
+- Admin has a RE-CALCULATE RANKINGS button for manual refreshes.
+- Clear League Data now requires typing DELETE UCS DATA.
 
-SETUP
-1. Create a Supabase project.
-2. Open SQL Editor and run ALL of supabase-schema.sql.
-   If you already ran the older UFK schema, this v2 file upgrades it.
-3. Open Project Settings / API in Supabase.
-4. Put your Project URL and anon/publishable key in config.js.
-   NEVER put a service_role or secret key in browser code.
-5. In Supabase Authentication settings, enable Email provider.
-6. Set your Site URL / Redirect URLs to your deployed website address.
-7. Deploy the folder to Vercel, Netlify, GitHub Pages or another static host.
+IMPORTANT UPDATE STEP
+1. In Supabase open SQL Editor.
+2. Paste/run the ENTIRE new supabase-schema.sql file.
+   This adds avatar fields, the public fighter-avatars Storage bucket, secure upload policies,
+   UCS title migration, and the new ranking/result functions.
+3. Upload/replace all website files in your GitHub repository.
+4. Commit the changes and wait for GitHub Pages to redeploy.
+5. Hard refresh the live site (Ctrl+F5).
 
-FIRST ADMIN
-Create an account normally through the website (or Supabase Authentication),
-then run this once in SQL Editor, replacing the email:
+PROFILE PICTURES
+Fighters sign in -> Fighter Account -> choose a profile picture -> UPLOAD PFP.
+The image is stored under that user's own Supabase Auth folder. Fighters cannot upload into another user's folder.
+
+SMART RANKINGS
+The built-in ranking engine is automatic and deterministic. It uses official data (record strength,
+recent form, KO wins, activity and championship experience) rather than pretending a browser-side
+formula is AI. This makes rankings explainable and prevents a public API key from being exposed.
+If you later want a true LLM ranking layer, put it in a Supabase Edge Function with a server-side secret.
+
+FIRST ADMIN (same as before)
+Create an account normally, then run once in SQL Editor with your email:
 
 update public.profiles p
 set is_admin = true
 from auth.users u
 where p.id = u.id and u.email = 'YOUR-ADMIN-EMAIL@example.com';
 
-FIGHTER FLOW
-1. Fighter opens Fighter Account.
-2. Creates an account with fighter name, region, email and password.
-3. If email confirmation is enabled, they confirm the email.
-4. They sign in and click CREATE MY FIGHTER PROFILE.
-5. Their official fighter row starts at 0-0-0.
-6. Admins control the official record, championship status and ratings.
-
 SECURITY
-- Fighter accounts can update only display_name, region and updated_at on their own profile.
-- A fighter can create only a fighter row tied to their own auth user and only with a clean 0-0-0 / zero-rating record.
-- No fighter policy allows direct record/rating/title changes.
-- Admin actions are protected by RLS using public.is_ufk_admin().
-- Keep the service-role key server-side only; do not add it to config.js.
-
-NOTE
-This is a static frontend talking directly to Supabase. For payments, real-money betting,
-private moderation actions, file uploads, or other sensitive server-side operations, add a
-trusted backend / Supabase Edge Functions rather than exposing privileged keys in the browser.
+Never place a Supabase service_role key, sb_secret key, OpenAI secret, Discord bot token,
+or other private secret inside config.js or GitHub Pages.
