@@ -5,6 +5,7 @@ const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;'
 const state = {
   fighters: [], champions: [], results: [], events: [], contracts: [], bets: [], settings: {},
   user: null, isAdmin: false, profile: null, myFighter: null, wallet: null, userBets: [],
+  fighterContracts: [], contractTab: 'incoming', contractTarget: null,
   rankingDivision: 'UCS World', betSelection: null
 };
 
@@ -129,11 +130,40 @@ function openFighterProfile(id){
     const won=r.winner_id===f.id,opp=fighterById(won?r.loser_id:r.winner_id);
     return `<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small>${esc(r.method)} · ${esc(fmtDate(r.event_date))}</small></div></div>`;
   }).join(''):empty('No official fight history yet.');
+  const contractBtn=$('#profileContractBtn');
+  // Keep the contract CTA visible on every opponent profile. The click handler
+  // will guide guests to sign in/create a fighter profile, and will explain if
+  // the opponent has not linked a UCS account yet. Only hide it on your own profile.
+  const isOwnProfile=Boolean(state.myFighter&&f.id===state.myFighter.id);
+  if(contractBtn){
+    contractBtn.classList.toggle('hidden',isOwnProfile);
+    contractBtn.dataset.fighterId=isOwnProfile?'':f.id;
+    contractBtn.textContent='SEND CONTRACT';
+  }
   modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');
 }
-function closeFighterProfile(){const modal=$('#fighterModal');modal?.classList.remove('open');modal?.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open');}
+function closeFighterProfile(){const modal=$('#fighterModal');modal?.classList.remove('open');modal?.setAttribute('aria-hidden','true');if(!$('#contractModal')?.classList.contains('open'))document.body.classList.remove('modal-open');}
 $$('[data-close-profile]').forEach(x=>x.addEventListener('click',closeFighterProfile));
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeFighterProfile();});
+
+function openContractModal(fighterId){
+  if(!state.user){toast('Sign in to send a contract.',true);closeFighterProfile();showPage('account');return;}
+  if(!state.myFighter){toast('Create your official fighter profile before sending contracts.',true);closeFighterProfile();showPage('account');return;}
+  const opponent=fighterById(fighterId);
+  if(!opponent||opponent.id===state.myFighter.id)return toast('Choose another fighter.',true);
+  if(!opponent.user_id)return toast('That fighter is not linked to a UCS account yet.',true);
+  state.contractTarget=opponent;
+  $('#contractReceiverId').value=opponent.id;
+  $('#contractOpponentCard').innerHTML=`${avatarHtml(opponent,'contract-avatar')}<div><small>CHALLENGING</small><strong>${esc(opponent.name)}</strong><span>${esc(record(opponent))} · UCS ${esc(opponent.platform||'WORLD')}</span></div>`;
+  const max=Math.floor(Number(state.wallet?.balance||0)*.25);
+  $('#contractWager').max=String(max);
+  $('#contractWagerHint').textContent=`Max ${formatCredits(max)} — 25% of balance`;
+  closeFighterProfile();
+  const modal=$('#contractModal');modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');
+}
+function closeContractModal(){const modal=$('#contractModal');modal?.classList.remove('open');modal?.setAttribute('aria-hidden','true');state.contractTarget=null;document.body.classList.remove('modal-open');}
+$('#profileContractBtn')?.addEventListener('click',e=>{const id=e.currentTarget.dataset.fighterId;if(id)openContractModal(id);});
+$$('[data-close-contract]').forEach(x=>x.addEventListener('click',closeContractModal));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeFighterProfile();closeContractModal();}});
 
 function americanReturn(stake,odds){
   const n=parseFloat(String(odds||'').replace(/[^0-9+.-]/g,'')); if(!Number.isFinite(n)||n===0)return stake;
@@ -165,16 +195,98 @@ async function refreshWallet(){if(!db||!state.user){state.wallet=null;state.user
 function renderEvents(){$('#fightList').innerHTML=state.events.length?state.events.map(e=>`<article class="event-row"><time>${esc(fmtDate(e.event_date))}</time><strong>${esc(e.name)}</strong><span>${esc(e.details||e.status)}</span></article>`).join(''):empty('No fight cards or results have been added yet.');}
 function populateFighterSelects(){const html=`<option value="">Select fighter</option>`+state.fighters.map(f=>`<option value="${f.id}">${esc(f.name)} (${f.wins}-${f.losses}-${f.draws})</option>`).join('');$$('.fighter-select').forEach(s=>{const current=s.value;s.innerHTML=html;if([...s.options].some(o=>o.value===current))s.value=current;});}
 
+
+function contractStatusLabel(status){
+  return ({pending:'PENDING',accepted:'ACCEPTED',declined:'DECLINED',cancelled:'CANCELLED',expired:'EXPIRED',completed:'COMPLETE'}[status]||String(status||'').toUpperCase());
+}
+function contractOpponent(c){
+  if(!state.myFighter)return null;
+  return fighterById(c.sender_fighter_id===state.myFighter.id?c.receiver_fighter_id:c.sender_fighter_id);
+}
+function contractTerms(c){
+  const pieces=[`${c.rounds||10} RDS`,`${Number(c.damage||1).toFixed(1)} DMG`,c.purse_split||'100/0'];
+  if(c.weight_class)pieces.push(c.weight_class);
+  if(c.rating_limit)pieces.push(`≤ ${c.rating_limit} OVR`);
+  if(c.bans&&c.bans!=='No bans')pieces.push(c.bans);
+  if(c.rematch_clause)pieces.push('REMATCH');
+  if(c.live_fight)pieces.push('LIVE');
+  return pieces.join(' · ');
+}
+async function refreshContracts(){
+  if(!db||!state.user||!state.myFighter){state.fighterContracts=[];renderContractCenter();return;}
+  try{await db.rpc('expire_my_fighter_contracts');}catch(_e){}
+  const {data,error}=await db.from('fighter_contracts').select('*').order('created_at',{ascending:false}).limit(100);
+  if(error){state.fighterContracts=[];renderContractCenter();return;}
+  state.fighterContracts=data||[];
+  renderContractCenter();
+}
+function renderContractCenter(){
+  const center=$('#contractCenter');if(!center)return;
+  $('#contractWalletBalance').textContent=state.wallet?formatCredits(state.wallet.balance):'UC 0';
+  if(!state.user||!state.myFighter){$('#incomingContractCount').textContent='0';$('#contractRows').innerHTML=empty('Create an official fighter profile to send and receive contracts.');return;}
+  const pendingIncoming=state.fighterContracts.filter(c=>c.status==='pending'&&c.receiver_fighter_id===state.myFighter.id);
+  $('#incomingContractCount').textContent=String(pendingIncoming.length);
+  let rows=[];
+  if(state.contractTab==='incoming')rows=pendingIncoming;
+  else if(state.contractTab==='sent')rows=state.fighterContracts.filter(c=>c.status==='pending'&&c.sender_fighter_id===state.myFighter.id);
+  else rows=state.fighterContracts.filter(c=>c.status!=='pending');
+  $('#contractRows').innerHTML=rows.length?rows.map(c=>{
+    const opp=contractOpponent(c),incoming=c.receiver_fighter_id===state.myFighter.id,status=contractStatusLabel(c.status);
+    let actions='';
+    if(c.status==='pending'&&incoming)actions=`<button class="contract-action accept" data-contract-action="accept" data-contract-id="${c.id}">ACCEPT</button><button class="contract-action decline" data-contract-action="decline" data-contract-id="${c.id}">DECLINE</button>`;
+    else if(c.status==='pending'&&!incoming)actions=`<button class="contract-action decline" data-contract-action="cancel" data-contract-id="${c.id}">CANCEL</button>`;
+    return `<article class="contract-row">
+      <div class="contract-row-main">${avatarHtml(opp,'contract-row-avatar')}<div><small>${incoming?'CHALLENGE FROM':'CHALLENGE SENT TO'}</small><strong>${esc(opp?.name||'Unknown fighter')}</strong><span>${esc(contractTerms(c))}</span></div></div>
+      <div class="contract-row-wager"><small>WAGER</small><strong>${formatCredits(c.wager)}</strong><span>${c.status==='pending'?`Expires ${new Date(c.expires_at).toLocaleString()}`:new Date(c.updated_at||c.created_at).toLocaleDateString()}</span></div>
+      <div class="contract-status status-${esc(c.status)}">${esc(status)}</div>
+      <div class="contract-row-actions">${actions}</div>
+    </article>`;
+  }).join(''):empty(state.contractTab==='incoming'?'No incoming contract challenges.':state.contractTab==='sent'?'No pending contracts sent.':'No contract history yet.');
+}
+$('#contractTabs')?.addEventListener('click',e=>{const b=e.target.closest('[data-contract-tab]');if(!b)return;state.contractTab=b.dataset.contractTab;$$('#contractTabs button').forEach(x=>x.classList.toggle('active',x===b));renderContractCenter();});
+$('#contractRows')?.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-contract-action]');if(!b||!db)return;
+  const action=b.dataset.contractAction,id=b.dataset.contractId;
+  b.disabled=true;
+  const {error}=await db.rpc('respond_fighter_contract',{p_contract_id:id,p_action:action});
+  if(error){b.disabled=false;return toast(error.message,true);}
+  await refreshWallet();await refreshContracts();toast(action==='accept'?'Contract accepted. Fight is locked in.':action==='decline'?'Contract declined.':'Contract cancelled.');
+});
+$('#fighterContractForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!db||!state.user||!state.myFighter||!state.contractTarget)return toast('Open a fighter profile and choose Send Contract.',true);
+  const d=new FormData(e.target),wager=Math.floor(Number(d.get('wager')||0)),max=Math.floor(Number(state.wallet?.balance||0)*.25);
+  if(wager<0)return toast('Wager cannot be negative.',true);
+  if(wager>max)return toast(`Maximum contract wager is ${formatCredits(max)}.`,true);
+  const payload={
+    p_receiver_fighter_id:d.get('receiver_fighter_id'),
+    p_wager:wager,
+    p_purse_split:d.get('purse_split'),
+    p_rounds:Number(d.get('rounds')),
+    p_damage:Number(d.get('damage')),
+    p_weight_class:(d.get('weight_class')||'').trim()||null,
+    p_rating_limit:d.get('rating_limit')?Number(d.get('rating_limit')):null,
+    p_bans:d.get('bans'),
+    p_rematch_clause:d.get('rematch_clause')==='true',
+    p_live_fight:d.get('live_fight')==='true'
+  };
+  const submit=e.submitter; if(submit)submit.disabled=true;
+  const {error}=await db.rpc('create_fighter_contract',payload);
+  if(submit)submit.disabled=false;
+  if(error)return toast(error.message,true);
+  e.target.reset();closeContractModal();await refreshWallet();await refreshContracts();state.contractTab='sent';$$('#contractTabs button').forEach(x=>x.classList.toggle('active',x.dataset.contractTab==='sent'));renderContractCenter();showPage('account');toast('Contract challenge sent.');
+});
+
 async function refreshSession(){
   if(!db){updateAdminUI();updateAccountUI();return;}
-  const {data:{session}}=await db.auth.getSession();state.user=session?.user||null;state.isAdmin=false;state.profile=null;state.myFighter=null;state.wallet=null;state.userBets=[];
+  const {data:{session}}=await db.auth.getSession();state.user=session?.user||null;state.isAdmin=false;state.profile=null;state.myFighter=null;state.wallet=null;state.userBets=[];state.fighterContracts=[];
   if(state.user){
     const [{data:profile,error:profileError},{data:myFighter}]=await Promise.all([
       db.from('profiles').select('id,is_admin,display_name,region,platform,avatar_url').eq('id',state.user.id).single(),
       db.from('fighters').select('*').eq('user_id',state.user.id).maybeSingle()
     ]);
-    if(!profileError&&profile){state.profile=profile;state.isAdmin=Boolean(profile.is_admin);}state.myFighter=myFighter||null;await refreshWallet();
-  } else renderBets();
+    if(!profileError&&profile){state.profile=profile;state.isAdmin=Boolean(profile.is_admin);}state.myFighter=myFighter||null;await refreshWallet();await refreshContracts();
+  } else {renderBets();renderContractCenter();}
   updateAdminUI();updateAccountUI();
 }
 function updateAdminUI(){
@@ -189,11 +301,12 @@ function updateAccountUI(){
   const preview=$('#avatarPreview');if(preview)preview.innerHTML=state.profile?.avatar_url?`<img src="${esc(state.profile.avatar_url)}" alt="Profile picture">`:`<span>${esc(initials(state.profile?.display_name||'UCS'))}</span>`;
   const f=state.myFighter;$('#createMyFighterBtn').classList.toggle('hidden',Boolean(f));
   $('#myFighterDetails').innerHTML=f?`<div class="my-fighter-head">${avatarHtml(f,'my-fighter-avatar')}<div><strong>${esc(f.name)}</strong><span class="fighter-badge">OFFICIAL UCS FIGHTER</span></div></div><div class="my-record"><div><strong>${f.wins}</strong><span>WINS</span></div><div><strong>${f.losses}</strong><span>LOSSES</span></div><div><strong>${f.draws}</strong><span>DRAWS</span></div></div><small>Platform: ${esc(f.platform||'—')} · Region: ${esc(f.region||'—')} · Rating: ${Number(f.score||0).toFixed(1)}</small>`:'No official fighter profile linked yet. Create yours below with a clean 0-0-0 record.';
+  renderContractCenter();
 }
 
 $('#fighterSignupForm')?.addEventListener('submit',async e=>{e.preventDefault();if(!db)return toast('Configure Supabase first.',true);const d=new FormData(e.target),fighter_name=d.get('fighter_name').trim(),region=d.get('region').trim(),platform=d.get('platform');const {data,error}=await db.auth.signUp({email:d.get('email'),password:d.get('password'),options:{data:{fighter_name,region,platform}}});if(error)return toast(error.message,true);if(data.session){await refreshSession();toast('Account created and signed in.');}else toast('Account created. Check your email to confirm your UCS account.');});
 $('#fighterLoginForm')?.addEventListener('submit',async e=>{e.preventDefault();if(!db)return toast('Configure Supabase first.',true);const d=new FormData(e.target),{error}=await db.auth.signInWithPassword({email:d.get('email'),password:d.get('password')});if(error)return toast(error.message,true);await refreshSession();toast('Signed in to UCS.');});
-$('#fighterSignOutBtn')?.addEventListener('click',async()=>{if(db)await db.auth.signOut();state.user=null;state.isAdmin=false;state.profile=null;state.myFighter=null;state.wallet=null;state.userBets=[];updateAdminUI();updateAccountUI();renderBets();toast('Signed out.');});
+$('#fighterSignOutBtn')?.addEventListener('click',async()=>{if(db)await db.auth.signOut();state.user=null;state.isAdmin=false;state.profile=null;state.myFighter=null;state.wallet=null;state.userBets=[];state.fighterContracts=[];updateAdminUI();updateAccountUI();renderBets();renderContractCenter();toast('Signed out.');});
 $('#profileForm')?.addEventListener('submit',async e=>{e.preventDefault();if(!db||!state.user)return toast('Sign in first.',true);const d=new FormData(e.target),display_name=d.get('display_name').trim(),region=d.get('region').trim(),platform=d.get('platform');const {error}=await db.from('profiles').update({display_name,region:region||null,platform,updated_at:new Date().toISOString()}).eq('id',state.user.id);if(error)return toast(error.message,true);if(state.myFighter){const {error:syncError}=await db.rpc('sync_my_fighter_identity');if(syncError)return toast(syncError.message,true);}await refreshSession();await loadPublicData();toast('Profile saved.');});
 $('#avatarFile')?.addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const url=URL.createObjectURL(file);$('#avatarPreview').innerHTML=`<img src="${url}" alt="Profile preview">`;});
 $('#uploadAvatarBtn')?.addEventListener('click',async()=>{
@@ -208,7 +321,7 @@ $('#uploadAvatarBtn')?.addEventListener('click',async()=>{
 $('#createMyFighterBtn')?.addEventListener('click',async()=>{if(!db||!state.user)return toast('Sign in first.',true);if(state.myFighter)return toast('Your fighter profile already exists.',true);const name=(state.profile?.display_name||state.user.user_metadata?.fighter_name||'').trim();if(!name)return toast('Add a display name to your profile first.',true);const {error}=await db.from('fighters').insert({user_id:state.user.id,name,region:state.profile?.region||null,platform:state.profile?.platform||'PS5',avatar_url:state.profile?.avatar_url||null,wins:0,losses:0,draws:0,resume:0,momentum:0,finishing:0,activity:0,big_fight:0,score:0,active:true});if(error)return toast(error.message,true);await refreshSession();await loadPublicData();toast('Official fighter profile created.');});
 
 $('#loginForm')?.addEventListener('submit',async e=>{e.preventDefault();if(!db)return toast('Configure Supabase first.',true);const d=new FormData(e.target),{error}=await db.auth.signInWithPassword({email:d.get('email'),password:d.get('password')});if(error)return toast(error.message,true);await refreshSession();toast(state.isAdmin?'Admin signed in.':'Signed in, but this user is not an admin.',!state.isAdmin);});
-$('#signOutBtn')?.addEventListener('click',async()=>{if(db)await db.auth.signOut();state.user=null;state.isAdmin=false;state.profile=null;state.myFighter=null;state.wallet=null;state.userBets=[];updateAdminUI();updateAccountUI();renderBets();toast('Signed out.');});
+$('#signOutBtn')?.addEventListener('click',async()=>{if(db)await db.auth.signOut();state.user=null;state.isAdmin=false;state.profile=null;state.myFighter=null;state.wallet=null;state.userBets=[];state.fighterContracts=[];updateAdminUI();updateAccountUI();renderBets();renderContractCenter();toast('Signed out.');});
 $('#refreshAdmin')?.addEventListener('click',async()=>{await loadPublicData();toast('Database refreshed.');});
 $('#smartRankingsBtn')?.addEventListener('click',async()=>{if(!state.isAdmin)return toast('Admin permission required.',true);const {error}=await db.rpc('recalculate_ucs_rankings');if(error)return toast(error.message,true);await loadPublicData();toast('UCS smart rankings recalculated.');});
 

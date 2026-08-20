@@ -42,3 +42,23 @@ where p.id = u.id and u.email = 'YOUR-ADMIN-EMAIL@example.com';
 SECURITY
 Never place a Supabase service_role key, sb_secret key, OpenAI secret, Discord bot token,
 or other private secret inside config.js or GitHub Pages.
+
+UCS V5 — FIGHTER CONTRACT CHALLENGES
+------------------------------------
+This build adds fighter-to-fighter contracts.
+
+IMPORTANT: run the latest supabase-schema.sql in Supabase SQL Editor before uploading the new frontend files.
+
+FLOW
+- Open Rankings and click another linked fighter.
+- Signed-in fighters with an official UCS fighter profile will see SEND CONTRACT.
+- Contract terms include UCS Credit wager, purse split, rounds, damage, optional weight/rating limit, bans, rematch clause and live-fight flag.
+- Sender wager is held in Supabase escrow immediately.
+- The challenged fighter can ACCEPT or DECLINE from Fighter Account > Contract Center.
+- Sender can cancel while the contract is still pending.
+- Pending contracts expire after 72 hours and the sender wager is returned.
+- When accepted, the challenged fighter matches the same wager into escrow.
+- When an admin publishes the official result for the two fighters, the newest accepted contract is automatically completed and escrow is paid using the chosen purse split.
+- Contract history is private to the two involved fighter accounts (admins can also inspect it through Supabase).
+
+UCS Credits are virtual league currency only; there is no real-money settlement.

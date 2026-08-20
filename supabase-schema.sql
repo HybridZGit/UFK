@@ -418,3 +418,334 @@ grant execute on function public.publish_ucs_result(uuid,uuid,text,date) to auth
 
 -- Recalculate once after migration so existing fighters receive fresh UCS ratings.
 select public.recalculate_ucs_rankings();
+
+
+-- ============================================================
+-- UCS v5 — FIGHTER-TO-FIGHTER CONTRACT CHALLENGES + ESCROW
+-- ============================================================
+-- Contract wagers use virtual UCS Credits only. No real-money settlement.
+
+create table if not exists public.fighter_contracts (
+  id uuid primary key default gen_random_uuid(),
+  sender_fighter_id uuid not null references public.fighters(id) on delete cascade,
+  receiver_fighter_id uuid not null references public.fighters(id) on delete cascade,
+  wager numeric(12,2) not null default 0 check (wager >= 0),
+  purse_split text not null default '100/0' check (purse_split in ('100/0','80/20','70/30','60/40','50/50')),
+  rounds integer not null default 10 check (rounds in (3,5,8,10,12)),
+  damage numeric(3,1) not null default 1.0 check (damage in (0.5,1.0,1.5,2.0)),
+  weight_class text,
+  rating_limit integer check (rating_limit is null or (rating_limit >= 0 and rating_limit <= 100)),
+  bans text not null default 'No bans',
+  rematch_clause boolean not null default false,
+  live_fight boolean not null default false,
+  status text not null default 'pending' check (status in ('pending','accepted','declined','cancelled','expired','completed')),
+  expires_at timestamptz not null default (now() + interval '72 hours'),
+  accepted_at timestamptz,
+  completed_at timestamptz,
+  winner_fighter_id uuid references public.fighters(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (sender_fighter_id <> receiver_fighter_id)
+);
+
+create index if not exists fighter_contracts_sender_idx on public.fighter_contracts(sender_fighter_id, created_at desc);
+create index if not exists fighter_contracts_receiver_idx on public.fighter_contracts(receiver_fighter_id, created_at desc);
+create index if not exists fighter_contracts_status_idx on public.fighter_contracts(status, expires_at);
+
+alter table public.fighter_contracts enable row level security;
+
+drop policy if exists "fighters read own contracts" on public.fighter_contracts;
+create policy "fighters read own contracts" on public.fighter_contracts
+for select to authenticated
+using (
+  (select public.is_ufk_admin())
+  or exists (
+    select 1 from public.fighters f
+    where f.user_id = (select auth.uid())
+      and (f.id = sender_fighter_id or f.id = receiver_fighter_id)
+  )
+);
+
+drop policy if exists "admin manages fighter contracts" on public.fighter_contracts;
+create policy "admin manages fighter contracts" on public.fighter_contracts
+for all to authenticated
+using ((select public.is_ufk_admin()))
+with check ((select public.is_ufk_admin()));
+
+grant select on public.fighter_contracts to authenticated;
+revoke insert, update, delete on public.fighter_contracts from authenticated;
+
+-- Send a challenge and escrow the sender's wager immediately.
+create or replace function public.create_fighter_contract(
+  p_receiver_fighter_id uuid,
+  p_wager numeric,
+  p_purse_split text,
+  p_rounds integer,
+  p_damage numeric,
+  p_weight_class text,
+  p_rating_limit integer,
+  p_bans text,
+  p_rematch_clause boolean,
+  p_live_fight boolean
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_sender public.fighters%rowtype;
+  v_receiver public.fighters%rowtype;
+  v_balance numeric(12,2);
+  v_max numeric(12,2);
+  v_id uuid;
+begin
+  if v_uid is null then raise exception 'Sign in to send a contract.'; end if;
+
+  select * into v_sender from public.fighters where user_id = v_uid and active = true;
+  if not found then raise exception 'Create your official fighter profile first.'; end if;
+
+  select * into v_receiver from public.fighters where id = p_receiver_fighter_id and active = true;
+  if not found then raise exception 'Opponent not found.'; end if;
+  if v_receiver.id = v_sender.id then raise exception 'You cannot challenge yourself.'; end if;
+  if v_receiver.user_id is null then raise exception 'That fighter is not linked to a UCS account yet.'; end if;
+
+  if exists (
+    select 1 from public.fighter_contracts c
+    where c.status = 'pending'
+      and ((c.sender_fighter_id=v_sender.id and c.receiver_fighter_id=v_receiver.id)
+        or (c.sender_fighter_id=v_receiver.id and c.receiver_fighter_id=v_sender.id))
+  ) then
+    raise exception 'A pending contract already exists between these fighters.';
+  end if;
+
+  if coalesce(p_wager,0) < 0 then raise exception 'Wager cannot be negative.'; end if;
+  if coalesce(p_purse_split,'') not in ('100/0','80/20','70/30','60/40','50/50') then raise exception 'Invalid purse split.'; end if;
+  if p_rounds not in (3,5,8,10,12) then raise exception 'Invalid round count.'; end if;
+  if p_damage not in (0.5,1.0,1.5,2.0) then raise exception 'Invalid damage setting.'; end if;
+
+  select balance into v_balance from public.wallets where user_id = v_uid for update;
+  if not found then raise exception 'UCS wallet not found.'; end if;
+  v_max := floor(v_balance * 0.25);
+  if coalesce(p_wager,0) > v_max then raise exception 'Wager exceeds the 25%% contract limit.'; end if;
+  if v_balance < coalesce(p_wager,0) then raise exception 'Not enough UCS Credits.'; end if;
+
+  update public.wallets
+  set balance = balance - coalesce(p_wager,0), updated_at = now()
+  where user_id = v_uid;
+
+  insert into public.fighter_contracts(
+    sender_fighter_id, receiver_fighter_id, wager, purse_split, rounds, damage,
+    weight_class, rating_limit, bans, rematch_clause, live_fight
+  ) values (
+    v_sender.id, v_receiver.id, coalesce(p_wager,0), p_purse_split, p_rounds, p_damage,
+    nullif(trim(coalesce(p_weight_class,'')),''), p_rating_limit,
+    coalesce(nullif(trim(coalesce(p_bans,'')),''),'No bans'),
+    coalesce(p_rematch_clause,false), coalesce(p_live_fight,false)
+  ) returning id into v_id;
+
+  insert into public.contract_activity(fighter_id,action)
+  values(v_sender.id, 'sent a fight contract to ' || v_receiver.name);
+
+  return v_id;
+end;
+$$;
+
+-- Accept, decline, or cancel a pending contract.
+-- Accepting escrows the receiver's matching wager.
+create or replace function public.respond_fighter_contract(p_contract_id uuid, p_action text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_me public.fighters%rowtype;
+  v_c public.fighter_contracts%rowtype;
+  v_sender public.fighters%rowtype;
+  v_receiver public.fighters%rowtype;
+  v_balance numeric(12,2);
+begin
+  if v_uid is null then raise exception 'Sign in first.'; end if;
+  select * into v_me from public.fighters where user_id=v_uid and active=true;
+  if not found then raise exception 'Official fighter profile required.'; end if;
+
+  select * into v_c from public.fighter_contracts where id=p_contract_id for update;
+  if not found then raise exception 'Contract not found.'; end if;
+
+  if v_c.status <> 'pending' then raise exception 'This contract is no longer pending.'; end if;
+
+  if v_c.expires_at <= now() then
+    update public.fighter_contracts set status='expired',updated_at=now() where id=v_c.id;
+    select * into v_sender from public.fighters where id=v_c.sender_fighter_id;
+    if v_sender.user_id is not null and v_c.wager > 0 then
+      update public.wallets set balance=balance+v_c.wager,updated_at=now() where user_id=v_sender.user_id;
+    end if;
+    return;
+  end if;
+
+  select * into v_sender from public.fighters where id=v_c.sender_fighter_id;
+  select * into v_receiver from public.fighters where id=v_c.receiver_fighter_id;
+
+  if p_action='accept' then
+    if v_me.id <> v_c.receiver_fighter_id then raise exception 'Only the challenged fighter can accept.'; end if;
+    select balance into v_balance from public.wallets where user_id=v_uid for update;
+    if not found then raise exception 'UCS wallet not found.'; end if;
+    if v_balance < v_c.wager then raise exception 'You need enough UCS Credits to match the wager.'; end if;
+    update public.wallets set balance=balance-v_c.wager,updated_at=now() where user_id=v_uid;
+    update public.fighter_contracts set status='accepted',accepted_at=now(),updated_at=now() where id=v_c.id;
+    insert into public.contract_activity(fighter_id,action)
+    values(v_receiver.id, 'accepted a fight contract vs ' || v_sender.name);
+
+  elsif p_action='decline' then
+    if v_me.id <> v_c.receiver_fighter_id then raise exception 'Only the challenged fighter can decline.'; end if;
+    if v_sender.user_id is not null and v_c.wager > 0 then
+      update public.wallets set balance=balance+v_c.wager,updated_at=now() where user_id=v_sender.user_id;
+    end if;
+    update public.fighter_contracts set status='declined',updated_at=now() where id=v_c.id;
+    insert into public.contract_activity(fighter_id,action)
+    values(v_receiver.id, 'declined a fight contract from ' || v_sender.name);
+
+  elsif p_action='cancel' then
+    if v_me.id <> v_c.sender_fighter_id then raise exception 'Only the sender can cancel this contract.'; end if;
+    if v_sender.user_id is not null and v_c.wager > 0 then
+      update public.wallets set balance=balance+v_c.wager,updated_at=now() where user_id=v_sender.user_id;
+    end if;
+    update public.fighter_contracts set status='cancelled',updated_at=now() where id=v_c.id;
+    insert into public.contract_activity(fighter_id,action)
+    values(v_sender.id, 'cancelled a fight contract vs ' || v_receiver.name);
+  else
+    raise exception 'Action must be accept, decline or cancel.';
+  end if;
+end;
+$$;
+
+-- Refund expired pending contracts. Safe to call whenever an account loads.
+create or replace function public.expire_my_fighter_contracts()
+returns integer
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_count integer := 0;
+  c record;
+  v_sender_user uuid;
+begin
+  if v_uid is null then return 0; end if;
+
+  for c in
+    select fc.*
+    from public.fighter_contracts fc
+    join public.fighters me on me.user_id=v_uid
+    where fc.status='pending'
+      and fc.expires_at <= now()
+      and (fc.sender_fighter_id=me.id or fc.receiver_fighter_id=me.id)
+    for update of fc
+  loop
+    select user_id into v_sender_user from public.fighters where id=c.sender_fighter_id;
+    if v_sender_user is not null and c.wager > 0 then
+      update public.wallets set balance=balance+c.wager,updated_at=now() where user_id=v_sender_user;
+    end if;
+    update public.fighter_contracts set status='expired',updated_at=now() where id=c.id;
+    v_count := v_count + 1;
+  end loop;
+  return v_count;
+end;
+$$;
+
+-- Settle an accepted contract after an official result.
+-- The accepted contract holds one wager from each fighter.
+create or replace function public.settle_fighter_contract(p_contract_id uuid, p_winner_fighter_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_c public.fighter_contracts%rowtype;
+  v_sender public.fighters%rowtype;
+  v_receiver public.fighters%rowtype;
+  v_winner_user uuid;
+  v_loser_user uuid;
+  v_pool numeric(12,2);
+  v_win_pct numeric;
+  v_lose_pct numeric;
+  v_win_pay numeric(12,2);
+  v_lose_pay numeric(12,2);
+begin
+  if not public.is_ufk_admin() then raise exception 'Admin permission required.'; end if;
+  select * into v_c from public.fighter_contracts where id=p_contract_id for update;
+  if not found then raise exception 'Contract not found.'; end if;
+  if v_c.status <> 'accepted' then raise exception 'Only accepted contracts can be completed.'; end if;
+  if p_winner_fighter_id not in (v_c.sender_fighter_id,v_c.receiver_fighter_id) then raise exception 'Winner is not part of this contract.'; end if;
+
+  select * into v_sender from public.fighters where id=v_c.sender_fighter_id;
+  select * into v_receiver from public.fighters where id=v_c.receiver_fighter_id;
+  v_winner_user := case when p_winner_fighter_id=v_sender.id then v_sender.user_id else v_receiver.user_id end;
+  v_loser_user := case when p_winner_fighter_id=v_sender.id then v_receiver.user_id else v_sender.user_id end;
+  v_pool := v_c.wager * 2;
+
+  v_win_pct := split_part(v_c.purse_split,'/',1)::numeric / 100;
+  v_lose_pct := split_part(v_c.purse_split,'/',2)::numeric / 100;
+  v_win_pay := round(v_pool*v_win_pct,2);
+  v_lose_pay := round(v_pool*v_lose_pct,2);
+
+  if v_winner_user is not null and v_win_pay > 0 then
+    update public.wallets set balance=balance+v_win_pay,updated_at=now() where user_id=v_winner_user;
+  end if;
+  if v_loser_user is not null and v_lose_pay > 0 then
+    update public.wallets set balance=balance+v_lose_pay,updated_at=now() where user_id=v_loser_user;
+  end if;
+
+  update public.fighter_contracts
+  set status='completed',winner_fighter_id=p_winner_fighter_id,completed_at=now(),updated_at=now()
+  where id=v_c.id;
+end;
+$$;
+
+-- Override result publishing so an accepted fighter contract between the two
+-- competitors is automatically completed and its UCS Credit escrow is paid.
+create or replace function public.publish_ucs_result(p_winner_id uuid,p_loser_id uuid,p_method text,p_event_date date)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_id uuid;
+  v_contract_id uuid;
+begin
+  if not public.is_ufk_admin() then raise exception 'Admin permission required.'; end if;
+  if p_winner_id is null or p_loser_id is null or p_winner_id=p_loser_id then raise exception 'Choose two different fighters.'; end if;
+
+  insert into public.results(winner_id,loser_id,method,event_date)
+  values(p_winner_id,p_loser_id,p_method,p_event_date) returning id into v_id;
+
+  update public.fighters set wins=wins+1,updated_at=now() where id=p_winner_id;
+  update public.fighters set losses=losses+1,updated_at=now() where id=p_loser_id;
+
+  select id into v_contract_id
+  from public.fighter_contracts
+  where status='accepted'
+    and ((sender_fighter_id=p_winner_id and receiver_fighter_id=p_loser_id)
+      or (sender_fighter_id=p_loser_id and receiver_fighter_id=p_winner_id))
+  order by accepted_at desc nulls last, created_at desc
+  limit 1;
+
+  if v_contract_id is not null then
+    perform public.settle_fighter_contract(v_contract_id,p_winner_id);
+  end if;
+
+  perform public.recalculate_ucs_rankings();
+  return v_id;
+end;
+$$;
+
+grant execute on function public.create_fighter_contract(uuid,numeric,text,integer,numeric,text,integer,text,boolean,boolean) to authenticated;
+grant execute on function public.respond_fighter_contract(uuid,text) to authenticated;
+grant execute on function public.expire_my_fighter_contracts() to authenticated;
+grant execute on function public.settle_fighter_contract(uuid,uuid) to authenticated;

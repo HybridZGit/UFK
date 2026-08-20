@@ -179,6 +179,19 @@
             <button class="btn primary" id="createMyFighterBtn" type="button">CREATE MY FIGHTER PROFILE</button>
           </div>
         </div>
+
+        <section class="contract-center" id="contractCenter">
+          <div class="contract-center-head">
+            <div><small>FIGHTER-TO-FIGHTER</small><h3>CONTRACT CENTER</h3><p>Send challenges, accept match terms and track your UCS fight agreements.</p></div>
+            <div class="contract-wallet"><span>AVAILABLE</span><strong id="contractWalletBalance">UC 0</strong></div>
+          </div>
+          <div class="contract-tabs" id="contractTabs">
+            <button class="active" type="button" data-contract-tab="incoming">INCOMING <span id="incomingContractCount">0</span></button>
+            <button type="button" data-contract-tab="sent">SENT</button>
+            <button type="button" data-contract-tab="history">HISTORY</button>
+          </div>
+          <div id="contractRows" class="contract-list"><div class="data-empty">No contracts yet.</div></div>
+        </section>
       </div>
     </section>
 
@@ -288,7 +301,10 @@
       <header class="profile-hero">
         <div class="profile-avatar" id="profileAvatar"><span>UCS</span></div>
         <div class="profile-identity"><div class="profile-overline" id="profilePlatform">UCS WORLD</div><h2 id="profileName">FIGHTER</h2><p id="profileRegion">—</p></div>
-        <div class="profile-rank-badge"><small>WORLD RANK</small><strong id="profileRank">#—</strong></div>
+        <div class="profile-rank-actions">
+          <div class="profile-rank-badge"><small>WORLD RANK</small><strong id="profileRank">#—</strong></div>
+          <button class="btn contract-challenge-btn hidden" id="profileContractBtn" type="button">SEND CONTRACT</button>
+        </div>
       </header>
       <div class="profile-stat-grid">
         <div><strong id="profileRecord">0-0-0</strong><span>RECORD</span></div>
@@ -299,6 +315,47 @@
       </div>
       <div class="profile-rating-bars" id="profileRatingBars"></div>
       <section class="profile-history"><div class="profile-section-title"><span>RECENT FIGHTS</span><small>Official UCS results</small></div><div id="profileFightHistory"></div></section>
+    </article>
+  </div>
+
+
+  <div class="contract-modal" id="contractModal" aria-hidden="true">
+    <div class="contract-modal-backdrop" data-close-contract></div>
+    <article class="contract-dialog" role="dialog" aria-modal="true" aria-labelledby="contractModalTitle">
+      <button class="profile-close" type="button" data-close-contract aria-label="Close contract challenge">×</button>
+      <div class="contract-dialog-kicker">UCS OFFICIAL FIGHT OFFER</div>
+      <h2 id="contractModalTitle">SEND CONTRACT CHALLENGE</h2>
+      <div class="contract-opponent" id="contractOpponentCard">Choose a fighter from the rankings.</div>
+      <form id="fighterContractForm">
+        <input type="hidden" name="receiver_fighter_id" id="contractReceiverId">
+        <label>Wager <span class="field-hint" id="contractWagerHint">Max 25% of your UCS balance</span>
+          <div class="stake-field"><span>UC</span><input name="wager" id="contractWager" type="number" min="0" step="1" value="0"></div>
+        </label>
+        <label>Purse split
+          <select name="purse_split">
+            <option value="100/0">100 / 0 — Winner takes all</option>
+            <option value="80/20">80 / 20 — Winner / loser</option>
+            <option value="70/30">70 / 30 — Winner / loser</option>
+            <option value="60/40">60 / 40 — Winner / loser</option>
+            <option value="50/50">50 / 50 — Even split</option>
+          </select>
+        </label>
+        <div class="split-2">
+          <label>Rounds<select name="rounds"><option value="3">3 rounds</option><option value="5">5 rounds</option><option value="8">8 rounds</option><option value="10" selected>10 rounds</option><option value="12">12 rounds</option></select></label>
+          <label>Damage<select name="damage"><option value="0.5">0.5</option><option value="1.0" selected>1.0</option><option value="1.5">1.5</option><option value="2.0">2.0</option></select></label>
+        </div>
+        <div class="split-2">
+          <label>Weight class <span class="field-hint">Optional</span><input name="weight_class" maxlength="40" placeholder="e.g. Welterweight"></label>
+          <label>Rating limit <span class="field-hint">Optional</span><input name="rating_limit" type="number" min="0" max="100" placeholder="e.g. 90"></label>
+        </div>
+        <div class="split-2">
+          <label>Bans<select name="bans"><option value="No bans">No bans</option><option value="1 fighter ban">1 fighter ban</option><option value="2 fighter bans">2 fighter bans</option><option value="Custom">Custom / agree in chat</option></select></label>
+          <label>Rematch clause<select name="rematch_clause"><option value="false">No</option><option value="true">Yes</option></select></label>
+        </div>
+        <label>Live fight?<select name="live_fight"><option value="false">No</option><option value="true">Yes</option></select></label>
+        <div class="contract-escrow-note">Any wager is held in UCS escrow when the contract is sent. Your opponent has 72 hours to accept or decline. Pending contracts can be cancelled by the sender.</div>
+        <div class="contract-dialog-actions"><button class="btn ghost" type="button" data-close-contract>CANCEL</button><button class="btn primary" type="submit">SEND CHALLENGE</button></div>
+      </form>
     </article>
   </div>
 
