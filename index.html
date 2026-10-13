@@ -228,6 +228,14 @@
             <button class="btn primary" type="submit">ADD FIGHTER</button>
           </form>
 
+          <form class="admin-card" id="adminFighterAvatarForm">
+            <h3>Upload fighter picture</h3><p>Choose a roster fighter and upload their profile picture (PNG, JPG or WebP, max 5 MB). No fighter login required.</p>
+            <label>Fighter<select name="fighter_id" class="fighter-select" required></select></label>
+            <label>Profile picture<input id="adminFighterAvatarFile" name="avatar" type="file" accept="image/png,image/jpeg,image/webp" required></label>
+            <div id="adminFighterAvatarPreview" aria-live="polite" style="margin:12px 0;min-height:24px"></div>
+            <button class="btn primary" id="adminFighterAvatarSubmit" type="submit">UPLOAD FIGHTER PICTURE</button>
+          </form>
+
           <form class="admin-card" id="recordForm">
             <h3>Update record</h3><p>Set a fighter's official W-L-D record.</p>
             <label>Fighter<select name="fighter_id" class="fighter-select" required></select></label>
