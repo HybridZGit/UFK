@@ -329,6 +329,41 @@ async function adminInsert(table,payload,msg){if(!state.isAdmin)return toast('Ad
 async function adminUpdate(table,payload,match,msg){if(!state.isAdmin)return toast('Admin permission required.',true);let q=db.from(table).update(payload);Object.entries(match).forEach(([k,v])=>q=q.eq(k,v));const {error}=await q;if(error)return toast(error.message,true);toast(msg);await loadPublicData();}
 
 $('#fighterCreateForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);await adminInsert('fighters',{name:d.get('name').trim(),wins:+d.get('wins'),losses:+d.get('losses'),draws:+d.get('draws'),region:d.get('region').trim()||null,platform:d.get('platform')},'Fighter added.');if(state.isAdmin)e.target.reset();});
+$('#adminFighterAvatarFile')?.addEventListener('change',e=>{
+  const target=$('#adminFighterAvatarPreview'),file=e.target.files?.[0];
+  if(!target)return;
+  if(window._adminAvatarPreviewUrl)URL.revokeObjectURL(window._adminAvatarPreviewUrl);
+  window._adminAvatarPreviewUrl=file?URL.createObjectURL(file):null;
+  target.innerHTML=file?`<img src="${window._adminAvatarPreviewUrl}" alt="Selected fighter picture preview" style="width:100px;height:100px;object-fit:cover;border-radius:12px"><p>${esc(file.name)}</p>`:'';
+});
+$('#adminFighterAvatarForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!db||!state.user||!state.isAdmin)return toast('UCS admin permission required.',true);
+  const form=e.currentTarget,details=new FormData(form),fighterId=details.get('fighter_id');
+  const fighter=fighterById(fighterId),file=$('#adminFighterAvatarFile')?.files?.[0],submit=$('#adminFighterAvatarSubmit');
+  if(!fighter)return toast('Select a valid fighter.',true);
+  if(!file)return toast('Choose a picture first.',true);
+  const types={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'};
+  const extension=types[file.type];
+  if(!extension)return toast('Upload PNG, JPG or WebP only.',true);
+  if(file.size>5*1024*1024)return toast('Picture must be 5 MB or smaller.',true);
+  if(!file.size)return toast('Picture file is empty.',true);
+  submit.disabled=true;submit.textContent='UPLOADING...';
+  try{
+    const path=`admin/${fighter.id}/${crypto.randomUUID()}.${extension}`;
+    const {error:uploadError}=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type,cacheControl:'3600',upsert:false});
+    if(uploadError)throw uploadError;
+    const {data:publicData}=db.storage.from('fighter-avatars').getPublicUrl(path);
+    const {error:saveError}=await db.from('fighters').update({avatar_url:publicData.publicUrl,updated_at:new Date().toISOString()}).eq('id',fighter.id);
+    if(saveError)throw saveError;
+    form.reset();$('#adminFighterAvatarPreview').innerHTML='';
+    if(window._adminAvatarPreviewUrl)URL.revokeObjectURL(window._adminAvatarPreviewUrl);
+    window._adminAvatarPreviewUrl=null;
+    await loadPublicData();toast(`${fighter.name} picture updated.`);
+  }catch(error){toast(error.message||'Could not upload fighter picture.',true);}
+  finally{submit.disabled=false;submit.textContent='UPLOAD FIGHTER PICTURE';}
+});
+
 $('#recordForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);await adminUpdate('fighters',{wins:+d.get('wins'),losses:+d.get('losses'),draws:+d.get('draws'),updated_at:new Date().toISOString()},{id:d.get('fighter_id')},'Record updated.');if(state.isAdmin){await db.rpc('recalculate_ucs_rankings');await loadPublicData();}});
 $('#championForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);if(!state.isAdmin)return;const payload={division:d.get('division'),fighter_id:d.get('fighter_id'),defenses:+d.get('defenses')||0,granted_at:new Date().toISOString()};const {error}=await db.from('champions').upsert(payload,{onConflict:'division'});if(error)return toast(error.message,true);await db.rpc('recalculate_ucs_rankings');toast(`${d.get('division')} champion granted.`);await loadPublicData();});
 $('#vacateTitleBtn')?.addEventListener('click',async()=>{const f=$('#championForm'),division=new FormData(f).get('division');if(!state.isAdmin)return;const {error}=await db.from('champions').upsert({division,fighter_id:null,defenses:0,granted_at:new Date().toISOString()},{onConflict:'division'});if(error)return toast(error.message,true);await db.rpc('recalculate_ucs_rankings');toast(`${division} title vacated.`);await loadPublicData();});
