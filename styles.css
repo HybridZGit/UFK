@@ -42,3 +42,16 @@
 .ucs-scheduled-row{border-left:3px solid #df4d34;gap:14px}
 .ucs-scheduled-row a{white-space:normal}
 @media(max-width:600px){.ucs-bout-spotlight{padding:14px}.ucs-bout-links .btn{width:100%}}
+
+/* Upcoming bouts: BoxRec-style one-row information inside the original UCS profile */
+#profileUpcomingFights .ucs-inline-bout{display:flex;align-items:center;gap:16px;width:100%;padding:14px 0;min-width:0}
+#profileUpcomingFights .ucs-inline-bout .result-pill{background:#995f12;color:#fff;flex:0 0 auto}
+#profileUpcomingFights .ucs-inline-bout-details{display:flex;flex:1;min-width:0;align-items:center;gap:13px;white-space:nowrap;overflow-x:auto;padding:5px 0;scrollbar-width:thin}
+#profileUpcomingFights .ucs-inline-bout-details>span,#profileUpcomingFights .ucs-inline-bout-details>a{display:inline;flex:0 0 auto;line-height:1.5;margin:0;font-size:.86rem}
+#profileUpcomingFights .ucs-inline-opponent{font-weight:800;color:#f3f3f5}
+#profileUpcomingFights .ucs-inline-date,#profileUpcomingFights .ucs-inline-event,#profileUpcomingFights .ucs-inline-status{color:#a5a9b9}
+#profileUpcomingFights .ucs-inline-belt{font-weight:900;color:#efc65b;text-shadow:0 0 10px rgba(229,178,55,.2)}
+#profileUpcomingFights .ucs-inline-nontitle{color:#8c94a9}
+#profileUpcomingFights a.ucs-inline-contribute{font-weight:700;color:#efc65b;text-decoration:none}
+#profileUpcomingFights a.ucs-inline-contribute:hover{text-decoration:underline}
+#profileUpcomingFights .ucs-inline-status{font-size:.72rem;letter-spacing:.07em}
