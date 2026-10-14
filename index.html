@@ -281,7 +281,8 @@
             <label>Event name<input name="event_name" required></label>
             <label>Fight date (optional)<input name="bout_date" type="date"></label>
             <label>Belt<select name="belt"><option value="">Non-title fight / TBA</option><option>UCS World</option><option>UCS PS5</option><option>UCS PC</option><option>UCS XBOX</option></select></label>
-            <label>Poster image URL (optional)<input name="poster_url" type="url" placeholder="https://..."></label>
+            <label>Poster image (optional)<input name="poster_file" type="file" accept="image/png,image/jpeg,image/webp"></label>
+            <label>Or poster image URL<input name="poster_url" type="url" placeholder="https://..."></label>
             <label>Contribute link (optional)<input name="contribution_url" type="url"></label>
             <div class="button-row"><button class="btn primary" type="submit">SAVE BOUT</button><button class="btn danger-btn" type="button" id="cancelScheduledBout">CANCEL BOUT</button></div>
           </form>
@@ -348,6 +349,7 @@
         <div><strong id="profileFights">0</strong><span>CAREER FIGHTS</span></div>
       </div>
       <div class="profile-rating-bars" id="profileRatingBars"></div>
+      <section class="profile-history"><div class="profile-section-title"><span>UPCOMING FIGHTS</span><small>Scheduled only — not results</small></div><div id="profileUpcomingFights"></div></section>
       <section class="profile-history"><div class="profile-section-title"><span>RECENT FIGHTS</span><small>Official UCS results</small></div><div id="profileFightHistory"></div></section>
     </article>
   </div>
