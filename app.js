@@ -3,7 +3,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
 
 const state = {
-  fighters: [], champions: [], results: [], events: [], contracts: [], bets: [], settings: {},
+  fighters: [], champions: [], results: [], events: [], contracts: [], bets: [], scheduledBouts: [], settings: {},
   user: null, isAdmin: false, profile: null, myFighter: null, wallet: null, userBets: [],
   fighterContracts: [], contractTab: 'incoming', contractTarget: null,
   rankingDivision: 'UCS World', betSelection: null
@@ -55,16 +55,18 @@ async function loadPublicData(){
     db.from('events').select('*').order('event_date',{ascending:true}),
     db.from('contract_activity').select('*').order('created_at',{ascending:false}).limit(20),
     db.from('betting_markets').select('*').eq('is_open',true).order('created_at',{ascending:false}),
-    db.from('league_settings').select('*')
+    db.from('league_settings').select('*'),
+    db.from('scheduled_bouts').select('*').eq('status','scheduled').order('bout_date',{ascending:true,nullsFirst:false})
   ]);
   const firstError = queries.find(x=>x.error)?.error;
   if(firstError) toast(`Supabase: ${firstError.message}`,true);
   [state.fighters,state.champions,state.results,state.events,state.contracts,state.bets]=queries.slice(0,6).map(x=>x.data||[]);
   state.settings=Object.fromEntries((queries[6].data||[]).map(x=>[x.key,x.value]));
+  state.scheduledBouts=queries[7].data||[];
   renderAll();
 }
 
-function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); renderAdminRows(); updateAccountUI(); }
+function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateScheduledBoutSelect(); renderAdminRows(); updateAccountUI(); }
 
 function renderHome(){
   const featured=state.settings.featured_main_event||{};
@@ -89,6 +91,7 @@ function renderHome(){
   }).join(''):empty('No contract activity.');
 
   renderRankingChampion();
+  renderUpcomingSpotlight();
 }
 
 function renderRanks(filter=''){
@@ -130,6 +133,11 @@ function openFighterProfile(id){
     const won=r.winner_id===f.id,opp=fighterById(won?r.loser_id:r.winner_id);
     return `<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small>${esc(r.method)} · ${esc(fmtDate(r.event_date))}</small></div></div>`;
   }).join(''):empty('No official fight history yet.');
+  const upcoming=state.scheduledBouts.filter(b=>b.fighter_a_id===f.id||b.fighter_b_id===f.id);
+  $('#profileUpcomingFights').innerHTML=upcoming.length?upcoming.map(b=>{
+    const other=fighterById(b.fighter_a_id===f.id?b.fighter_b_id:b.fighter_a_id);
+    return `<div class="profile-fight-row"><span class="result-pill" style="background:#995f12;color:white">S</span><div><strong>vs ${esc(other?.name||'Unknown')}</strong><small>${esc(b.event_name)} · ${esc(b.bout_date?fmtDate(b.bout_date):'Date TBA')} · ${esc(b.belt?b.belt+' TITLE FIGHT':'Non-title bout')}</small>${safeHttps(b.contribution_url)?`<a href="${esc(b.contribution_url)}" target="_blank" rel="noopener noreferrer">Contribute to fight ↗</a>`:''}</div></div>`;
+  }).join(''):empty('No upcoming bouts scheduled.');
   const contractBtn=$('#profileContractBtn');
   // Keep the contract CTA visible on every opponent profile. The click handler
   // will guide guests to sign in/create a fighter profile, and will explain if
@@ -192,7 +200,43 @@ $$('.quick-stakes button').forEach(b=>b.addEventListener('click',()=>{$('#betSta
 $('#placeBetForm')?.addEventListener('submit',async e=>{e.preventDefault();if(!db||!state.user||!state.betSelection)return toast('Sign in and select a market first.',true);const stake=Math.floor(Number($('#betStake').value||0));if(stake<1)return toast('Enter a valid UCS Credit stake.',true);if(!state.wallet||Number(state.wallet.balance)<stake)return toast('Not enough UCS Credits in your wallet.',true);const {error}=await db.rpc('place_ufk_bet',{p_market_id:state.betSelection.marketId,p_selection_id:state.betSelection.fighterId,p_stake:stake});if(error)return toast(error.message,true);state.betSelection=null;$('#betStake').value='';$$('.fighter-odds').forEach(x=>x.classList.remove('selected'));await refreshWallet();toast('UCS bet placed.');});
 async function refreshWallet(){if(!db||!state.user){state.wallet=null;state.userBets=[];renderBets();return;}const [{data:wallet},{data:bets}]=await Promise.all([db.from('wallets').select('user_id,balance').eq('user_id',state.user.id).maybeSingle(),db.from('user_bets').select('*').eq('user_id',state.user.id).order('created_at',{ascending:false}).limit(20)]);state.wallet=wallet||null;state.userBets=bets||[];renderBets();}
 
-function renderEvents(){$('#fightList').innerHTML=state.events.length?state.events.map(e=>`<article class="event-row"><time>${esc(fmtDate(e.event_date))}</time><strong>${esc(e.name)}</strong><span>${esc(e.details||e.status)}</span></article>`).join(''):empty('No fight cards or results have been added yet.');}
+function safeHttps(url){try{return new URL(url).protocol==='https:';}catch{return false;}}
+function boutLink(b){return safeHttps(b.contribution_url)?`<a class="btn outline" href="${esc(b.contribution_url)}" target="_blank" rel="noopener noreferrer">CONTRIBUTE TO FIGHT ↗</a>`:'';}
+function renderUpcomingSpotlight(){
+  const root=$('#upcomingBoutSpotlight');if(!root)return;
+  const b=state.scheduledBouts.find(x=>x.event_name==='RAFA vs BBK')||state.scheduledBouts[0];
+  if(!b){root.innerHTML=empty('No upcoming fight announced yet.');return;}
+  const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
+  const poster=safeHttps(b.poster_url)?`<img class="ucs-bout-poster" src="${esc(b.poster_url)}" alt="${esc(a?.name||'Fighter')} versus ${esc(c?.name||'Fighter')} fight poster" loading="lazy">`:'';
+  root.innerHTML=`${poster}<div class="ucs-bout-info"><span class="section-kicker">SCHEDULED · ${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</span><h2>${esc(a?.name||'TBA')} <em>VS</em> ${esc(c?.name||'TBA')}</h2><p>${esc(b.event_name)} · ${esc(b.belt?b.belt+' CHAMPIONSHIP':'Belt / title TBA')}</p><p>Fight scheduled — result not recorded.</p><div class="ucs-bout-links"><button class="btn ghost" type="button" data-jump="fights" id="seeUpcomingBouts">VIEW UPCOMING FIGHTS →</button>${boutLink(b)}</div></div>`;
+  $('#seeUpcomingBouts')?.addEventListener('click',()=>showPage('fights'));
+}
+function renderEvents(){
+  const upcoming=state.scheduledBouts.map(b=>{
+    const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
+    return `<article class="event-row ucs-scheduled-row"><time>${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</time><strong>${esc(a?.name||'TBA')} vs ${esc(c?.name||'TBA')}</strong><span>${esc(b.event_name)} · ${esc(b.belt?b.belt+' TITLE FIGHT':'Non-title / TBA')} · UPCOMING</span>${boutLink(b)}</article>`;
+  }).join('');
+  const events=state.events.map(e=>`<article class="event-row"><time>${esc(fmtDate(e.event_date))}</time><strong>${esc(e.name)}</strong><span>${esc(e.details||e.status)}</span></article>`).join('');
+  $('#fightList').innerHTML=upcoming+events||empty('No fight cards or results have been added yet.');
+}
+function populateScheduledBoutSelect(){
+  const select=$('#scheduledBoutSelect');if(!select)return;
+  const current=select.value;
+  select.innerHTML='<option value="">Select scheduled fight</option>'+state.scheduledBouts.map(b=>{
+    const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
+    return `<option value="${esc(b.id)}">${esc(a?.name||'TBA')} vs ${esc(c?.name||'TBA')} (${esc(b.belt||'non-title')})</option>`;
+  }).join('');
+  if(state.scheduledBouts.some(b=>b.id===current))select.value=current;
+  else if(state.scheduledBouts.length)select.value=state.scheduledBouts[0].id;
+  fillScheduledBoutEditor();
+}
+function fillScheduledBoutEditor(){
+  const form=$('#editScheduledBoutForm');if(!form)return;
+  const b=state.scheduledBouts.find(x=>x.id===$('#scheduledBoutSelect').value);
+  for(const field of ['event_name','bout_date','belt','poster_url','contribution_url'])form.elements[field].value=b?.[field]||'';
+}
+$('#scheduledBoutSelect')?.addEventListener('change',fillScheduledBoutEditor);
+
 function populateFighterSelects(){const html=`<option value="">Select fighter</option>`+state.fighters.map(f=>`<option value="${f.id}">${esc(f.name)} (${f.wins}-${f.losses}-${f.draws})</option>`).join('');$$('.fighter-select').forEach(s=>{const current=s.value;s.innerHTML=html;if([...s.options].some(o=>o.value===current))s.value=current;});}
 
 
@@ -368,6 +412,50 @@ $('#recordForm')?.addEventListener('submit',async e=>{e.preventDefault();const d
 $('#championForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);if(!state.isAdmin)return;const payload={division:d.get('division'),fighter_id:d.get('fighter_id'),defenses:+d.get('defenses')||0,granted_at:new Date().toISOString()};const {error}=await db.from('champions').upsert(payload,{onConflict:'division'});if(error)return toast(error.message,true);await db.rpc('recalculate_ucs_rankings');toast(`${d.get('division')} champion granted.`);await loadPublicData();});
 $('#vacateTitleBtn')?.addEventListener('click',async()=>{const f=$('#championForm'),division=new FormData(f).get('division');if(!state.isAdmin)return;const {error}=await db.from('champions').upsert({division,fighter_id:null,defenses:0,granted_at:new Date().toISOString()},{onConflict:'division'});if(error)return toast(error.message,true);await db.rpc('recalculate_ucs_rankings');toast(`${division} title vacated.`);await loadPublicData();});
 $('#resultForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);if(d.get('winner_id')===d.get('loser_id'))return toast('Winner and loser must be different.',true);if(!state.isAdmin)return toast('Admin permission required.',true);const {error}=await db.rpc('publish_ucs_result',{p_winner_id:d.get('winner_id'),p_loser_id:d.get('loser_id'),p_method:d.get('method'),p_event_date:d.get('event_date')});if(error)return toast(error.message,true);toast('Result published, records and rankings updated.');await loadPublicData();});
+$('#scheduleBoutForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db||!state.isAdmin)return toast('UCS admin required.',true);
+  const d=new FormData(e.currentTarget),a=d.get('fighter_a_id'),b=d.get('fighter_b_id');
+  if(a===b)return toast('Select two different fighters.',true);
+  const url=(d.get('contribution_url')||'').trim();
+  if(url&&!safeHttps(url))return toast('Use a valid HTTPS contribution link.',true);
+  const payload={fighter_a_id:a,fighter_b_id:b,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,contribution_url:url||null};
+  const {error}=await db.from('scheduled_bouts').insert(payload);
+  if(error)return toast(error.message,true);
+  e.currentTarget.reset();await loadPublicData();toast('Bout scheduled. Fight records unchanged.');
+});
+$('#editScheduledBoutForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db||!state.isAdmin)return toast('UCS admin required.',true);
+  const form=e.currentTarget,d=new FormData(form),boutId=d.get('bout_id');
+  const original=state.scheduledBouts.find(x=>x.id===boutId);
+  if(!original)return toast('Select a scheduled bout.',true);
+  const posterFile=d.get('poster_file'),contribution=(d.get('contribution_url')||'').trim();
+  let posterUrl=(d.get('poster_url')||'').trim();
+  if(contribution&&!safeHttps(contribution))return toast('Use a valid HTTPS contribution link.',true);
+  if(posterUrl&&!safeHttps(posterUrl))return toast('Use an HTTPS poster image URL.',true);
+  const button=form.querySelector('[type="submit"]');button.disabled=true;
+  try{
+    if(posterFile instanceof File&&posterFile.size){
+      const types={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'},ext=types[posterFile.type];
+      if(!ext)throw Error('Poster must be PNG, JPG, or WebP.');
+      if(posterFile.size>5*1024*1024)throw Error('Poster must be under 5 MB.');
+      const path=`bout-posters/${boutId}/${crypto.randomUUID()}.${ext}`;
+      const {error:uploadError}=await db.storage.from('fighter-avatars').upload(path,posterFile,{contentType:posterFile.type,upsert:false});
+      if(uploadError)throw uploadError;
+      posterUrl=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
+    }
+    const payload={event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,poster_url:posterUrl||null,contribution_url:contribution||null,updated_at:new Date().toISOString()};
+    const {error}=await db.from('scheduled_bouts').update(payload).eq('id',boutId);
+    if(error)throw error;
+    await loadPublicData();toast('Scheduled bout updated. No result recorded.');
+  }catch(error){toast(error.message||'Could not save bout.',true);}finally{button.disabled=false;}
+});
+$('#cancelScheduledBout')?.addEventListener('click',async()=>{
+  if(!db||!state.isAdmin)return toast('UCS admin required.',true);
+  const id=$('#scheduledBoutSelect').value;if(!id)return;
+  if(!confirm('Cancel this scheduled bout? Fight records will not change.'))return;
+  const {error}=await db.from('scheduled_bouts').update({status:'cancelled',updated_at:new Date().toISOString()}).eq('id',id);
+  if(error)return toast(error.message,true);await loadPublicData();toast('Scheduled bout cancelled.');
+});
 $('#eventForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);await adminInsert('events',{name:d.get('name').trim(),event_date:d.get('event_date'),details:d.get('details').trim()||null,status:d.get('status')},'Event created.');});
 $('#contractForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);await adminInsert('contract_activity',{fighter_id:d.get('fighter_id'),action:d.get('action')},'Contract activity posted.');});
 $('#betForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);if(d.get('fighter_a_id')===d.get('fighter_b_id'))return toast('Choose two different fighters.',true);await adminInsert('betting_markets',{fighter_a_id:d.get('fighter_a_id'),fighter_b_id:d.get('fighter_b_id'),odds_a:d.get('odds_a'),odds_b:d.get('odds_b'),is_open:true},'Betting market opened.');});
