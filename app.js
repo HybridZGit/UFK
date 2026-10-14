@@ -138,15 +138,19 @@ function openFighterProfile(id){
     const other=fighterById(b.fighter_a_id===f.id?b.fighter_b_id:b.fighter_a_id);
     const opponentRecord=other?`${other.wins||0}-${other.losses||0}-${other.draws||0}`:'—';
     const date=b.bout_date?fmtDate(b.bout_date):'DATE TBA';
-    const title=b.belt?`🏆 ${esc(b.belt)} title fight`:'Non-title bout';
-    return `<div class="profile-fight-row"><span class="result-pill" style="background:#995f12;color:white">VS</span><div>
-      <small>${esc(date)}</small>
-      <strong>${esc(other?.name||'Unknown')} <span style="font-weight:normal;opacity:.7">(${esc(opponentRecord)})</span></strong>
-      <small>${esc(b.event_name||'UCS scheduled bout')}</small>
-      <small>${title}</small>
-      ${safeHttps(b.contribution_url)?`<a href="${esc(b.contribution_url)}" target="_blank" rel="noopener noreferrer" style="color:#dcb85a;text-decoration:none">Contribute to fight ↗</a>`:''}
-      <small>Scheduled bout — result pending</small>
-    </div></div>`;
+    const belt=b.belt?`<span class="ucs-inline-belt">🏆 ${esc(b.belt)} TITLE FIGHT</span>`:'<span class="ucs-inline-nontitle">NON-TITLE BOUT</span>';
+    const contribute=safeHttps(b.contribution_url)?`<a class="ucs-inline-contribute" href="${esc(b.contribution_url)}" target="_blank" rel="noopener noreferrer">Contribute to fight ↗</a>`:'';
+    return `<div class="profile-fight-row ucs-inline-bout">
+      <span class="result-pill">VS</span>
+      <div class="ucs-inline-bout-details">
+        <span class="ucs-inline-date">${esc(date)}</span>
+        <span class="ucs-inline-opponent">${esc(other?.name||'Unknown')} (${esc(opponentRecord)})</span>
+        <span class="ucs-inline-event">${esc(b.event_name||'UCS scheduled bout')}</span>
+        ${belt}
+        ${contribute}
+        <span class="ucs-inline-status">SCHEDULED</span>
+      </div>
+    </div>`;
   }).join(''):empty('No upcoming bouts scheduled.');
   const contractBtn=$('#profileContractBtn');
   // Keep the contract CTA visible on every opponent profile. The click handler
