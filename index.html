@@ -71,6 +71,10 @@
           </div>
         </article>
 
+        <section class="ucs-upcoming-highlight" aria-label="Upcoming UCS fights">
+          <div class="section-kicker">UPCOMING FIGHT</div>
+          <div id="upcomingBoutSpotlight" class="ucs-bout-spotlight"></div>
+        </section>
         <div class="dashboard-grid">
           <article class="panel"><header><h3>Recent results</h3><a href="#fights">All fights →</a></header><div id="recentResults"></div></article>
           <article class="panel"><header><h3>Current Champions</h3><a href="#rankings">Rankings →</a></header><div id="championList"></div></article>
@@ -258,6 +262,28 @@
             <label>Method<select name="method"><option>KO/TKO</option><option>Decision</option><option>Draw</option><option>DQ</option><option>No Contest</option></select></label>
             <label>Date<input name="event_date" type="date" required></label>
             <button class="btn primary" type="submit">PUBLISH RESULT</button>
+          </form>
+
+          <form class="admin-card" id="scheduleBoutForm">
+            <h3>Schedule a bout</h3><p>Book an upcoming fight without changing either fighter's record. Optionally select a championship belt.</p>
+            <label>Fighter A<select name="fighter_a_id" class="fighter-select" required></select></label>
+            <label>Fighter B<select name="fighter_b_id" class="fighter-select" required></select></label>
+            <label>Event name<input name="event_name" placeholder="UCS Fight Night" value="UCS Fight Night" required></label>
+            <label>Fight date (optional)<input name="bout_date" type="date"></label>
+            <label>Championship belt<select name="belt"><option value="">Non-title fight / TBA</option><option>UCS World</option><option>UCS PS5</option><option>UCS PC</option><option>UCS XBOX</option></select></label>
+            <label>Contribute link (optional)<input name="contribution_url" type="url" placeholder="https://matcherino.com/..."></label>
+            <button class="btn primary" type="submit">SCHEDULE BOUT</button>
+          </form>
+
+          <form class="admin-card" id="editScheduledBoutForm">
+            <h3>Update scheduled bout</h3><p>Set or change its belt, date, event name, poster URL, or contribution link.</p>
+            <label>Upcoming fight<select id="scheduledBoutSelect" name="bout_id" required></select></label>
+            <label>Event name<input name="event_name" required></label>
+            <label>Fight date (optional)<input name="bout_date" type="date"></label>
+            <label>Belt<select name="belt"><option value="">Non-title fight / TBA</option><option>UCS World</option><option>UCS PS5</option><option>UCS PC</option><option>UCS XBOX</option></select></label>
+            <label>Poster image URL (optional)<input name="poster_url" type="url" placeholder="https://..."></label>
+            <label>Contribute link (optional)<input name="contribution_url" type="url"></label>
+            <div class="button-row"><button class="btn primary" type="submit">SAVE BOUT</button><button class="btn danger-btn" type="button" id="cancelScheduledBout">CANCEL BOUT</button></div>
           </form>
 
           <form class="admin-card" id="eventForm">
