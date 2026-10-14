@@ -95,8 +95,8 @@ function renderHome(){
 }
 
 function renderRanks(filter=''){
-  const platform=state.rankingDivision==='UCS World'?null:state.rankingDivision.replace('UCS ','');
-  const rows=state.fighters.filter(f=>f.name.toLowerCase().includes(filter.toLowerCase())&&(!platform||(f.platform||'').toUpperCase()===platform));
+  const platform=(state.rankingDivision==='UCS World'||state.rankingDivision==='UCS SIM World')?null:state.rankingDivision.replace('UCS ','');
+  const rows=state.fighters.filter(f=>f.name.toLowerCase().includes(filter.toLowerCase())&&(state.rankingDivision!=='UCS SIM World'||f.sim_division===true)&&(!platform||(f.platform||'').toUpperCase()===platform));
   $('#rankRows').innerHTML=rows.length?rows.map((f,i)=>`<tr class="fighter-rank-row" data-fighter-profile="${f.id}" tabindex="0"><td><span class="rank-number">${i+1}</span></td><td class="rank-name"><div class="rank-fighter-cell">${avatarHtml(f)}<div><strong>${esc(f.name)}</strong><span>${esc(record(f))} · ${esc(f.platform||'UNASSIGNED')}</span></div></div></td><td>${chip(f.resume)}</td><td>${chip(f.momentum)}</td><td>${chip(f.finishing)}</td><td>${chip(f.activity)}</td><td>${chip(f.big_fight)}</td><td class="overall">${Number(f.score||0).toFixed(1)}</td></tr>`).join(''):`<tr><td colspan="8">${empty(`No ${state.rankingDivision} fighters in the database yet.`)}</td></tr>`;
   renderRankingChampion();
 }
@@ -423,6 +423,17 @@ $('#adminFighterAvatarForm')?.addEventListener('submit',async e=>{
 });
 
 $('#recordForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);await adminUpdate('fighters',{wins:+d.get('wins'),losses:+d.get('losses'),draws:+d.get('draws'),updated_at:new Date().toISOString()},{id:d.get('fighter_id')},'Record updated.');if(state.isAdmin){await db.rpc('recalculate_ucs_rankings');await loadPublicData();}});
+$('#simDivisionForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!db||!state.isAdmin)return toast('UCS admin permission required.',true);
+  const d=new FormData(e.currentTarget);
+  const fighter_id=d.get('fighter_id');
+  const sim_division=d.get('sim_division')==='true';
+  const {error}=await db.from('fighters').update({sim_division,updated_at:new Date().toISOString()}).eq('id',fighter_id);
+  if(error)return toast(error.message,true);
+  await loadPublicData();
+  toast(sim_division?'Fighter added to UCS SIM World.':'Fighter removed from UCS SIM World.');
+});
 $('#championForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);if(!state.isAdmin)return;const payload={division:d.get('division'),fighter_id:d.get('fighter_id'),defenses:+d.get('defenses')||0,granted_at:new Date().toISOString()};const {error}=await db.from('champions').upsert(payload,{onConflict:'division'});if(error)return toast(error.message,true);await db.rpc('recalculate_ucs_rankings');toast(`${d.get('division')} champion granted.`);await loadPublicData();});
 $('#vacateTitleBtn')?.addEventListener('click',async()=>{const f=$('#championForm'),division=new FormData(f).get('division');if(!state.isAdmin)return;const {error}=await db.from('champions').upsert({division,fighter_id:null,defenses:0,granted_at:new Date().toISOString()},{onConflict:'division'});if(error)return toast(error.message,true);await db.rpc('recalculate_ucs_rankings');toast(`${division} title vacated.`);await loadPublicData();});
 $('#resultForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);if(d.get('winner_id')===d.get('loser_id'))return toast('Winner and loser must be different.',true);if(!state.isAdmin)return toast('Admin permission required.',true);const {error}=await db.rpc('publish_ucs_result',{p_winner_id:d.get('winner_id'),p_loser_id:d.get('loser_id'),p_method:d.get('method'),p_event_date:d.get('event_date')});if(error)return toast(error.message,true);toast('Result published, records and rankings updated.');await loadPublicData();});
