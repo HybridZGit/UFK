@@ -498,3 +498,10 @@ a{accent-color:#d5ad48}
 .ucs-rank-info{margin-left:auto;flex:0 0 auto;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;background:#1b1c1d;border:1px solid #7d6839;border-radius:50%;color:#ebd08a;font:700 18px/1 Georgia,serif;padding:0;transition:border-color .15s,background .15s}
 .ucs-rank-info:hover,.ucs-rank-info:focus-visible{background:#3a2e19;border-color:#eac86d;color:#fff1c0}
 .ucs-rank-info:focus-visible{outline:2px solid #eac86d;outline-offset:2px}
+
+/* Existing UCS fighter popup remains the home for expanded fighter details. */
+#fighterModal .fighter-profile-panel{width:min(980px,96vw);max-height:90vh;overflow-y:auto}
+#fighterModal .ucs-fighter-analysis{padding:22px 25px}
+#fighterModal .profile-stat-grid{grid-template-columns:repeat(7,minmax(0,1fr))}
+@media(max-width:850px){#fighterModal .profile-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:570px){#fighterModal .profile-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#fighterModal .ucs-fighter-analysis{padding:16px}}
