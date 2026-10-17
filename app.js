@@ -125,7 +125,8 @@ function fighterForm(f){
 
 async function loadPublicData(){
   if(!db){ renderAll(); return; }
-  const queries = await Promise.all([
+  // Isolate every request: an Events or optional-table outage must NEVER clear fighter data.
+  const settled = await Promise.allSettled([
     db.from('fighters').select('*').eq('active',true).order('score',{ascending:false}),
     db.from('champions').select('*'),
     db.from('results').select('*').order('event_date',{ascending:false}).limit(100),
@@ -139,15 +140,15 @@ async function loadPublicData(){
     db.from('ucs_photos').select('*').order('created_at',{ascending:false}).limit(120),
     db.from('ucs_former_championships').select('fighter_id,division')
   ]);
-  const firstError = queries.find(x=>x.error)?.error;
-  if(firstError) toast(`Supabase: ${firstError.message}`,true);
-  [state.fighters,state.champions,state.results,state.events,state.contracts,state.bets]=queries.slice(0,6).map(x=>x.data||[]);
-  state.settings=Object.fromEntries((queries[6].data||[]).map(x=>[x.key,x.value]));
-  state.scheduledBouts=queries[7].data||[];
-  state.fighterEarnings=new Map((queries[8].data||[]).map(row=>[row.fighter_id,Number(row.amount)]));
-  state.news=queries[9].data||[];
-  state.photos=queries[10].data||[];
-  state.formerChampionships=queries[11].data||[];
+  const queries=settled.map(x=>x.status==='fulfilled'?x.value:{error:x.reason||new Error('Request failed')});
+  const errors=queries.map((x,i)=>x.error?{table:['fighters','champions','results','events','contract_activity','betting_markets','league_settings','scheduled_bouts','fighter_earnings','ucs_news','ucs_photos','ucs_former_championships'][i],error:x.error}:null).filter(Boolean);
+  if(errors.length){console.error('UCS data load errors:',errors);toast('Some UCS data is unavailable; attempting to show available records.',true);}
+  const good=i=>!queries[i].error&&Array.isArray(queries[i].data)?queries[i].data:null;
+  for(const [index,key] of [[0,'fighters'],[1,'champions'],[2,'results'],[3,'events'],[4,'contracts'],[5,'bets'],[7,'scheduledBouts'],[9,'news'],[10,'photos'],[11,'formerChampionships']]){
+    const rows=good(index);if(rows!==null)state[key]=rows;
+  }
+  if(good(6)!==null)state.settings=Object.fromEntries(good(6).map(x=>[x.key,x.value]));
+  if(good(8)!==null)state.fighterEarnings=new Map(good(8).map(row=>[row.fighter_id,Number(row.amount)]));
   renderAll();
 }
 
