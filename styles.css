@@ -955,3 +955,5 @@ a{accent-color:#d5ad48}
 .ucs-event-content h3{font-size:23px;margin:6px 0}
 .ucs-event-content p{font-size:13px;margin:6px 0}
 @media(max-width:720px){.ucs-events-grid{grid-template-columns:1fr;gap:12px}.ucs-event-poster{aspect-ratio:1.5}.ucs-event-overlay-title{font-size:clamp(30px,8vw,55px)}}
+
+.ucs-event-poster>.ucs-event-bg{position:absolute;inset:0;width:100%;height:100%;max-height:none;object-fit:cover;z-index:-2;pointer-events:none}
