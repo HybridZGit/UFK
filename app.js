@@ -717,7 +717,7 @@ function ucsRenderEventCards(){
   if(grid)grid.innerHTML=events.length?events.map(event=>{
     const bouts=(state.scheduledBouts||[]).filter(b=>b.event_id===event.id);
     const poster=safeHttps(event.poster_url)?'<img class="ucs-event-bg" loading="lazy" src="'+esc(event.poster_url)+'" alt="">':'';
-    const names=(event.name||'').match(/(?:—|:|\\s)\\s*(.+?)\\s+VS\\s+(.+)$/i);
+    const names=(event.name||'').match(/—\\s*(.+?)\\s+VS\\s+(.+)$/i);
     const title=names?'<span>'+esc(names[1])+'</span><small>VS</small><span>'+esc(names[2])+'</span>':'<span>'+esc(event.name)+'</span>';
     const date=event.event_date?new Date(event.event_date+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short'}).toUpperCase():'DATE TBA';
     return '<article class="ucs-event-card"><div class="ucs-event-poster">'+poster+'<span class="ucs-event-overlay-date">'+esc(date)+'</span><div class="ucs-event-overlay-title">'+title+'</div><span class="ucs-event-overlay-detail">'+esc(event.details||'UCS OFFICIAL FIGHT NIGHT')+'</span></div><div class="ucs-event-content"><span class="ucs-event-status">'+esc(event.status||'upcoming')+'</span><h3>'+esc(event.name)+'</h3>'+(bouts.length?'<p>'+bouts.map(b=>{const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);return esc((a?.name||'TBA')+' vs '+(c?.name||'TBA'));}).join(' · ')+'</p>':'')+(safeHttps(event.poster_url)?'<a class="ucs-event-view" href="'+esc(event.poster_url)+'" target="_blank" rel="noopener noreferrer">VIEW FULL POSTER ↗</a>':'')+'</div></article>';
@@ -768,7 +768,13 @@ $('#ucsEventEditor')?.addEventListener('submit',async e=>{
       if(uploadError)throw uploadError;
       payload.poster_url=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
     }
-    const query=id?db.from('events').update(payload).eq('id',id).select('id').single():db.from('events').insert(payload).select('id').single();
+    let existingEventId=id;
+    if(!existingEventId){
+      const {data:duplicateCheck,error:checkError}=await db.from('events').select('id').ilike('name',payload.name).limit(1);
+      if(checkError)throw checkError;
+      if(duplicateCheck?.length)throw new Error('An event with this name already exists. Choose EDIT / REPLACE POSTER instead.');
+    }
+    const query=existingEventId?db.from('events').update(payload).eq('id',existingEventId).select('id').single():db.from('events').insert(payload).select('id').single();
     const {data:savedEvent,error}=await query;if(error)throw error;
     // Automatically publish one announcement per event; future poster edits update the same article.
     const eventId=savedEvent.id,marker='[UCS_EVENT:'+eventId+']';
