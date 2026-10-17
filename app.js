@@ -262,7 +262,7 @@ $('#rankRows')?.addEventListener('click',e=>{const button=e.target.closest('[dat
 
 function openFighterProfile(id){
   const f=fighterById(id); if(!f)return;
-  const modal=$('#fighter');
+  const modal=$('#fighterModal');
   const rank=currentRank(f),titles=state.champions.filter(c=>c.fighter_id===f.id),history=fighterResults(f);
   $('#profileName').textContent=f.name;
   $('#profilePlatform').textContent=`UCS ${f.platform||'WORLD'}`;
@@ -339,9 +339,9 @@ function openFighterProfile(id){
     contractBtn.dataset.fighterId=isOwnProfile?'':f.id;
     contractBtn.textContent='SEND CONTRACT';
   }
-  showPage('fighter');history.replaceState(null,'','#fighter/'+encodeURIComponent(f.id));
+  modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');
 }
-function closeFighterProfile(){showPage('rankings');history.replaceState(null,'','#rankings');}
+function closeFighterProfile(){const modal=$('#fighterModal');modal?.classList.remove('open');modal?.setAttribute('aria-hidden','true');if(!$('#contractModal')?.classList.contains('open')&&!$('#ucsUndercardModal')?.classList.contains('hidden'))return;document.body.classList.remove('modal-open');}
 $$('[data-close-profile]').forEach(x=>x.addEventListener('click',closeFighterProfile));
 
 function openContractModal(fighterId){
@@ -455,7 +455,7 @@ function openUndercardForm(boutId){
 }
 function closeUndercardForm(){
   const modal=$('#ucsUndercardModal');modal?.classList.add('hidden');modal?.setAttribute('aria-hidden','true');
-  if(!$('#fighter')?.classList.contains('active')&&!$('#contractModal')?.classList.contains('open'))document.body.classList.remove('modal-open');
+  if(!$('#fighterModal')?.classList.contains('open')&&!$('#contractModal')?.classList.contains('open'))document.body.classList.remove('modal-open');
 }
 $$('[data-close-undercard]').forEach(el=>el.addEventListener('click',closeUndercardForm));
 $('#ucsUndercardForm')?.addEventListener('submit',async e=>{
@@ -768,7 +768,7 @@ async function ucsLoadEarnings(){
   if(error)return toast('Could not load earnings: '+error.message,true);
   ucsEarningsState.records=new Map((data||[]).map(x=>[x.fighter_id,Number(x.amount)]));
   state.fighterEarnings=new Map(ucsEarningsState.records);
-  const shownProfile=$('#fighter')?.classList.contains('active')?state.fighters.find(f=>f.name===$('#profileName')?.textContent):null;
+  const shownProfile=$('#fighterModal')?.classList.contains('open')?state.fighters.find(f=>f.name===$('#profileName')?.textContent):null;
   if(shownProfile)$('#profileEarnings').textContent=ucsFormatEarnings(state.fighterEarnings.get(shownProfile.id)||0);
   ucsEarningsState.loaded=true;
   ucsRenderEarnings();
@@ -928,4 +928,4 @@ if(db){
     if(document.visibilityState==='visible')refreshMatchupsFromDb();
   });
 }
-(async function init(){renderAll();updateAdminUI();await refreshSession();await loadPublicData();if(location.hash.startsWith('#fighter/'))openFighterProfile(decodeURIComponent(location.hash.slice(9)));else if(location.hash&&$(location.hash))showPage(location.hash.slice(1));})();
+(async function init(){renderAll();updateAdminUI();await refreshSession();await loadPublicData();if(location.hash.startsWith('#fighter/')){showPage('rankings');openFighterProfile(decodeURIComponent(location.hash.slice(9)));}else if(location.hash&&$(location.hash))showPage(location.hash.slice(1));})();
