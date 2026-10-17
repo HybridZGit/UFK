@@ -545,3 +545,29 @@ a{accent-color:#d5ad48}
 .ucs-earner-value{font-variant-numeric:tabular-nums;font-size:19px;color:#f0ce76}
 .ucs-earners-note{font-size:12px;color:#aeb4bf;margin:12px 0}
 @media(max-width:650px){.ucs-earners-head{align-items:start;flex-direction:column}.ucs-earner-row{padding:12px;gap:10px}.ucs-earner-rank{width:24px;flex-basis:24px}.ucs-earner-avatar{width:36px;height:36px;flex-basis:36px}.ucs-earner-identity strong{font-size:13px}.ucs-earner-value{font-size:16px}}
+
+
+/* Featured fight poster — generated automatically from official live UCS records */
+.ucs-featured-poster.mega-card{display:flex;flex-direction:column;gap:0;min-height:390px;padding:0;border:1px solid #8e713a;border-radius:16px;background:radial-gradient(ellipse at 50% 15%,rgba(221,169,54,.16),transparent 49%),linear-gradient(118deg,#181714 0%,#0b0d12 52%,#191713 100%);box-shadow:0 17px 42px rgba(0,0,0,.42);isolation:isolate}
+.ucs-featured-poster.mega-card:before{content:"UCS";font:900 clamp(140px,22vw,300px)/1 'Barlow Condensed',Impact,sans-serif;color:rgba(216,177,83,.035);transform:rotate(-10deg);pointer-events:none;z-index:-1}
+.ucs-featured-poster-top,.ucs-featured-poster-bottom{position:relative;width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 26px;background:rgba(5,6,8,.52)}
+.ucs-featured-poster-top{border-bottom:1px solid rgba(213,171,81,.26)}
+.ucs-featured-poster-bottom{border-top:1px solid rgba(213,171,81,.26)}
+.ucs-featured-poster-brand{display:flex;align-items:baseline;gap:10px;font:900 26px/1 'Barlow Condensed',Impact,sans-serif;letter-spacing:.07em;color:#f6de9d}
+.ucs-featured-poster-brand small{font:800 10px Inter,Arial,sans-serif;letter-spacing:.12em;color:#d8c9a6}
+.ucs-featured-poster-tag{display:inline-flex;padding:7px 11px;border:1px solid #a88744;border-radius:4px;font:850 11px Inter,Arial,sans-serif;letter-spacing:.11em;color:#ffe4a0;background:#372b19}
+.ucs-featured-poster-match{display:grid;grid-template-columns:minmax(0,1fr) 145px minmax(0,1fr);align-items:center;gap:7px;width:100%;flex:1;min-height:270px;padding:16px 36px 20px}
+.ucs-featured-fighter{display:flex;align-items:center;justify-content:center;min-width:0;flex-direction:column;text-align:center;gap:5px}
+.ucs-featured-portrait{display:grid;place-items:center;position:relative;width:clamp(100px,13vw,170px);height:clamp(100px,13vw,170px);overflow:hidden;border:2px solid #a68a52;border-radius:50%;box-shadow:0 0 0 6px rgba(211,168,67,.06),0 10px 35px #0008;background:radial-gradient(circle at 35% 30%,#423824,#171920 67%);font:900 40px 'Barlow Condensed',Impact,sans-serif;color:#d6bd85}
+.ucs-featured-portrait img{width:100%;height:100%;object-fit:cover;object-position:top center}
+.ucs-featured-role{margin-top:7px;font:850 10px Inter,Arial,sans-serif;letter-spacing:.13em;color:#dbbb73}
+.ucs-featured-fighter h3{margin:4px 0 1px;max-width:100%;font:900 clamp(26px,4vw,50px)/.95 'Barlow Condensed',Impact,sans-serif;letter-spacing:.015em;color:#fff9ed;overflow-wrap:anywhere;text-shadow:0 3px 14px #000}
+.ucs-featured-fighter p{margin:0;color:#c9c3b6;font-size:13px;letter-spacing:.025em}
+.ucs-featured-vs{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center}
+.ucs-featured-vs span{font:850 11px Inter,Arial,sans-serif;letter-spacing:.13em;color:#d7bb7c}
+.ucs-featured-vs strong{font:900 clamp(54px,8vw,94px)/.9 'Barlow Condensed',Impact,sans-serif;font-style:italic;letter-spacing:-.05em;color:#f3d383;text-shadow:0 0 32px #c4993a33}
+.ucs-featured-vs small{font:800 10px Inter,Arial,sans-serif;color:#dbd1bd;letter-spacing:.07em;line-height:1.5}
+.ucs-featured-poster-bottom span{min-width:0;overflow-wrap:anywhere;text-transform:uppercase;font-size:13px;letter-spacing:.1em;font-weight:850;color:#f0d99b}
+.ucs-featured-poster-bottom strong{flex:0 0 auto;color:#d0d0d4;font-size:12px;letter-spacing:.055em}
+@media(max-width:720px){.ucs-featured-poster-top,.ucs-featured-poster-bottom{padding:13px 15px}.ucs-featured-poster-brand{font-size:23px}.ucs-featured-poster-brand small{font-size:8px}.ucs-featured-poster-match{grid-template-columns:minmax(0,1fr) 68px minmax(0,1fr);gap:2px;padding:18px 9px}.ucs-featured-portrait{width:clamp(78px,21vw,125px);height:clamp(78px,21vw,125px)}.ucs-featured-fighter h3{font-size:clamp(22px,5.5vw,36px)}.ucs-featured-vs strong{font-size:57px}.ucs-featured-vs span{font-size:8px}.ucs-featured-vs small{font-size:9px}.ucs-featured-fighter p{font-size:11px}}
+@media(max-width:450px){.ucs-featured-poster-brand small{display:none}.ucs-featured-poster-tag{font-size:9px}.ucs-featured-poster-bottom{flex-direction:column;gap:6px;text-align:center}.ucs-featured-fighter h3{font-size:22px}.ucs-featured-portrait{width:79px;height:79px}.ucs-featured-poster-match{grid-template-columns:minmax(0,1fr) 58px minmax(0,1fr)}.ucs-featured-vs strong{font-size:48px}}
