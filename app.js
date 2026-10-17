@@ -245,7 +245,7 @@ function renderHome(){
 function renderRanks(filter=''){
   const platform=(state.rankingDivision==='UCS World'||state.rankingDivision==='UCS SIM World')?null:state.rankingDivision.replace('UCS ','');
   const rows=state.fighters.filter(f=>f.name.toLowerCase().includes(filter.toLowerCase())&&(state.rankingDivision!=='UCS SIM World'||f.sim_division===true)&&(!platform||(f.platform||'').toUpperCase()===platform));
-  $('#rankRows').innerHTML=rows.length?rows.map((f,i)=>`<tr class="fighter-rank-row"><td><span class="rank-number">${i+1}</span></td><td class="rank-name"><div class="rank-fighter-cell ucs-ranking-fighter">${avatarHtml(f)}<div class="ucs-ranking-name-copy"><strong>${esc(f.name)}</strong><span>${esc(record(f))} · ${esc(f.platform||'UNASSIGNED')}</span></div><button type="button" class="ucs-rank-info" data-fighter-info="${esc(f.id)}" aria-label="About ${esc(f.name)}" title="About this fighter">ⓘ</button></div></td><td>${chip(f.resume)}</td><td>${chip(f.momentum)}</td><td>${chip(f.finishing)}</td><td>${chip(f.activity)}</td><td>${chip(f.big_fight)}</td><td class="overall">${Number(f.score||0).toFixed(1)}</td></tr>`).join(''):`<tr><td colspan="8">${empty(`No ${state.rankingDivision} fighters in the database yet.`)}</td></tr>`;
+  $('#rankRows').innerHTML=rows.length?rows.map((f,i)=>`<tr class="fighter-rank-row" data-fighter-profile="${esc(f.id)}" tabindex="0" aria-label="View ${esc(f.name)} fighter profile"><td><span class="rank-number">${i+1}</span></td><td class="rank-name"><div class="rank-fighter-cell ucs-ranking-fighter">${avatarHtml(f)}<div class="ucs-ranking-name-copy"><strong>${esc(f.name)}</strong><span>${esc(record(f))} · ${esc(f.platform||'UNASSIGNED')}</span></div><button type="button" class="ucs-rank-info" data-fighter-info="${esc(f.id)}" aria-label="About ${esc(f.name)}" title="About this fighter">ⓘ</button></div></td><td>${chip(f.resume)}</td><td>${chip(f.momentum)}</td><td>${chip(f.finishing)}</td><td>${chip(f.activity)}</td><td>${chip(f.big_fight)}</td><td class="overall">${Number(f.score||0).toFixed(1)}</td></tr>`).join(''):`<tr><td colspan="8">${empty(`No ${state.rankingDivision} fighters in the database yet.`)}</td></tr>`;
   renderRankingChampion();
 }
 function renderRankingChampion(){
@@ -258,7 +258,18 @@ function renderRankingChampion(){
 }
 $('#fighterSearch')?.addEventListener('input',e=>renderRanks(e.target.value));
 $('#rankingTabs')?.addEventListener('click',e=>{if(e.target.tagName==='BUTTON'){ $$('#rankingTabs button').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.rankingDivision=e.target.dataset.div;renderRanks($('#fighterSearch')?.value||'');}});
-$('#rankRows')?.addEventListener('click',e=>{const button=e.target.closest('[data-fighter-info]');if(button)openFighterProfile(button.dataset.fighterInfo);});
+$('#rankRows')?.addEventListener('click',e=>{
+  const button=e.target.closest('[data-fighter-info]');
+  if(button){openFighterProfile(button.dataset.fighterInfo);return;}
+  const row=e.target.closest('[data-fighter-profile]');
+  if(row)openFighterProfile(row.dataset.fighterProfile);
+});
+$('#rankRows')?.addEventListener('keydown',e=>{
+  if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-fighter-profile]')){
+    e.preventDefault();
+    openFighterProfile(e.target.dataset.fighterProfile);
+  }
+});
 
 function openFighterProfile(id){
   const f=fighterById(id); if(!f)return;
