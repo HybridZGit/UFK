@@ -1029,3 +1029,6 @@ a{accent-color:#d5ad48}
 #home .ucs-sponsor-banner{box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0 16px!important;margin:28px auto 42px!important}
 #home .ucs-sponsor-banner .ucs-sponsor-original{box-sizing:border-box!important;display:block!important;flex:0 1 auto!important;width:100%!important;max-width:min(850px,100%)!important;min-width:0!important;height:auto!important;max-height:none!important;object-fit:contain!important;margin:0 auto!important;position:static!important;transform:none!important}
 @media(max-width:700px){#home .ucs-sponsor-banner{padding:0 8px!important}#home .ucs-sponsor-banner .ucs-sponsor-original{max-width:100%!important}}
+
+/* UCS sitewide uppercase visual typography (does not modify stored names or typed values) */
+body, body button, body select, body option, body label, body a, body textarea, body input, body input::placeholder, body textarea::placeholder {text-transform:uppercase!important}
