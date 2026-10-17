@@ -21,8 +21,8 @@ function ucsMountTwitch(){
   if(!player||!chat)return;
   const host=window.location.hostname||'ucsleague.vercel.app';
   const parent=encodeURIComponent(host);
-  const playerUrl='https://player.twitch.tv/?channel=hymass21&parent='+parent+'&muted=false&autoplay=false';
-  const chatUrl='https://www.twitch.tv/embed/hymass21/chat?parent='+parent+'&darkpopout';
+  const playerUrl='https://player.twitch.tv/?channel=ucseries&parent='+parent+'&muted=false&autoplay=false';
+  const chatUrl='https://www.twitch.tv/embed/ucseries/chat?parent='+parent+'&darkpopout';
   const frame=(url,title)=>{const el=document.createElement('iframe');el.src=url;el.title=title;el.loading='lazy';el.referrerPolicy='strict-origin-when-cross-origin';el.allow='autoplay; fullscreen; picture-in-picture';el.allowFullscreen=true;el.setAttribute('frameborder','0');return el;};
   player.replaceChildren(frame(playerUrl,'UCS Twitch live video player'));
   chat.replaceChildren(frame(chatUrl,'UCS Twitch live chat'));
@@ -44,7 +44,7 @@ function ucsMountHomeTwitch(){
   const details=$('#ucsHomeTwitchDetails');
   if(!box||!details?.open)return;
   const host=window.location.hostname||'ucsleague.vercel.app';
-  const url='https://player.twitch.tv/?channel=hymass21&parent='+encodeURIComponent(host)+'&autoplay=true&muted=true';
+  const url='https://player.twitch.tv/?channel=ucseries&parent='+encodeURIComponent(host)+'&autoplay=true&muted=true';
   const frame=document.createElement('iframe');
   frame.src=url;
   frame.title='Watch UCS live on Twitch without leaving the website';
