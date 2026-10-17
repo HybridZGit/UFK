@@ -67,8 +67,8 @@ $('#ucsHomeTwitchDetails')?.addEventListener('toggle',e=>{
 });
 
 function showPage(id){
-  $('.page').forEach(p=>p.classList.toggle('active',p.id===id));
-  $('nav a').forEach(a=>a.classList.toggle('active',a.dataset.page===id));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));
+  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('active',a.dataset.page===id));
   $('#nav')?.classList.remove('open');
   if(id==='watch')ucsMountTwitch();else ucsUnmountTwitch();
   if(id==='home')ucsMountHomeTwitch();else ucsUnmountHomeTwitch();
