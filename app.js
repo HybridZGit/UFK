@@ -632,14 +632,27 @@ $('#ucsNewsGrid')?.addEventListener('click',e=>{
   const btn=e.target.closest('[data-news-open]');if(!btn)return;
   const item=state.news.find(x=>x.id===btn.dataset.newsOpen&&x.is_published);if(!item)return;
   const reader=$('#ucsNewsReader');
-  reader.innerHTML=`<button type="button" class="btn ghost" id="ucsNewsBack">← ALL NEWS</button><small>${esc(ucsNewsDate(item))} · ${item.is_auto_report?'OFFICIAL FIGHT RESULT':'UCS NEWS'}</small><h2>${esc(item.headline)}</h2>${safeHttps(item.image_url)?`<img class="ucs-news-feature-image" src="${esc(item.image_url)}" alt="">`:''}<p class="ucs-news-summary">${esc(item.summary||'')}</p><div class="ucs-news-body">${esc(item.body)}</div>${renderNewsTaggedFighters(item)}`;
+  reader.innerHTML=`<button type="button" class="btn ghost" id="ucsNewsBack">← ALL NEWS</button><small>${esc(ucsNewsDate(item))} · ${item.is_auto_report?'OFFICIAL FIGHT RESULT':'UCS NEWS'}</small><h2>${esc(item.headline)}</h2>${safeHttps(item.image_url)?`<img class="ucs-news-feature-image" src="${esc(item.image_url)}" alt="">`:''}<p class="ucs-news-summary">${esc(item.summary||'')}</p>${safeHttps(item.banner_url)?`<a class="ucs-news-poster-banner" href="${esc(item.banner_url)}" target="_blank" rel="noopener noreferrer" aria-label="Open full fight poster"><img src="${esc(item.banner_url)}" alt="${esc(item.headline)} fight poster banner" loading="lazy"><span>VIEW FULL POSTER ↗</span></a>`:''}<div class="ucs-news-body">${esc(item.body)}</div>${renderNewsTaggedFighters(item)}`;
   reader.classList.remove('hidden');$('#ucsNewsGrid').classList.add('hidden');
   $('#ucsNewsBack').addEventListener('click',()=>{reader.classList.add('hidden');$('#ucsNewsGrid').classList.remove('hidden');});
   reader.scrollIntoView({behavior:'smooth',block:'start'});
 });
+function ucsNewsBannerPreview(url=null){
+  const box=$('#ucsNewsBannerPreview');if(!box)return;
+  const editor=$('#ucsNewsForm');
+  const current=state.news.find(item=>item.id===editor?.elements.article_id.value);
+  const image=url||(safeHttps(current?.banner_url)?current.banner_url:null);
+  box.innerHTML=image?`<img src="${esc(image)}" alt="Article poster banner preview"><small>${url?'NEW POSTER BANNER':'CURRENT POSTER BANNER'}</small>`:'';
+}
+$('#ucsNewsBannerFile')?.addEventListener('change',e=>{
+  if(window._ucsNewsBannerObjectURL)URL.revokeObjectURL(window._ucsNewsBannerObjectURL);
+  const file=e.target.files?.[0];
+  window._ucsNewsBannerObjectURL=file?URL.createObjectURL(file):null;
+  ucsNewsBannerPreview(window._ucsNewsBannerObjectURL);
+});
 function resetNewsEditor(){
   const form=$('#ucsNewsForm');form?.reset();
-  if(form){form.elements.article_id.value='';form.elements.is_published.checked=true;setNewsTaggedFighters([]);}
+  if(form){form.elements.article_id.value='';form.elements.is_published.checked=true;setNewsTaggedFighters([]);ucsNewsBannerPreview();}
   $('#ucsNewsEditorHeading').textContent='New article';
   $('#ucsNewsSave').textContent='PUBLISH ARTICLE';
 }
@@ -652,7 +665,8 @@ $('#ucsAdminNewsList')?.addEventListener('click',async e=>{
     const f=$('#ucsNewsForm');
     f.elements.article_id.value=item.id;f.elements.headline.value=item.headline;
     f.elements.summary.value=item.summary||'';f.elements.body.value=item.body;
-    f.elements.image_url.value=item.image_url||'';f.elements.is_published.checked=item.is_published;
+    f.elements.image_url.value=item.image_url||'';f.elements.banner_url.value=item.banner_url||'';f.elements.is_published.checked=item.is_published;
+    ucsNewsBannerPreview();
     setNewsTaggedFighters(item.tagged_fighter_ids);
     $('#ucsNewsEditorHeading').textContent='Edit article';
     $('#ucsNewsSave').textContent='SAVE CHANGES';
@@ -680,9 +694,20 @@ $('#ucsNewsForm')?.addEventListener('submit',async e=>{
       if(error)throw error;
       url=db.storage.from('ucs-news').getPublicUrl(path).data.publicUrl;
     }
+    let bannerUrl=String(d.get('banner_url')||'').trim();
+    if(bannerUrl&&!safeHttps(bannerUrl))throw Error('Use a secure HTTPS banner URL.');
+    const bannerFile=d.get('banner_file');
+    if(bannerFile instanceof File&&bannerFile.size){
+      const types={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'},ext=types[bannerFile.type];
+      if(!ext||bannerFile.size>5*1024*1024)throw Error('Banner must be PNG, JPG or WebP, maximum 5 MB.');
+      const path='articles/banners/'+crypto.randomUUID()+'.'+ext;
+      const {error}=await db.storage.from('ucs-news').upload(path,bannerFile,{contentType:bannerFile.type,upsert:false});
+      if(error)throw error;
+      bannerUrl=db.storage.from('ucs-news').getPublicUrl(path).data.publicUrl;
+    }
     const id=String(d.get('article_id')||'');
     const taggedIds=$('#ucsNewsFighterTags input[name="tagged_fighters"]:checked').map(el=>el.value).filter(id=>state.fighters.some(f=>f.id===id));
-    const payload={headline:String(d.get('headline')||'').trim(),summary:String(d.get('summary')||'').trim(),body:String(d.get('body')||'').trim(),image_url:url||null,tagged_fighter_ids:taggedIds,is_published:d.has('is_published'),updated_at:new Date().toISOString()};
+    const payload={headline:String(d.get('headline')||'').trim(),summary:String(d.get('summary')||'').trim(),body:String(d.get('body')||'').trim(),image_url:url||null,banner_url:bannerUrl||null,tagged_fighter_ids:taggedIds,is_published:d.has('is_published'),updated_at:new Date().toISOString()};
     if(payload.is_published)payload.published_at=new Date().toISOString();
     const q=id?db.from('ucs_news').update(payload).eq('id',id):db.from('ucs_news').insert(payload);
     const {error}=await q;if(error)throw error;
