@@ -957,3 +957,16 @@ a{accent-color:#d5ad48}
 @media(max-width:720px){.ucs-events-grid{grid-template-columns:1fr;gap:12px}.ucs-event-poster{aspect-ratio:1.5}.ucs-event-overlay-title{font-size:clamp(30px,8vw,55px)}}
 
 .ucs-event-poster>.ucs-event-bg{position:absolute;inset:0;width:100%;height:100%;max-height:none;object-fit:cover;z-index:-2;pointer-events:none}
+
+
+.ucs-event-tags{position:relative;padding:14px;background:#131521;border:1px solid #292c3b;border-radius:9px}
+.ucs-event-tags>strong{display:block;font-size:13px;letter-spacing:1px}
+.ucs-event-tags>p{font-size:12px;color:#b4b8c9}
+.ucs-event-tag-suggestions{max-height:270px;overflow:auto;margin-top:6px;background:#151622;border:1px solid #303143;border-radius:6px}
+.ucs-event-tag-option{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:9px 11px;background:transparent;border:0;color:#e5e7f3;cursor:pointer;font:inherit}
+.ucs-event-tag-option:hover,.ucs-event-tag-option:focus{background:#242638}
+.ucs-event-tag-option .ucs-mention-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.ucs-event-tag-selected{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.ucs-event-tag-chip{display:inline-flex;align-items:center;gap:6px;background:#242638;color:#fff;padding:6px 9px;border-radius:6px}
+.ucs-event-tag-chip .ucs-mention-avatar{width:22px;height:22px;border-radius:50%;object-fit:cover}
+.ucs-event-tag-chip button{border:0;background:none;color:#f2d391;cursor:pointer;font-size:19px}
