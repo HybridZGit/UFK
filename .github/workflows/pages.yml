@@ -36,3 +36,4 @@ jobs:
       - name: Publish
         id: deployment
         uses: actions/deploy-pages@v4
+# Re-publish the restored pre-Events UCS site.
