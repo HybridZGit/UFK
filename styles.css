@@ -804,3 +804,29 @@ a{accent-color:#d5ad48}
 @media(max-width:760px){.ucs-watch-page .ucs-watch-countdown-wrap{min-height:0;padding:28px 12px 30px}.ucs-countdown-crown{margin:27px 0 15px;font-size:9px;letter-spacing:.12em}.ucs-watch-page .ucs-watch-countdown-wrap h2{font-size:clamp(41px,10vw,78px)}.ucs-watch-page .ucs-watch-countdown-sub{margin-bottom:27px}.ucs-watch-page .ucs-watch-countdown{gap:clamp(3px,.8vw,9px)}.ucs-watch-page .ucs-count-unit{min-height:115px;padding:13px 3px;width:22%;gap:11px}.ucs-watch-page .ucs-count-unit strong{font-size:clamp(38px,9vw,75px)}.ucs-watch-page .ucs-count-unit span{font-size:9px;letter-spacing:.05em}.ucs-watch-page .ucs-count-divider{font-size:clamp(25px,5vw,40px);padding-bottom:23px}.ucs-watch-page .ucs-count-status{margin-top:24px}.ucs-countdown-bottom-line{margin-top:18px}}
 @media(max-width:390px){.ucs-watch-page .ucs-count-unit{min-height:90px;padding:10px 2px}.ucs-watch-page .ucs-count-unit strong{font-size:37px}.ucs-watch-page .ucs-count-divider{font-size:23px}.ucs-watch-page .ucs-watch-countdown-wrap h2{font-size:39px}}
 @media(prefers-reduced-motion:reduce){.ucs-countdown-aura{animation:none}.ucs-watch-page .ucs-count-unit{transition:none}}
+
+
+/* Homepage embedded UCS stream — immediately viewable below Marquee Matchups. */
+.ucs-home-twitch-section{padding-top:4px;padding-bottom:35px}
+.ucs-home-twitch-details{overflow:visible;background:linear-gradient(135deg,#171922,#0d0f15 55%,#221c15);border:1px solid #857043;border-radius:15px;box-shadow:0 15px 48px #0008,0 0 28px #b28c3020}
+.ucs-home-twitch-summary{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:19px 23px;cursor:pointer;list-style:none;user-select:none;min-height:89px}
+.ucs-home-twitch-summary::-webkit-details-marker{display:none}
+.ucs-home-twitch-identity{display:flex;align-items:center;gap:17px;min-width:0}
+.ucs-home-twitch-symbol{display:grid;place-items:center;flex:0 0 47px;width:47px;height:47px;border-radius:50%;border:1px solid #d8b46c;background:radial-gradient(circle,#725322,#31241c);color:#f2d28c;font-size:20px;box-shadow:0 0 26px #deb15848}
+.ucs-home-twitch-identity>span:last-child{display:flex;flex-direction:column;gap:5px;min-width:0}
+.ucs-home-twitch-identity small{font-size:10px;letter-spacing:.15em;font-weight:850;color:#efca7d}
+.ucs-home-twitch-identity strong{font:900 clamp(22px,3.4vw,37px)/.95 'Barlow Condensed',Impact,sans-serif;color:#f8f0dd;letter-spacing:.02em}
+.ucs-home-twitch-identity>span:last-child>span{font-size:12px;color:#b8becc}
+.ucs-home-twitch-chevron{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;color:#f3d48c;font-size:33px;font-weight:800;transition:transform .2s;border-radius:8px;background:#3c332455}
+.ucs-home-twitch-details[open] .ucs-home-twitch-chevron{transform:rotate(180deg)}
+.ucs-home-twitch-summary:focus-visible{outline:2px solid #f4d587;outline-offset:3px;border-radius:12px}
+.ucs-home-twitch-content{padding:0 18px 18px}
+.ucs-home-twitch-player{width:100%;aspect-ratio:16/9;min-height:310px;overflow:hidden;border:1px solid #554a34;border-radius:11px;background:radial-gradient(ellipse at center,#45311c,#090a10 70%)}
+.ucs-home-twitch-player iframe{display:block;width:100%;height:100%;border:0}
+.ucs-home-twitch-loading{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;height:100%;color:#d7c18b;text-align:center}
+.ucs-home-twitch-loading>span{font-size:39px}
+.ucs-home-twitch-loading strong{font:900 30px 'Barlow Condensed',Impact,sans-serif}
+.ucs-home-twitch-loading small{font-size:12px;color:#b7bac3}
+.ucs-home-twitch-footer{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-top:12px;font-size:11px;line-height:1.55;color:#b9bdc8}
+.ucs-home-twitch-footer>span:first-child{color:#e9c577;font-weight:900;letter-spacing:.08em}
+@media(max-width:650px){.ucs-home-twitch-summary{padding:13px;min-height:0}.ucs-home-twitch-identity{gap:9px}.ucs-home-twitch-symbol{width:36px;height:36px;flex-basis:36px;font-size:15px}.ucs-home-twitch-identity strong{font-size:23px}.ucs-home-twitch-identity small{font-size:9px}.ucs-home-twitch-identity>span:last-child>span{font-size:11px}.ucs-home-twitch-content{padding:0 9px 12px}.ucs-home-twitch-player{min-height:0;aspect-ratio:16/9}.ucs-home-twitch-footer{gap:6px;font-size:10px}}
