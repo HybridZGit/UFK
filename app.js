@@ -751,10 +751,33 @@ $('#ucsEventEditor')?.addEventListener('submit',async e=>{
       if(uploadError)throw uploadError;
       payload.poster_url=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
     }
-    const query=id?db.from('events').update(payload).eq('id',id):db.from('events').insert(payload);
-    const {error}=await query;if(error)throw error;
+    const query=id?db.from('events').update(payload).eq('id',id).select('id').single():db.from('events').insert(payload).select('id').single();
+    const {data:savedEvent,error}=await query;if(error)throw error;
+    // Automatically publish one announcement per event; future poster edits update the same article.
+    const eventId=savedEvent.id,marker='[UCS_EVENT:'+eventId+']';
+    const eventNumber=(payload.name.match(/UCS\\s*#?\\s*\\d+/i)||[])[0]||payload.name;
+    const fight=(payload.name.match(/([A-Za-z0-9][A-Za-z0-9 .'-]{0,55})\\s+VS?\\s+([A-Za-z0-9][A-Za-z0-9 .'-]{0,55})/i)||payload.details?.match(/([A-Za-z0-9][A-Za-z0-9 .'-]{0,55})\\s+VS?\\s+([A-Za-z0-9][A-Za-z0-9 .'-]{0,55})/i));
+    const matchLabel=fight?(fight[1].trim()+' V '+fight[2].trim()):'FIGHTER V FIGHTER';
+    const headline=(eventNumber+' HAS JUST BEEN ANNOUNCED WITH '+matchLabel+' AS THE HEADLINE').slice(0,160);
+    const summary=(payload.details||'The next UCS fight night has been officially announced.').slice(0,450);
+    const body=payload.name+' has officially been announced!\\n\\n'+(payload.details||'The main event will be confirmed soon.')+'\\n\\nEvent date: '+payload.event_date+'. Visit the Events tab for the official fight poster and updated fight card.\\n\\n'+marker;
+    let announcementError=null;
+    try{
+      const {data:existing,error:findError}=await db.from('ucs_news').select('id').ilike('body','%'+marker+'%').limit(1);
+      if(findError)throw findError;
+      const article={headline,summary,body,image_url:payload.poster_url||null,banner_url:payload.poster_url||null,is_published:true,updated_at:new Date().toISOString()};
+      if(existing?.length){
+        // Do not erase an existing news poster when an admin edits text without uploading a new one.
+        if(!payload.poster_url){delete article.image_url;delete article.banner_url;}
+        const {error:newsError}=await db.from('ucs_news').update(article).eq('id',existing[0].id);if(newsError)throw newsError;
+      }else{
+        article.published_at=new Date().toISOString();
+        const {error:newsError}=await db.from('ucs_news').insert(article);if(newsError)throw newsError;
+      }
+    }catch(error){announcementError=error;console.error('UCS event news publication:',error);}
     form.reset();form.elements.event_id.value='';
-    await loadPublicData();toast(id?'Event and poster updated.':'UCS event created.');
+    await loadPublicData();
+    toast(announcementError?'Event saved, but news announcement failed: '+announcementError.message:(id?'Event and news updated.':'Event published to Events and News.'),!!announcementError);
   }catch(error){toast(error.message||'Could not save event.',true);}
   finally{button.disabled=false;}
 });
