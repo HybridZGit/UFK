@@ -196,3 +196,10 @@
 @media(hover:none){.ucs-poster-hover{position:relative;opacity:1;pointer-events:auto;background:#1a151b;padding:18px}.ucs-poster-hover h3{font-size:25px}.ucs-poster-shell{overflow:visible}}
 @media(max-width:760px){.ucs-news-card:first-child{grid-template-columns:1fr}.ucs-news-card:first-child .ucs-news-image{min-height:240px}.ucs-news-admin-grid{grid-template-columns:1fr}.ucs-undercard-dialog{padding:22px}}
 @media(prefers-reduced-motion:reduce){.ucs-news-card,.ucs-news-image img,.ucs-poster-hover{transition:none}}
+
+/* Matcherino verified prize pool below the RAFA vs BBK poster */
+.ucs-matcherino-total{width:min(100%,510px);display:flex;flex-direction:column;align-items:center;gap:7px;margin:19px auto 5px;padding:15px 20px;border:1px solid rgba(231,184,58,.47);border-radius:11px;background:radial-gradient(ellipse at top,rgba(231,184,58,.11),transparent 75%),#141115}
+.ucs-matcherino-total-label{font-size:10px;letter-spacing:.16em;font-weight:900;color:#d6b35d}
+.ucs-matcherino-total strong{color:#f5d373;font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(20px,3vw,34px);font-weight:900;line-height:1.1}
+.ucs-matcherino-total a{font-size:12px;font-weight:700;color:#dbbb65;text-decoration:none}
+.ucs-matcherino-total a:hover{text-decoration:underline}
