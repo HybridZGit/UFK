@@ -911,3 +911,11 @@ a{accent-color:#d5ad48}
 .ucs-tott-likely>strong{color:#ffe29b;font:900 clamp(31px,5.2vw,60px)/.98 'Barlow Condensed',Impact,sans-serif;text-shadow:0 0 25px #d6a64b69;overflow-wrap:anywhere}
 .ucs-tott-likely>p{margin:0;max-width:650px;color:#c7c1b3;line-height:1.6;font-size:12px}
 .ucs-tott-section .ucs-tott-stage>.data-empty{background:#17171b;border:1px solid #655031;border-radius:12px;color:#c7c1b5;padding:35px;text-align:center}
+
+
+/* Tale of the Tape: every undercard pairing is directly selectable. */
+.ucs-tott-undercard-tabs{display:contents}
+.ucs-tott-tabs{row-gap:10px}
+.ucs-tott-tabs [data-tott-bout]{border-radius:8px;background:#13171c;border-color:#716044;color:#d8cbb5;font-size:11px;max-width:100%;overflow-wrap:anywhere}
+.ucs-tott-tabs [data-tott-bout].active{background:linear-gradient(110deg,#4a371b,#28221b);border-color:#e3b75e;color:#ffe0a1;box-shadow:0 0 18px #d4a24730}
+@media(max-width:640px){.ucs-tott-tabs [data-tott-bout]{flex:1 1 46%;min-width:0;padding:11px 8px}}
