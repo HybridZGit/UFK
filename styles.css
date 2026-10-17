@@ -1019,3 +1019,8 @@ a{accent-color:#d5ad48}
 
 /* Exact sponsor artwork: preserve original composition and aspect ratio */
 .ucs-sponsor-original{display:block;width:100%;height:auto;object-fit:contain;border-radius:5px}
+
+/* Centered compact sponsor placement */
+.ucs-sponsor-banner{display:flex;flex-direction:column;align-items:center;justify-content:center;margin:32px auto 44px;text-align:center}
+.ucs-sponsor-original{display:block;width:82%;max-width:960px;height:auto;margin:0 auto;object-fit:contain;border-radius:6px}
+@media(max-width:700px){.ucs-sponsor-original{width:94%;max-width:100%}.ucs-sponsor-banner{margin:24px auto 32px}}
