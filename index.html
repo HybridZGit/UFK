@@ -24,6 +24,7 @@
       <a href="#rankings" data-page="rankings">Rankings</a>
       <a href="#betting" data-page="betting">Betting</a>
       <a href="#fights" data-page="fights">Fights</a>
+      <a href="#events" data-page="events">Events</a>
       <a href="#watch" data-page="watch">WATCH LIVE</a>
       <a href="#news" data-page="news">News</a>
       <a href="#photography" data-page="photography">Photography</a>
@@ -252,6 +253,11 @@
       <div class="ucs-watch-stream-label"><div><span class="ucs-watch-stream-pulse"></span><strong>OFFICIAL UCS STREAM</strong><span>Live when the channel is broadcasting</span></div><a href="https://www.twitch.tv/hymass21" target="_blank" rel="noopener noreferrer">OPEN ON TWITCH ↗</a></div>
       <div class="ucs-twitch-layout"><div class="ucs-twitch-player"><div id="ucsTwitchPlayer" class="ucs-twitch-placeholder"><span>▶</span><strong>UCS LIVE BROADCAST</strong><p>Open the Watch tab to load the Twitch player.</p></div></div><aside class="ucs-twitch-chat-wrap"><div class="ucs-twitch-chat-title">STREAM CHAT <span>● LIVE CHAT</span></div><div id="ucsTwitchChat" class="ucs-twitch-chat"><p>Chat loads alongside the stream.</p></div></aside></div>
       <p class="ucs-watch-disclaimer">Twitch playback and chat depend on Twitch availability and browser privacy settings. If an embed is blocked, use the Twitch link above.</p>
+    </section>
+
+    <section class="page shell section-space ucs-events-page" id="events">
+      <div class="section-kicker">OFFICIAL UCS EVENTS</div><div class="section-title-row"><h2>UCS <em>EVENTS</em></h2><span>Fight nights, posters and updated cards</span></div>
+      <div id="ucsEventsGrid" class="ucs-events-grid"><div class="data-empty">Loading UCS events…</div></div>
     </section>
 
     <section class="page shell section-space" id="fights">
@@ -490,14 +496,19 @@
             <div class="button-row"><button class="btn primary" type="submit">SAVE BOUT</button><button class="btn danger-btn" type="button" id="cancelScheduledBout">CANCEL BOUT</button></div>
           </form>
 
-          <form class="admin-card" id="eventForm">
-            <h3>Create event</h3><p>Add an upcoming fight card or completed event.</p>
-            <label>Event name<input name="name" required placeholder="UCS 001"></label>
-            <label>Date<input name="event_date" type="date" required></label>
-            <label>Card / matchup<input name="details" placeholder="Main event TBA"></label>
-            <label>Status<select name="status"><option value="upcoming">Upcoming</option><option value="live">Live</option><option value="completed">Completed</option></select></label>
-            <button class="btn primary" type="submit">CREATE EVENT</button>
-          </form>
+          <div class="admin-card ucs-events-admin">
+            <h3>UCS EVENTS MANAGER</h3><p>Create UCS #002 and later events, edit existing cards and upload replacement posters for UCS #001 and every event.</p>
+            <form id="ucsEventEditor">
+              <input type="hidden" name="event_id">
+              <label>Event title<input name="name" required maxlength="120" placeholder="UCS #002"></label>
+              <label>Event date<input name="event_date" type="date" required></label>
+              <label>Main event / details<textarea name="details" rows="3" placeholder="Main event and fight card details"></textarea></label>
+              <label>Status<select name="status"><option value="upcoming">Upcoming</option><option value="live">Live</option><option value="completed">Completed</option></select></label>
+              <label>Upload event poster (JPG, PNG, WebP; max 5 MB)<input type="file" name="poster" accept="image/jpeg,image/png,image/webp"></label>
+              <div class="ucs-event-actions"><button class="btn primary" type="submit" id="ucsEventSave">SAVE EVENT</button><button class="btn ghost" type="button" id="ucsEventNew">NEW EVENT</button></div>
+            </form>
+            <div id="ucsAdminEventsList" class="ucs-admin-events-list"></div>
+          </div>
 
           <form class="admin-card" id="contractForm">
             <h3>Contract activity</h3><p>Post signing, renewal, offer or release activity.</p>
