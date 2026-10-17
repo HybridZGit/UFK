@@ -771,3 +771,36 @@ a{accent-color:#d5ad48}
 @media(max-width:1050px){.ucs-twitch-layout{grid-template-columns:minmax(0,1fr)}.ucs-twitch-player{min-height:0}.ucs-twitch-chat-wrap{min-height:380px}.ucs-twitch-chat{min-height:330px}}
 @media(max-width:630px){.ucs-watch-heading{flex-direction:column;align-items:start}.ucs-watch-event-overline{flex-wrap:wrap;font-size:9px}.ucs-watch-countdown-wrap h2{margin-top:21px}.ucs-count-unit{width:21%;border-radius:7px;padding:11px 3px;gap:6px}.ucs-count-divider{padding-top:9px}.ucs-watch-stream-label{align-items:start;flex-direction:column}.ucs-watch-countdown-sub{font-size:11px;line-height:1.6}.ucs-home-countdown-strip{padding:14px}}
 @media(prefers-reduced-motion:reduce){.ucs-count-divider,.ucs-watch-stream-pulse{animation:none}}
+
+
+/* UCS#001 CINEMATIC COUNTDOWN — premium arena scale, glowing gold lighting */
+.ucs-watch-page .ucs-watch-countdown-wrap{position:relative;isolation:isolate;min-height:520px;padding:clamp(25px,4.4vw,65px) clamp(12px,3.2vw,53px) clamp(33px,4vw,56px);border:1px solid #a68a4d;border-top:2px solid #f2cc6e;border-radius:20px;overflow:hidden;background:radial-gradient(ellipse at center,#382a16 0%,#17171a 35%,#080a0e 80%);box-shadow:0 0 0 1px #a98b3523,inset 0 0 85px #ba87311c,0 32px 95px #000c,0 0 85px #aa7c2224}
+.ucs-watch-page .ucs-watch-countdown-wrap::before{content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse at 50% 48%,#b9944933,transparent 57%);transform:none}
+.ucs-watch-page .ucs-watch-countdown-wrap::after{content:"";position:absolute;z-index:2;inset:0;pointer-events:none;border-radius:inherit;border:1px solid #eac66a30;box-shadow:inset 0 1px 26px #f2c95c10}
+.ucs-countdown-aura{position:absolute;z-index:-1;pointer-events:none;width:60%;aspect-ratio:1;border-radius:50%;filter:blur(37px);animation:ucs-aura-drift 7s ease-in-out infinite alternate}
+.ucs-countdown-aura-one{top:-53%;left:-14%;background:radial-gradient(circle,#d8a12e53 0%,#976a2320 34%,transparent 71%)}
+.ucs-countdown-aura-two{bottom:-88%;right:-15%;background:radial-gradient(circle,#ffe3a65e 0%,#c7992433 37%,transparent 72%);animation-delay:-3.5s}
+@keyframes ucs-aura-drift{from{transform:scale(.94) translateX(-2%);opacity:.64}to{transform:scale(1.1) translateX(3%);opacity:1}}
+.ucs-countdown-grid{position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.18;background-image:linear-gradient(#f1c46b16 1px,transparent 1px),linear-gradient(90deg,#f1c46b16 1px,transparent 1px);background-size:46px 46px;mask-image:radial-gradient(ellipse at center,#000,transparent 82%)}
+.ucs-countdown-watermark{position:absolute;inset:3% 0 auto;z-index:-1;text-align:center;font:900 clamp(240px,33vw,530px)/1 'Barlow Condensed',Impact,sans-serif;color:#f5d4850a;letter-spacing:-.05em;pointer-events:none;user-select:none}
+.ucs-watch-page .ucs-watch-event-overline{position:relative;z-index:1;font-size:clamp(10px,1.15vw,14px);letter-spacing:.15em;color:#f9d888}
+.ucs-countdown-crown{position:relative;z-index:1;text-align:center;margin:43px 0 12px;font-weight:900;letter-spacing:.27em;color:#ecc369;font-size:clamp(10px,1.2vw,13px)}
+.ucs-watch-page .ucs-watch-countdown-wrap h2{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:0;margin:0 auto 16px;font:900 clamp(48px,7.3vw,106px)/.88 'Barlow Condensed',Impact,sans-serif;letter-spacing:.013em;text-align:center;text-shadow:0 4px 25px #000c}
+.ucs-watch-page .ucs-watch-countdown-wrap h2>span{font-size:.38em;letter-spacing:.24em;color:#fff9e9;line-height:1.35}
+.ucs-watch-page .ucs-watch-countdown-wrap h2 em{color:#f3d27b;text-shadow:0 0 22px #e7bd5a69,0 0 70px #d49a3266,0 4px 15px #000;font-style:normal;white-space:normal}
+.ucs-watch-page .ucs-watch-countdown-sub{position:relative;z-index:1;margin:0 auto 35px;max-width:630px;color:#cfc8b7;font-size:clamp(12px,1.3vw,15px);font-weight:650;letter-spacing:.025em}
+.ucs-watch-page .ucs-watch-countdown{position:relative;z-index:1;align-items:center;gap:clamp(5px,1.5vw,20px);width:100%;max-width:1000px}
+.ucs-watch-page .ucs-count-unit{width:clamp(80px,17vw,210px);min-height:clamp(100px,14vw,177px);justify-content:center;gap:12px;border:1px solid #9c7c3d;border-top:2px solid #eac46e;border-radius:13px;background:linear-gradient(165deg,#3e321d,#171719 62%,#100f10);box-shadow:inset 0 1px 27px #e3b95222,0 0 30px #e2a53a20,0 10px 38px #0009;transform:translateZ(0);transition:transform .25s,box-shadow .25s}
+.ucs-watch-page .ucs-count-unit:hover{transform:translateY(-5px);box-shadow:0 0 55px #deb04c40,0 13px 35px #000a}
+.ucs-watch-page .ucs-count-unit strong{font:900 clamp(48px,8.8vw,119px)/.93 'Barlow Condensed',Impact,sans-serif;letter-spacing:.025em;color:#ffe29a;text-shadow:0 0 20px #edbe669c,0 0 52px #c78d3566,0 2px 9px #000;display:block}
+.ucs-watch-page .ucs-count-unit span{color:#e6d0a0;font-size:clamp(9px,1.15vw,15px);font-weight:900;letter-spacing:.17em}
+.ucs-watch-page .ucs-count-divider{font:900 clamp(30px,5.1vw,72px)/1 'Barlow Condensed',Impact,sans-serif;color:#f1c968;text-shadow:0 0 29px #dfae4aaf;padding:0 0 28px}
+.ucs-watch-page .ucs-count-status{position:relative;z-index:1;margin-top:35px;font-size:clamp(10px,1.2vw,14px);color:#f7d992;letter-spacing:.21em}
+.ucs-countdown-bottom-line{position:relative;z-index:1;display:flex;align-items:center;gap:16px;justify-content:center;margin-top:23px;color:#c2a063;font-size:10px;letter-spacing:.19em}
+.ucs-countdown-bottom-line span{width:min(15vw,120px);height:1px;background:linear-gradient(90deg,transparent,#ac8644)}
+.ucs-countdown-bottom-line span:last-child{transform:rotate(180deg)}
+.ucs-home-countdown-strip{box-shadow:0 0 30px #ae7f2a23,inset 0 1px #f7d37b26}
+.ucs-home-countdown-numbers{text-shadow:0 0 18px #d4a04766}
+@media(max-width:760px){.ucs-watch-page .ucs-watch-countdown-wrap{min-height:0;padding:28px 12px 30px}.ucs-countdown-crown{margin:27px 0 15px;font-size:9px;letter-spacing:.12em}.ucs-watch-page .ucs-watch-countdown-wrap h2{font-size:clamp(41px,10vw,78px)}.ucs-watch-page .ucs-watch-countdown-sub{margin-bottom:27px}.ucs-watch-page .ucs-watch-countdown{gap:clamp(3px,.8vw,9px)}.ucs-watch-page .ucs-count-unit{min-height:115px;padding:13px 3px;width:22%;gap:11px}.ucs-watch-page .ucs-count-unit strong{font-size:clamp(38px,9vw,75px)}.ucs-watch-page .ucs-count-unit span{font-size:9px;letter-spacing:.05em}.ucs-watch-page .ucs-count-divider{font-size:clamp(25px,5vw,40px);padding-bottom:23px}.ucs-watch-page .ucs-count-status{margin-top:24px}.ucs-countdown-bottom-line{margin-top:18px}}
+@media(max-width:390px){.ucs-watch-page .ucs-count-unit{min-height:90px;padding:10px 2px}.ucs-watch-page .ucs-count-unit strong{font-size:37px}.ucs-watch-page .ucs-count-divider{font-size:23px}.ucs-watch-page .ucs-watch-countdown-wrap h2{font-size:39px}}
+@media(prefers-reduced-motion:reduce){.ucs-countdown-aura{animation:none}.ucs-watch-page .ucs-count-unit{transition:none}}
