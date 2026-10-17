@@ -35,11 +35,43 @@ function ucsUnmountTwitch(){
   chat?.replaceChildren();
   ucsTwitchMounted=false;
 }
+// Homepage stream starts already expanded and muted to meet autoplay rules.
+// Guests can view Twitch streams without authentication; Twitch handles playback.
+let ucsHomePlayerMounted=false;
+function ucsMountHomeTwitch(){
+  if(ucsHomePlayerMounted)return;
+  const box=$('#ucsHomeTwitchPlayer');
+  const details=$('#ucsHomeTwitchDetails');
+  if(!box||!details?.open)return;
+  const host=window.location.hostname||'ucsleague.vercel.app';
+  const url='https://player.twitch.tv/?channel=hymass21&parent='+encodeURIComponent(host)+'&autoplay=true&muted=true';
+  const frame=document.createElement('iframe');
+  frame.src=url;
+  frame.title='Watch UCS live on Twitch without leaving the website';
+  frame.loading='eager';
+  frame.allow='autoplay; fullscreen; picture-in-picture';
+  frame.allowFullscreen=true;
+  frame.referrerPolicy='strict-origin-when-cross-origin';
+  frame.setAttribute('frameborder','0');
+  box.replaceChildren(frame);
+  ucsHomePlayerMounted=true;
+}
+function ucsUnmountHomeTwitch(){
+  if(!ucsHomePlayerMounted)return;
+  $('#ucsHomeTwitchPlayer')?.replaceChildren();
+  ucsHomePlayerMounted=false;
+}
+$('#ucsHomeTwitchDetails')?.addEventListener('toggle',e=>{
+  if(e.currentTarget.open&&$('#home')?.classList.contains('active'))ucsMountHomeTwitch();
+  else ucsUnmountHomeTwitch();
+});
+
 function showPage(id){
   $('.page').forEach(p=>p.classList.toggle('active',p.id===id));
   $('nav a').forEach(a=>a.classList.toggle('active',a.dataset.page===id));
   $('#nav')?.classList.remove('open');
   if(id==='watch')ucsMountTwitch();else ucsUnmountTwitch();
+  if(id==='home')ucsMountHomeTwitch();else ucsUnmountHomeTwitch();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 $$('[data-page]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();showPage(a.dataset.page);history.replaceState(null,'','#'+a.dataset.page)}));
@@ -1312,4 +1344,4 @@ if(db){
     if(document.visibilityState==='visible')refreshMatchupsFromDb();
   });
 }
-(async function init(){renderAll();updateAdminUI();await refreshSession();await loadPublicData();if(location.hash.startsWith('#fighter/')){showPage('rankings');openFighterProfile(decodeURIComponent(location.hash.slice(9)));}else if(location.hash&&$(location.hash))showPage(location.hash.slice(1));})();
+(async function init(){ucsMountHomeTwitch();renderAll();updateAdminUI();await refreshSession();await loadPublicData();if(location.hash.startsWith('#fighter/')){showPage('rankings');openFighterProfile(decodeURIComponent(location.hash.slice(9)));}else if(location.hash&&$(location.hash))showPage(location.hash.slice(1));})();
