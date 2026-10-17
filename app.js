@@ -124,32 +124,57 @@ function fighterForm(f){
 }
 
 async function loadPublicData(){
-  if(!db){ renderAll(); return; }
-  // Isolate every request: an Events or optional-table outage must NEVER clear fighter data.
-  const settled = await Promise.allSettled([
-    db.from('fighters').select('*').eq('active',true).order('score',{ascending:false}),
-    db.from('champions').select('*'),
-    db.from('results').select('*').order('event_date',{ascending:false}).limit(100),
-    db.from('events').select('*').order('event_date',{ascending:true}),
-    db.from('contract_activity').select('*').order('created_at',{ascending:false}).limit(20),
-    db.from('betting_markets').select('*').eq('is_open',true).order('created_at',{ascending:false}),
-    db.from('league_settings').select('*'),
-    db.from('scheduled_bouts').select('*').eq('status','scheduled').order('bout_date',{ascending:true,nullsFirst:false}),
-    db.from('fighter_earnings').select('fighter_id,amount'),
-    db.from('ucs_news').select('*').order('published_at',{ascending:false}),
-    db.from('ucs_photos').select('*').order('created_at',{ascending:false}).limit(120),
-    db.from('ucs_former_championships').select('fighter_id,division')
-  ]);
-  const queries=settled.map(x=>x.status==='fulfilled'?x.value:{error:x.reason||new Error('Request failed')});
-  const errors=queries.map((x,i)=>x.error?{table:['fighters','champions','results','events','contract_activity','betting_markets','league_settings','scheduled_bouts','fighter_earnings','ucs_news','ucs_photos','ucs_former_championships'][i],error:x.error}:null).filter(Boolean);
-  if(errors.length){console.error('UCS data load errors:',errors);toast('Some UCS data is unavailable; attempting to show available records.',true);}
-  const good=i=>!queries[i].error&&Array.isArray(queries[i].data)?queries[i].data:null;
-  for(const [index,key] of [[0,'fighters'],[1,'champions'],[2,'results'],[3,'events'],[4,'contracts'],[5,'bets'],[7,'scheduledBouts'],[9,'news'],[10,'photos'],[11,'formerChampionships']]){
-    const rows=good(index);if(rows!==null)state[key]=rows;
+  if(!db){renderAll();return;}
+  // Fighters load separately and render immediately, never waiting for optional data.
+  try{
+    const fighterRequest=db.from('fighters').select('*').eq('active',true).order('score',{ascending:false});
+    const fighterResponse=await Promise.race([
+      fighterRequest,
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('Fighter request timed out')),9000))
+    ]);
+    if(fighterResponse.error)throw fighterResponse.error;
+    if(!Array.isArray(fighterResponse.data))throw Error('Invalid fighter response');
+    state.fighters=fighterResponse.data;
+    console.info('UCS fighters loaded:',state.fighters.length);
+    try{renderRanks($('#fighterSearch')?.value||'')}catch(error){console.error('Rankings rendering failed:',error)}
+    try{renderHome()}catch(error){console.error('Home rendering failed:',error)}
+    try{renderEvents()}catch(error){console.error('Fight rendering failed:',error)}
+  }catch(error){
+    console.error('UCS fighter fetch failed:',error);
+    const target=$('#rankRows');
+    if(target)target.innerHTML='<tr><td colspan="9">Could not load fighters. Please reload this page.</td></tr>';
+    toast('Fighter connection failed. Trying again...',true);
+    setTimeout(()=>{if(!state.fighters.length)loadPublicData().catch(console.error)},7000);
   }
-  if(good(6)!==null)state.settings=Object.fromEntries(good(6).map(x=>[x.key,x.value]));
-  if(good(8)!==null)state.fighterEarnings=new Map(good(8).map(row=>[row.fighter_id,Number(row.amount)]));
-  renderAll();
+  // Remaining data is optional and independently updated on arrival.
+  const optional=[
+    ['champions',db.from('champions').select('*')],
+    ['results',db.from('results').select('*').order('event_date',{ascending:false}).limit(100)],
+    ['events',db.from('events').select('*').order('event_date',{ascending:true})],
+    ['contracts',db.from('contract_activity').select('*').order('created_at',{ascending:false}).limit(20)],
+    ['bets',db.from('betting_markets').select('*').eq('is_open',true).order('created_at',{ascending:false})],
+    ['settings',db.from('league_settings').select('*')],
+    ['scheduledBouts',db.from('scheduled_bouts').select('*').eq('status','scheduled').order('bout_date',{ascending:true,nullsFirst:false})],
+    ['fighterEarnings',db.from('fighter_earnings').select('fighter_id,amount')],
+    ['news',db.from('ucs_news').select('*').order('published_at',{ascending:false})],
+    ['photos',db.from('ucs_photos').select('*').order('created_at',{ascending:false}).limit(120)],
+    ['formerChampionships',db.from('ucs_former_championships').select('fighter_id,division')]
+  ];
+  await Promise.allSettled(optional.map(async([name,request])=>{
+    try{
+      const response=await Promise.race([
+        request,
+        new Promise((_,reject)=>setTimeout(()=>reject(new Error(name+' timed out')),9000))
+      ]);
+      if(response.error)throw response.error;
+      const rows=response.data||[];
+      if(name==='settings')state.settings=Object.fromEntries(rows.map(x=>[x.key,x.value]));
+      else if(name==='fighterEarnings')state.fighterEarnings=new Map(rows.map(x=>[x.fighter_id,Number(x.amount)]));
+      else state[name]=rows;
+      // Independent updates cannot block the main ranking page.
+      try{renderAll()}catch(err){console.error('UCS rendering '+name+':',err)}
+    }catch(error){console.error('UCS optional data '+name+':',error)}
+  }));
 }
 
 // UCS Photography: public read-only gallery; approved users can upload.
