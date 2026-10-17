@@ -603,3 +603,24 @@ a{accent-color:#d5ad48}
 #fights .ucs-fights-main-bottom .btn{margin:0;font-size:12px}
 #fights .event-row{width:100%}
 @media(max-width:720px){#fights .ucs-fights-main-top,#fights .ucs-fights-main-bottom{padding:12px}#fights .ucs-fights-main-top>span{display:none}#fights .ucs-fights-main-content{grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);min-height:220px;gap:4px;padding:19px 9px}#fights .ucs-fights-main-fighter>img,#fights .ucs-fights-main-fighter>span{width:clamp(76px,19vw,125px);height:clamp(76px,19vw,125px)}#fights .ucs-fights-main-fighter>strong{font-size:clamp(21px,5vw,34px)}#fights .ucs-fights-main-middle>strong{font-size:57px}#fights .ucs-fights-main-middle>span,#fights .ucs-fights-main-middle>small{font-size:9px}}
+
+
+/* Fights tab — compact, consistent fighter-versus-fighter matchup cards */
+#fights #fightList{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;width:100%}
+#fights .ucs-match-card{width:100%;min-width:0;box-sizing:border-box;overflow:hidden;display:flex;flex-direction:column;border:1px solid #48402c;border-radius:12px;background:linear-gradient(110deg,#17191d,#101215 55%,#17191d);padding:0;box-shadow:0 6px 20px #0003}
+#fights .ucs-match-featured{border-color:#c3a25c;background:radial-gradient(ellipse at 50% 20%,#57421d44,transparent 70%),linear-gradient(110deg,#1c1b19,#101215 55%,#1c1b19)}
+#fights .ucs-match-top{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #55452c;padding:11px 19px;color:#d8c7a0;font-size:11px;font-weight:800;letter-spacing:.08em}
+#fights .ucs-match-featured .ucs-match-top span:first-child{color:#ffe09a}
+#fights .ucs-match-contest{display:grid;grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr);gap:9px;align-items:center;padding:19px 23px;min-height:116px}
+#fights .ucs-match-person{display:flex;align-items:center;gap:14px;min-width:0}
+#fights .ucs-match-person-right{flex-direction:row-reverse;text-align:right}
+#fights .ucs-match-avatar{display:flex;flex:0 0 64px;width:64px;height:64px;min-width:64px;max-width:64px;max-height:64px;overflow:hidden;border:2px solid #c19b4f;border-radius:50%;background:#27231c;box-shadow:0 0 0 3px #bb985012;box-sizing:content-box}
+#fights .ucs-match-avatar img{display:block!important;flex:none!important;width:64px!important;height:64px!important;max-width:64px!important;max-height:64px!important;object-fit:cover!important;object-position:center 20%;border-radius:50%}
+#fights .ucs-match-avatar-fallback{display:grid;place-items:center;width:64px;height:64px;font:900 23px 'Barlow Condensed',Impact,sans-serif;color:#efda9d}
+#fights .ucs-match-person-info{display:flex;flex-direction:column;min-width:0;gap:5px}
+#fights .ucs-match-person-info strong{font:900 clamp(20px,2.5vw,31px)/1.08 'Barlow Condensed',Impact,sans-serif;color:#fff4dc;overflow-wrap:anywhere}
+#fights .ucs-match-person-info small{font-size:11px;color:#c6c5c0;overflow-wrap:anywhere}
+#fights .ucs-match-versus{text-align:center;color:#f5d387;font:900 29px 'Barlow Condensed',Impact,sans-serif}
+#fights .ucs-match-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-top:1px solid #48402d;padding:10px 19px;color:#c8b88f;font-size:12px}
+#fights .ucs-match-bottom .btn{margin:0!important;min-height:0;padding:9px 12px;font-size:11px}
+@media(max-width:650px){#fights .ucs-match-contest{grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr);padding:15px 11px;gap:5px}#fights .ucs-match-person,#fights .ucs-match-person-right{flex-direction:column;text-align:center;gap:7px}#fights .ucs-match-avatar{width:54px;height:54px;min-width:54px;max-width:54px;max-height:54px;flex-basis:54px}#fights .ucs-match-avatar img{width:54px!important;height:54px!important;max-width:54px!important;max-height:54px!important}#fights .ucs-match-avatar-fallback{width:54px;height:54px}#fights .ucs-match-person-info strong{font-size:clamp(19px,4.5vw,26px)}#fights .ucs-match-versus{font-size:25px}#fights .ucs-match-top,#fights .ucs-match-bottom{padding:11px}}
