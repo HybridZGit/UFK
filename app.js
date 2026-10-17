@@ -179,8 +179,41 @@ function renderHome(){
   }).join(''):empty('No contract activity.');
 
   renderRankingChampion();
+  renderMarqueeMatchups();
   renderUpcomingSpotlight();
   renderMarquee();
+}
+
+// Local, explainable record-based matchmaking: no external AI key, no fabricated bouts.
+function renderMarqueeMatchups(){
+  const root=$('#ucsMarqueeMatchups');if(!root)return;
+  const eligible=state.fighters.filter(f=>f.active!==false && Number(f.losses||0)===0 && Number(f.draws||0)===0);
+  const platformTokens=f=>String(f.platform||'').toUpperCase().split(/[\\/, +]+/).filter(Boolean);
+  const compatible=(a,b)=>{
+    const aa=platformTokens(a),bb=platformTokens(b);
+    return aa.some(p=>bb.includes(p));
+  };
+  const rankingScore=f=>Number(f.score)||0;
+  const wins=f=>Number(f.wins)||0;
+  const candidates=[];
+  for(let i=0;i<eligible.length;i++)for(let j=i+1;j<eligible.length;j++){
+    const a=eligible[i],b=eligible[j];
+    if(!compatible(a,b))continue;
+    // Avoid suggesting a matchup already on the upcoming fight card.
+    if(state.scheduledBouts.some(x=>(x.fighter_a_id===a.id&&x.fighter_b_id===b.id)||(x.fighter_a_id===b.id&&x.fighter_b_id===a.id)))continue;
+    const combinedWins=wins(a)+wins(b);
+    const score=combinedWins*100+Math.min(wins(a),wins(b))*40+(rankingScore(a)+rankingScore(b))*0.4-Math.abs(wins(a)-wins(b))*12-Math.abs(rankingScore(a)-rankingScore(b))*0.12;
+    candidates.push({a,b,score,combinedWins});
+  }
+  candidates.sort((x,y)=>y.score-x.score||y.combinedWins-x.combinedWins||String(x.a.name).localeCompare(String(y.a.name))||String(x.b.name).localeCompare(String(y.b.name)));
+  const picked=[],used=new Set();
+  for(const match of candidates){if(used.has(match.a.id)||used.has(match.b.id))continue;picked.push(match);used.add(match.a.id);used.add(match.b.id);if(picked.length===3)break;}
+  if(!picked.length){root.innerHTML=empty('No eligible undefeated cross-platform-compatible matchups yet. New records will refresh this list.');return;}
+  root.innerHTML=picked.map((m,i)=>{
+    const fighter=f=>`<div class="ucs-marquee-fighter">${avatarHtml(f,'ucs-marquee-avatar')}<strong>${esc(f.name)}</strong><span>${esc(String(f.wins||0)+'-'+String(f.losses||0)+'-'+String(f.draws||0))} · ${esc(f.platform||'')}</span></div>`;
+    const label=m.combinedWins===0?'UNDEFEATED PROSPECTS':m.combinedWins>=4?'UNDEFEATED SHOWDOWN':'RISING UNDEFEATED';
+    return `<article class="ucs-marquee-card" style="--marquee-index:${i}" aria-label="${esc(m.a.name)} versus ${esc(m.b.name)} suggested matchup"><div class="ucs-marquee-top"><span>★ ${label}</span><small>AI-STYLE RECORD ANALYSIS</small></div><div class="ucs-marquee-versus">${fighter(m.a)}<div class="ucs-marquee-vs">VS</div>${fighter(m.b)}</div><div class="ucs-marquee-footer"><span>${m.combinedWins} combined win${m.combinedWins===1?'':'s'} · Both undefeated</span><small>FANTASY MATCHUP · NOT SCHEDULED</small></div></article>`;
+  }).join('');
 }
 
 function renderRanks(filter=''){
