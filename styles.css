@@ -624,3 +624,12 @@ a{accent-color:#d5ad48}
 #fights .ucs-match-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-top:1px solid #48402d;padding:10px 19px;color:#c8b88f;font-size:12px}
 #fights .ucs-match-bottom .btn{margin:0!important;min-height:0;padding:9px 12px;font-size:11px}
 @media(max-width:650px){#fights .ucs-match-contest{grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr);padding:15px 11px;gap:5px}#fights .ucs-match-person,#fights .ucs-match-person-right{flex-direction:column;text-align:center;gap:7px}#fights .ucs-match-avatar{width:54px;height:54px;min-width:54px;max-width:54px;max-height:54px;flex-basis:54px}#fights .ucs-match-avatar img{width:54px!important;height:54px!important;max-width:54px!important;max-height:54px!important}#fights .ucs-match-avatar-fallback{width:54px;height:54px}#fights .ucs-match-person-info strong{font-size:clamp(19px,4.5vw,26px)}#fights .ucs-match-versus{font-size:25px}#fights .ucs-match-top,#fights .ucs-match-bottom{padding:11px}}
+
+
+/* Official UCS co-main event — distinct silver/gold card below the main event. */
+#fights .ucs-match-co-main{border-color:#8b90a0;background:linear-gradient(110deg,#21242d,#11141a 55%,#21242d);box-shadow:0 9px 28px #0005}
+#fights .ucs-match-co-main .ucs-match-top{border-bottom-color:#777b84}
+#fights .ucs-match-co-main .ucs-match-top span:first-child{color:#e1e4ed;font-weight:900}
+#fights .ucs-match-co-main .ucs-match-versus{color:#e8d8ab}
+#fights .ucs-match-co-main .ucs-match-avatar{border-color:#bec3d0}
+#fights .ucs-match-co-main .ucs-match-bottom{border-top-color:#565c65}
