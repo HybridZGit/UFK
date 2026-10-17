@@ -3,7 +3,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
 
 const state = {
-  fighters: [], champions: [], results: [], events: [], contracts: [], bets: [], scheduledBouts: [], news: [], settings: {},
+  fighters: [], champions: [], results: [], events: [], contracts: [], bets: [], scheduledBouts: [], news: [], photos: [], canPhotograph: false, settings: {},
   user: null, isAdmin: false, profile: null, myFighter: null, wallet: null, userBets: [],
   fighterEarnings: new Map(), fighterContracts: [], contractTab: 'incoming', contractTarget: null,
   rankingDivision: 'UCS World', betSelection: null
@@ -58,7 +58,8 @@ async function loadPublicData(){
     db.from('league_settings').select('*'),
     db.from('scheduled_bouts').select('*').eq('status','scheduled').order('bout_date',{ascending:true,nullsFirst:false}),
     db.from('fighter_earnings').select('fighter_id,amount'),
-    db.from('ucs_news').select('*').order('published_at',{ascending:false})
+    db.from('ucs_news').select('*').order('published_at',{ascending:false}),
+    db.from('ucs_photos').select('*').order('created_at',{ascending:false}).limit(120)
   ]);
   const firstError = queries.find(x=>x.error)?.error;
   if(firstError) toast(`Supabase: ${firstError.message}`,true);
@@ -67,10 +68,11 @@ async function loadPublicData(){
   state.scheduledBouts=queries[7].data||[];
   state.fighterEarnings=new Map((queries[8].data||[]).map(row=>[row.fighter_id,Number(row.amount)]));
   state.news=queries[9].data||[];
+  state.photos=queries[10].data||[];
   renderAll();
 }
 
-function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNews(); updateAccountUI(); }
+function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNews(); renderPhotoGallery(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -194,11 +196,31 @@ $('#rankRows')?.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')
 
 function openFighterProfile(id){
   const f=fighterById(id); if(!f)return;
-  const modal=$('#fighterModal');
+  const modal=$('#fighter');
   const rank=currentRank(f),titles=state.champions.filter(c=>c.fighter_id===f.id),history=fighterResults(f);
   $('#profileName').textContent=f.name;
   $('#profilePlatform').textContent=`UCS ${f.platform||'WORLD'}`;
   $('#profileRegion').textContent=f.region||'Region not set';
+  const badge=$('#profileUnderdog'),server=$('#profileServerIcon');
+  badge?.classList.toggle('hidden',!f.is_underdog);
+  if(server){
+    const url=f.server_icon_url;
+    server.classList.toggle('hidden',!safeHttps(url));
+    server.innerHTML=safeHttps(url)?`<img src="${esc(url)}" alt="Server icon" loading="lazy">`:'';
+  }
+  $('#profileBio').textContent=f.fighter_bio?.trim()||'This fighter has not added a biography yet.';
+  $('#profileScoutLabel').textContent=f.is_underdog?'UNDERDOG':'CONTENDER';
+  const winsRecorded=history.filter(x=>x.winner_id===f.id);
+  const kos=winsRecorded.filter(x=>/\b(KO|TKO|KNOCKOUT)\b/i.test(String(x.method||''))).length;
+  const recordWins=Number(f.wins||0);
+  const ratio=winsRecorded.length&&recordWins>0?Math.round(kos/recordWins*100)+'%':'—';
+  $('#profileKOs').textContent=winsRecorded.length?String(kos):'—';
+  $('#profileKoRatio').textContent=ratio;
+  $('#profileKOInsight').textContent=ratio;
+  const booked=state.scheduledBouts.filter(b=>b.fighter_a_id===f.id||b.fighter_b_id===f.id);
+  const soon=booked[0],opp=soon?fighterById(soon.fighter_a_id===f.id?soon.fighter_b_id:soon.fighter_a_id):null;
+  $('#profileNextFight').textContent=opp?'vs '+opp.name:'Not booked';
+
   $('#profileRank').textContent=rank?`#${rank}`:'#—';
   $('#profileRecord').textContent=`${f.wins||0}-${f.losses||0}-${f.draws||0}`;
   $('#profileScore').textContent=Number(f.score||0).toFixed(1);
@@ -251,9 +273,9 @@ function openFighterProfile(id){
     contractBtn.dataset.fighterId=isOwnProfile?'':f.id;
     contractBtn.textContent='SEND CONTRACT';
   }
-  modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');
+  showPage('fighter');history.replaceState(null,'','#fighter/'+encodeURIComponent(f.id));
 }
-function closeFighterProfile(){const modal=$('#fighterModal');modal?.classList.remove('open');modal?.setAttribute('aria-hidden','true');if(!$('#contractModal')?.classList.contains('open'))document.body.classList.remove('modal-open');}
+function closeFighterProfile(){showPage('rankings');history.replaceState(null,'','#rankings');}
 $$('[data-close-profile]').forEach(x=>x.addEventListener('click',closeFighterProfile));
 
 function openContractModal(fighterId){
@@ -367,7 +389,7 @@ function openUndercardForm(boutId){
 }
 function closeUndercardForm(){
   const modal=$('#ucsUndercardModal');modal?.classList.add('hidden');modal?.setAttribute('aria-hidden','true');
-  if(!$('#fighterModal')?.classList.contains('open')&&!$('#contractModal')?.classList.contains('open'))document.body.classList.remove('modal-open');
+  if(!$('#fighter')?.classList.contains('active')&&!$('#contractModal')?.classList.contains('open'))document.body.classList.remove('modal-open');
 }
 $$('[data-close-undercard]').forEach(el=>el.addEventListener('click',closeUndercardForm));
 $('#ucsUndercardForm')?.addEventListener('submit',async e=>{
@@ -567,16 +589,18 @@ $('#fighterContractForm')?.addEventListener('submit',async e=>{
 });
 
 async function refreshSession(){
-  if(!db){updateAdminUI();updateAccountUI();return;}
-  const {data:{session}}=await db.auth.getSession();state.user=session?.user||null;state.isAdmin=false;state.profile=null;state.myFighter=null;state.wallet=null;state.userBets=[];state.fighterContracts=[];
+  if(!db){updateAdminUI();updateAccountUI();updatePhotographerUI();return;}
+  const {data:{session}}=await db.auth.getSession();state.user=session?.user||null;state.isAdmin=false;state.profile=null;state.myFighter=null;state.wallet=null;state.userBets=[];state.fighterContracts=[];state.canPhotograph=false;
   if(state.user){
     const [{data:profile,error:profileError},{data:myFighter}]=await Promise.all([
       db.from('profiles').select('id,is_admin,display_name,region,platform,avatar_url').eq('id',state.user.id).single(),
       db.from('fighters').select('*').eq('user_id',state.user.id).maybeSingle()
     ]);
-    if(!profileError&&profile){state.profile=profile;state.isAdmin=Boolean(profile.is_admin);}state.myFighter=myFighter||null;await refreshWallet();await refreshContracts();
+    if(!profileError&&profile){state.profile=profile;state.isAdmin=Boolean(profile.is_admin);}state.myFighter=myFighter||null;
+    const {data:photoPermission}=await db.rpc('is_ucs_photographer');state.canPhotograph=Boolean(photoPermission);
+    await refreshWallet();await refreshContracts();
   } else {renderBets();renderContractCenter();}
-  updateAdminUI();updateAccountUI();
+  updateAdminUI();updateAccountUI();updatePhotographerUI();
 }
 function updateAdminUI(){
   $('#connectionStatus').textContent=configured?'Supabase connected':'Supabase not configured';
@@ -678,7 +702,7 @@ async function ucsLoadEarnings(){
   if(error)return toast('Could not load earnings: '+error.message,true);
   ucsEarningsState.records=new Map((data||[]).map(x=>[x.fighter_id,Number(x.amount)]));
   state.fighterEarnings=new Map(ucsEarningsState.records);
-  const shownProfile=$('#fighterModal')?.classList.contains('open')?state.fighters.find(f=>f.name===$('#profileName')?.textContent):null;
+  const shownProfile=$('#fighter')?.classList.contains('active')?state.fighters.find(f=>f.name===$('#profileName')?.textContent):null;
   if(shownProfile)$('#profileEarnings').textContent=ucsFormatEarnings(state.fighterEarnings.get(shownProfile.id)||0);
   ucsEarningsState.loaded=true;
   ucsRenderEarnings();
@@ -728,6 +752,31 @@ $('#fighterEarningsForm')?.addEventListener('submit',async e=>{
 });
 
 $('#recordForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);await adminUpdate('fighters',{wins:+d.get('wins'),losses:+d.get('losses'),draws:+d.get('draws'),updated_at:new Date().toISOString()},{id:d.get('fighter_id')},'Record updated.');if(state.isAdmin){await db.rpc('recalculate_ucs_rankings');await loadPublicData();}});
+function populateFighterDetailsEditor(){
+  const form=$('#fighterDetailsForm'),id=$('#fighterDetailsSelect')?.value;
+  if(!form)return;
+  const fighter=fighterById(id);
+  form.elements.fighter_bio.value=fighter?.fighter_bio||'';
+  form.elements.server_icon_url.value=fighter?.server_icon_url||'';
+  form.elements.is_underdog.value=fighter?.is_underdog?'true':'false';
+}
+$('#fighterDetailsSelect')?.addEventListener('change',populateFighterDetailsEditor);
+$('#fighterDetailsForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!db||!state.isAdmin)return toast('Admin permission required.',true);
+  const d=new FormData(e.currentTarget),id=d.get('fighter_id');
+  if(!fighterById(id))return toast('Choose a fighter.',true);
+  const iconUrl=String(d.get('server_icon_url')||'').trim();
+  if(iconUrl&&!safeHttps(iconUrl))return toast('Server icon must be HTTPS.',true);
+  const {error}=await db.from('fighters').update({
+    fighter_bio:String(d.get('fighter_bio')||'').trim(),
+    server_icon_url:iconUrl||null,
+    is_underdog:d.get('is_underdog')==='true',
+    updated_at:new Date().toISOString()
+  }).eq('id',id);
+  if(error)return toast(error.message,true);
+  await loadPublicData();toast('Fighter About page updated.');
+});
 $('#simDivisionForm')?.addEventListener('submit',async e=>{
   e.preventDefault();
   if(!db||!state.isAdmin)return toast('UCS admin permission required.',true);
@@ -813,4 +862,4 @@ if(db){
     if(document.visibilityState==='visible')refreshMatchupsFromDb();
   });
 }
-(async function init(){renderAll();updateAdminUI();await refreshSession();await loadPublicData();if(location.hash&&$(location.hash))showPage(location.hash.slice(1));})();
+(async function init(){renderAll();updateAdminUI();await refreshSession();await loadPublicData();if(location.hash.startsWith('#fighter/'))openFighterProfile(decodeURIComponent(location.hash.slice(9)));else if(location.hash&&$(location.hash))showPage(location.hash.slice(1));})();
