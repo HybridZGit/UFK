@@ -900,3 +900,14 @@ a{accent-color:#d5ad48}
 .ucs-tott-disclaimer{font-size:11px;color:#b9b4aa;line-height:1.7;margin:14px 0 0}
 @media(max-width:850px){.ucs-tott-main-grid{grid-template-columns:1fr 1fr;gap:6px;padding:16px}.ucs-tott-center{grid-column:1/-1;grid-row:2}.ucs-tott-fighter{grid-row:1}.ucs-tott-fighter:nth-child(3){grid-column:2}.ucs-tott-avatar{width:110px;height:110px}.ucs-tott-header{align-items:start;flex-direction:column}}
 @media(max-width:480px){.ucs-tott-main-grid{padding:12px 7px}.ucs-tott-fighter h3{font-size:29px}.ucs-tott-avatar{width:86px;height:86px}.ucs-tott-fighter>strong{font-size:18px}.ucs-tott-rank{font-size:9px}.ucs-tott-card-heading{padding:11px}.ucs-tott-tabs button{padding:11px}.ucs-tott-stat{padding:10px 5px}.ucs-tott-stat span{font-size:9px}}
+
+
+/* Tale of the Tape live profile scoring and scouting winner announcement */
+.ucs-tott-fighter .ucs-tott-record{display:block;font:900 25px 'Barlow Condensed',Impact,sans-serif;color:#faf6ec;letter-spacing:.025em}
+.ucs-tott-fighter-score{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;color:#cfbc94;font-size:11px;font-weight:900;letter-spacing:.09em}
+.ucs-tott-fighter-score b{font:900 23px 'Barlow Condensed',Impact,sans-serif;color:#ffda83;text-shadow:0 0 15px #dca74355}
+.ucs-tott-likely{display:flex;align-items:center;flex-direction:column;gap:10px;text-align:center;padding:23px 20px 27px;border-top:1px solid #be995d;background:radial-gradient(ellipse at center,#6c4e2344,transparent 75%),linear-gradient(120deg,#292114,#0d0e11 54%,#292114)}
+.ucs-tott-likely>span{color:#e9cd8b;letter-spacing:.14em;font-size:11px;font-weight:900}
+.ucs-tott-likely>strong{color:#ffe29b;font:900 clamp(31px,5.2vw,60px)/.98 'Barlow Condensed',Impact,sans-serif;text-shadow:0 0 25px #d6a64b69;overflow-wrap:anywhere}
+.ucs-tott-likely>p{margin:0;max-width:650px;color:#c7c1b3;line-height:1.6;font-size:12px}
+.ucs-tott-section .ucs-tott-stage>.data-empty{background:#17171b;border:1px solid #655031;border-radius:12px;color:#c7c1b5;padding:35px;text-align:center}
