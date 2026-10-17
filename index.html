@@ -75,19 +75,33 @@
         <div class="section-kicker">NEXT EVENT</div>
         <div class="section-title-row"><h2>FEATURED FIGHT CARD</h2><span class="live-dot">● LIVE EVENT</span></div>
 
-        <article class="fight-card mega-card">
-          <div class="fighter left">
-            <span>CHAMPION</span>
-            <h3 id="featuredChampion">TBA</h3>
-            <p id="featuredChampionMeta">No featured fight set</p>
+        <article class="fight-card mega-card ucs-featured-poster" id="ucsFeaturedPoster" aria-label="UCS featured fight poster">
+          <div class="ucs-featured-poster-top">
+            <span class="ucs-featured-poster-brand">UCS <small>UNDISPUTED CHAMPIONSHIP SERIES</small></span>
+            <span id="featuredFightTag" class="ucs-featured-poster-tag">MAIN EVENT</span>
           </div>
-          <div class="versus">
-            <small>UCS</small><strong>VS</strong><span>MAIN EVENT</span>
+          <div class="ucs-featured-poster-match">
+            <div class="ucs-featured-fighter left">
+              <div class="ucs-featured-portrait" id="featuredChampionImage" aria-hidden="true"><span>UCS</span></div>
+              <span class="ucs-featured-role" id="featuredChampionRole">CONTENDER</span>
+              <h3 id="featuredChampion">TBA</h3>
+              <p id="featuredChampionMeta">Fighter to be announced</p>
+            </div>
+            <div class="ucs-featured-vs">
+              <span>UCS FIGHT NIGHT</span>
+              <strong>VS</strong>
+              <small id="featuredFightType">OFFICIAL MATCHUP</small>
+            </div>
+            <div class="ucs-featured-fighter right">
+              <div class="ucs-featured-portrait" id="featuredChallengerImage" aria-hidden="true"><span>UCS</span></div>
+              <span class="ucs-featured-role" id="featuredChallengerRole">CONTENDER</span>
+              <h3 id="featuredChallenger">TBA</h3>
+              <p id="featuredChallengerMeta">Fighter to be announced</p>
+            </div>
           </div>
-          <div class="fighter right">
-            <span>CHALLENGER</span>
-            <h3 id="featuredChallenger">TBA</h3>
-            <p id="featuredChallengerMeta">Waiting for admin update</p>
+          <div class="ucs-featured-poster-bottom">
+            <span id="featuredFightEvent">UCS MAIN EVENT</span>
+            <strong id="featuredFightDate">DATE TO BE ANNOUNCED</strong>
           </div>
         </article>
 
