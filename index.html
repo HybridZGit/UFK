@@ -51,6 +51,22 @@
 
       <div class="ticker"><div class="shell ticker-inner"><strong>UCS LIVE</strong><span>Official fight cards • Rankings • Results • Champions</span><b>POWERED BY UFK FIGHT KIT</b></div></div>
 
+      <section class="shell ucs-marquee-section" aria-labelledby="ucsMarqueeHeading">
+        <div class="ucs-marquee-header">
+          <div><span class="section-kicker">RECORD-DRIVEN MATCHMAKING</span><h2 id="ucsMarqueeHeading">MARQUEE MATCHUPS</h2></div>
+          <span class="ucs-marquee-subtitle">Auto-ranked from live UCS fighter stats</span>
+        </div>
+        <div class="ucs-marquee-stage" id="ucsMarqueeStage" aria-live="off">
+          <div class="data-empty">Loading marquee matchups…</div>
+        </div>
+        <div class="ucs-marquee-controls">
+          <button type="button" id="ucsMarqueePrev" aria-label="Previous matchup">‹</button>
+          <div id="ucsMarqueeDots" class="ucs-marquee-dots" aria-label="Matchup slides"></div>
+          <button type="button" id="ucsMarqueeNext" aria-label="Next matchup">›</button>
+        </div>
+        <p class="ucs-marquee-disclaimer">Automated fantasy pairings based on league records and rankings, not officially scheduled fights.</p>
+      </section>
+
       <section class="shell section-space">
         <div class="section-kicker">NEXT EVENT</div>
         <div class="section-title-row"><h2>FEATURED FIGHT CARD</h2><span class="live-dot">● LIVE EVENT</span></div>
