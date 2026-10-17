@@ -992,3 +992,13 @@ a{accent-color:#d5ad48}
 .ucs-event-overlay-date,.ucs-event-overlay-title,.ucs-event-overlay-detail{position:relative;z-index:2}
 .ucs-event-overlay-date{position:absolute}
 .ucs-event-content{display:none!important}
+
+
+/* Poster visible behind every text element, with no separate footer */
+.ucs-event-card{position:relative;isolation:isolate}
+.ucs-event-poster{position:relative;isolation:isolate}
+.ucs-event-poster>.ucs-event-bg{z-index:-1!important}
+.ucs-event-poster::before{z-index:0!important}
+.ucs-event-overlay-date,.ucs-event-overlay-title,.ucs-event-overlay-detail{z-index:1!important}
+.ucs-delete-event{color:#ffb5b5!important;border-color:#9b4545!important}
+.ucs-delete-event:hover{background:#642a2a!important;color:#fff!important}
