@@ -66,7 +66,7 @@ async function loadPublicData(){
   renderAll();
 }
 
-function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateScheduledBoutSelect(); renderAdminRows(); updateAccountUI(); }
+function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -424,7 +424,7 @@ async function refreshSession(){
 }
 function updateAdminUI(){
   $('#connectionStatus').textContent=configured?'Supabase connected':'Supabase not configured';
-  $('#setupNotice').classList.toggle('hidden',configured&&state.isAdmin);$('#loginForm').classList.toggle('hidden',Boolean(state.user));$('#adminSession').classList.toggle('hidden',!state.user);$('#adminIdentity').textContent=state.user?`${state.user.email}${state.isAdmin?' · ADMIN':' · NOT ADMIN'}`:'';$('#adminControls').classList.toggle('hidden',!state.isAdmin);$('#adminLocked').classList.toggle('hidden',state.isAdmin);
+  $('#setupNotice').classList.toggle('hidden',configured&&state.isAdmin);$('#loginForm').classList.toggle('hidden',Boolean(state.user));$('#adminSession').classList.toggle('hidden',!state.user);$('#adminIdentity').textContent=state.user?`${state.user.email}${state.isAdmin?' · ADMIN':' · NOT ADMIN'}`:'';$('#adminControls').classList.toggle('hidden',!state.isAdmin);if(!state.isAdmin){ucsEarningsState.records=new Map();ucsEarningsState.loaded=false;ucsShowAdminTab('operations');}$('#adminLocked').classList.toggle('hidden',state.isAdmin);
   if(state.user&&!state.isAdmin)$('#adminLocked').textContent='This account is signed in but is not marked as a UCS admin in public.profiles.';else if(!configured)$('#adminLocked').textContent='Add your Supabase URL and anon/publishable key to config.js, then run supabase-schema.sql.';else $('#adminLocked').textContent='Sign in with an account marked as an admin in Supabase to unlock league controls.';
 }
 function updateAccountUI(){
@@ -495,6 +495,73 @@ $('#adminFighterAvatarForm')?.addEventListener('submit',async e=>{
     await loadPublicData();toast(`${fighter.name} picture updated.`);
   }catch(error){toast(error.message||'Could not upload fighter picture.',true);}
   finally{submit.disabled=false;submit.textContent='UPLOAD FIGHTER PICTURE';}
+});
+
+
+const ucsEarningsState={records:new Map(),loaded:false};
+function ucsShowAdminTab(tab){
+  const earnings=tab==='earnings'&&state.isAdmin;
+  $('#adminOperationsPanel')?.classList.toggle('hidden',earnings);
+  $('#adminEarningsPanel')?.classList.toggle('hidden',!earnings);
+  $('#adminEarningsPanel')?.setAttribute('aria-hidden',String(!earnings));
+  $('#adminOperationsTab')?.classList.toggle('active',!earnings);
+  $('#adminEarningsTab')?.classList.toggle('active',earnings);
+  $('#adminOperationsTab')?.setAttribute('aria-selected',String(!earnings));
+  $('#adminEarningsTab')?.setAttribute('aria-selected',String(earnings));
+  if(earnings)ucsLoadEarnings();
+}
+function ucsFormatEarnings(value){
+  return Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+async function ucsLoadEarnings(){
+  if(!db||!state.isAdmin)return;
+  const {data,error}=await db.from('fighter_earnings').select('fighter_id,amount');
+  if(error)return toast('Could not load earnings: '+error.message,true);
+  ucsEarningsState.records=new Map((data||[]).map(x=>[x.fighter_id,Number(x.amount)]));
+  ucsEarningsState.loaded=true;
+  ucsRenderEarnings();
+}
+function ucsRenderEarnings(){
+  if(!ucsEarningsState.loaded)return;
+  const tbody=$('#adminEarningsRows');
+  if(!tbody)return;
+  tbody.innerHTML=state.fighters.length?state.fighters.map(f=>{
+    const amount=ucsEarningsState.records.get(f.id)||0;
+    return `<tr><td><div class="rank-fighter-cell">${avatarHtml(f)}<strong>${esc(f.name)}</strong></div></td><td>${esc(f.wins+'-'+f.losses+'-'+f.draws)}</td><td class="ucs-earnings-value">${ucsFormatEarnings(amount)}</td><td><button type="button" class="mini-action" data-earnings-fighter="${esc(f.id)}">EDIT</button></td></tr>`;
+  }).join(''):'<tr><td colspan="4">No fighters on roster yet.</td></tr>';
+  const selected=$('#earningsFighterSelect')?.value;
+  if(selected)ucsPopulateEarningsInput(selected);
+}
+function ucsPopulateEarningsInput(fighterId){
+  const f=fighterById(fighterId);
+  if(!f)return;
+  $('#earningsFighterSelect').value=f.id;
+  $('#earningsAmount').value=String(ucsEarningsState.records.get(f.id)||0);
+}
+$('#adminOperationsTab')?.addEventListener('click',()=>ucsShowAdminTab('operations'));
+$('#adminEarningsTab')?.addEventListener('click',()=>ucsShowAdminTab('earnings'));
+$('#earningsFighterSelect')?.addEventListener('change',e=>ucsPopulateEarningsInput(e.target.value));
+$('#adminEarningsRows')?.addEventListener('click',e=>{
+  const button=e.target.closest('[data-earnings-fighter]');
+  if(!button)return;
+  ucsPopulateEarningsInput(button.dataset.earningsFighter);
+  $('#fighterEarningsForm')?.scrollIntoView({block:'nearest',behavior:'smooth'});
+});
+$('#fighterEarningsForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!db||!state.isAdmin)return toast('Admin permission required.',true);
+  const form=e.currentTarget,d=new FormData(form),fighter_id=d.get('fighter_id');
+  const amount=Number(d.get('amount'));
+  if(!fighterById(fighter_id))return toast('Choose a valid fighter.',true);
+  if(!Number.isFinite(amount)||amount<0||!Number.isInteger(amount*100))return toast('Enter a valid non-negative amount with at most 2 decimals.',true);
+  const submit=$('#saveFighterEarnings');submit.disabled=true;
+  try{
+    const {error}=await db.from('fighter_earnings').upsert({fighter_id,amount,updated_at:new Date().toISOString()},{onConflict:'fighter_id'});
+    if(error)throw error;
+    await ucsLoadEarnings();
+    toast('Fighter earnings saved.');
+  }catch(error){toast(error.message||'Could not save earnings.',true);}
+  finally{submit.disabled=false;}
 });
 
 $('#recordForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);await adminUpdate('fighters',{wins:+d.get('wins'),losses:+d.get('losses'),draws:+d.get('draws'),updated_at:new Date().toISOString()},{id:d.get('fighter_id')},'Record updated.');if(state.isAdmin){await db.rpc('recalculate_ucs_rankings');await loadPublicData();}});
