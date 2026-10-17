@@ -139,7 +139,7 @@ $('#ucsMyPhotoList')?.addEventListener('click',async e=>{
   await loadPublicData();toast('Photo visibility updated.');
 });
 
-function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNews(); renderPhotoGallery(); updateAccountUI(); }
+function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -486,22 +486,39 @@ function ucsNewsDate(item){
   const stamp=item.published_at||item.created_at;
   return stamp?new Date(stamp).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}):'UCS NEWS';
 }
+function renderTopEarners(){
+  const container=$('#ucsTopEarners');if(!container)return;
+  const entries=state.fighters.map(f=>({fighter:f,earnings:Number(state.fighterEarnings.get(f.id)||0)}))
+    .filter(item=>Number.isFinite(item.earnings)&&item.earnings>=0)
+    .sort((a,b)=>b.earnings-a.earnings||Number(b.fighter.score||0)-Number(a.fighter.score||0)||String(a.fighter.name||'').localeCompare(String(b.fighter.name||'')))
+    .slice(0,10);
+  if(!entries.length){container.innerHTML=empty('No fighter earnings recorded yet.');return;}
+  const hasEarnings=entries.some(item=>item.earnings>0);
+  if(!hasEarnings){container.innerHTML=empty('Earnings leaderboard will appear after an admin records fighter earnings.');return;}
+  container.innerHTML=entries.map(({fighter,earnings},i)=>`
+    <div class="ucs-earner-row">
+      <span class="ucs-earner-rank">${String(i+1).padStart(2,'0')}</span>
+      ${avatarHtml(fighter,'ucs-earner-avatar')}
+      <div class="ucs-earner-identity"><strong>${esc(fighter.name)}</strong><small>${esc(record(fighter))} · ${esc(fighter.platform||'UCS')}</small></div>
+      <strong class="ucs-earner-value">${ucsFormatEarnings(earnings)}</strong>
+    </div>`).join('');
+}
 function renderNews(){
   const grid=$('#ucsNewsGrid');if(!grid)return;
   const published=state.news.filter(x=>x.is_published);
   grid.innerHTML=published.length?published.map(item=>`
-    <button type="button" class="ucs-news-card" data-news-open="${esc(item.id)}">
+    <button type="button" class="ucs-news-card${item.is_auto_report?' ucs-auto-report':''}" data-news-open="${esc(item.id)}">
       <span class="ucs-news-image">${safeHttps(item.image_url)?`<img src="${esc(item.image_url)}" loading="lazy" alt="">`:'<span class="ucs-news-placeholder">UCS NEWS</span>'}</span>
-      <span class="ucs-news-card-copy"><small>${esc(ucsNewsDate(item))}</small><strong>${esc(item.headline)}</strong><span>${esc(item.summary||item.body.slice(0,150))}</span><b>READ ARTICLE →</b></span>
+      <span class="ucs-news-card-copy"><small>${item.is_auto_report?'🥊 OFFICIAL FIGHT RESULT · ':''}${esc(ucsNewsDate(item))}</small><strong>${esc(item.headline)}</strong><span>${esc(item.summary||item.body.slice(0,150))}</span><b>READ ARTICLE →</b></span>
     </button>`).join(''):empty('No UCS articles have been published yet.');
   const adminList=$('#ucsAdminNewsList');
-  if(adminList)adminList.innerHTML=state.news.length?state.news.map(item=>`<div class="ucs-news-admin-item"><div><strong>${esc(item.headline)}</strong><small>${item.is_published?'Published':'Draft'} · ${esc(ucsNewsDate(item))}</small></div><div><button type="button" class="mini-action" data-news-edit="${esc(item.id)}">EDIT</button><button type="button" class="mini-action danger" data-news-delete="${esc(item.id)}">DELETE</button></div></div>`).join(''):empty('No articles yet.');
+  if(adminList)adminList.innerHTML=state.news.length?state.news.map(item=>`<div class="ucs-news-admin-item"><div><strong>${esc(item.headline)}</strong><small>${item.is_auto_report?'AUTOMATED RESULT · ':''}${item.is_published?'Published':'Draft'} · ${esc(ucsNewsDate(item))}</small></div><div><button type="button" class="mini-action" data-news-edit="${esc(item.id)}">EDIT</button><button type="button" class="mini-action danger" data-news-delete="${esc(item.id)}">DELETE</button></div></div>`).join(''):empty('No articles yet.');
 }
 $('#ucsNewsGrid')?.addEventListener('click',e=>{
   const btn=e.target.closest('[data-news-open]');if(!btn)return;
   const item=state.news.find(x=>x.id===btn.dataset.newsOpen&&x.is_published);if(!item)return;
   const reader=$('#ucsNewsReader');
-  reader.innerHTML=`<button type="button" class="btn ghost" id="ucsNewsBack">← ALL NEWS</button><small>${esc(ucsNewsDate(item))} · UCS NEWS</small><h2>${esc(item.headline)}</h2>${safeHttps(item.image_url)?`<img class="ucs-news-feature-image" src="${esc(item.image_url)}" alt="">`:''}<p class="ucs-news-summary">${esc(item.summary||'')}</p><div class="ucs-news-body">${esc(item.body)}</div>`;
+  reader.innerHTML=`<button type="button" class="btn ghost" id="ucsNewsBack">← ALL NEWS</button><small>${esc(ucsNewsDate(item))} · ${item.is_auto_report?'OFFICIAL FIGHT RESULT':'UCS NEWS'}</small><h2>${esc(item.headline)}</h2>${safeHttps(item.image_url)?`<img class="ucs-news-feature-image" src="${esc(item.image_url)}" alt="">`:''}<p class="ucs-news-summary">${esc(item.summary||'')}</p><div class="ucs-news-body">${esc(item.body)}</div>`;
   reader.classList.remove('hidden');$('#ucsNewsGrid').classList.add('hidden');
   $('#ucsNewsBack').addEventListener('click',()=>{reader.classList.add('hidden');$('#ucsNewsGrid').classList.remove('hidden');});
   reader.scrollIntoView({behavior:'smooth',block:'start'});
@@ -967,6 +984,8 @@ if(db){
   db.channel('ucs-marquee-live-records')
     .on('postgres_changes',{event:'*',schema:'public',table:'fighters'},refreshMatchupsFromDb)
     .on('postgres_changes',{event:'*',schema:'public',table:'results'},refreshMatchupsFromDb)
+    .on('postgres_changes',{event:'*',schema:'public',table:'fighter_earnings'},refreshMatchupsFromDb)
+    .on('postgres_changes',{event:'*',schema:'public',table:'ucs_news'},refreshMatchupsFromDb)
     .on('postgres_changes',{event:'*',schema:'public',table:'scheduled_bouts'},refreshMatchupsFromDb)
     .subscribe();
   document.addEventListener('visibilitychange',()=>{
