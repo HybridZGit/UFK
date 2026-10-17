@@ -267,7 +267,7 @@ function renderHome(){
 }
 
 function renderRanks(filter=''){
-  const platform=(state.rankingDivision==='UCS World'||state.rankingDivision==='UCS SIM World')?null:state.rankingDivision.replace('UCS ','');
+  const platform=(state.rankingDivision==='UCS World'||state.rankingDivision==='UCS International'||state.rankingDivision==='UCS SIM World')?null:state.rankingDivision.replace('UCS ','');
   const rows=state.fighters.filter(f=>f.name.toLowerCase().includes(filter.toLowerCase())&&(state.rankingDivision!=='UCS SIM World'||f.sim_division===true)&&(!platform||(f.platform||'').toUpperCase()===platform));
   $('#rankRows').innerHTML=rows.length?rows.map((f,i)=>`<tr class="fighter-rank-row" data-fighter-profile="${f.id}" tabindex="0"><td><span class="rank-number">${i+1}</span></td><td class="rank-name"><div class="rank-fighter-cell">${avatarHtml(f)}<div><strong>${esc(f.name)}</strong><span>${esc(record(f))} · ${esc(f.platform||'UNASSIGNED')}</span></div></div></td><td>${chip(f.resume)}</td><td>${chip(f.momentum)}</td><td>${chip(f.finishing)}</td><td>${chip(f.activity)}</td><td>${chip(f.big_fight)}</td><td class="overall">${Number(f.score||0).toFixed(1)}</td></tr>`).join(''):`<tr><td colspan="8">${empty(`No ${state.rankingDivision} fighters in the database yet.`)}</td></tr>`;
   renderRankingChampion();
@@ -338,7 +338,7 @@ function openFighterProfile(id){
     $('#profileChampionBelts').textContent='';
   }
   $('#profileFights').textContent=String((f.wins||0)+(f.losses||0)+(f.draws||0));
-  $('#profileEarnings').textContent=Number(state.fighterEarnings.get(f.id)||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  $('#profileEarnings').textContent=ucsFormatEarnings(state.fighterEarnings.get(f.id)||0);
   $('#profileAvatar').innerHTML=f.avatar_url?`<img src="${esc(f.avatar_url)}" alt="${esc(f.name)}">`:`<span>${esc(initials(f.name))}</span>`;
   const metrics=[['Resume',f.resume],['Momentum',f.momentum],['Finishing',f.finishing],['Activity',f.activity],['Big fight',f.big_fight]];
   $('#profileRatingBars').innerHTML=metrics.map(([label,val])=>`<div class="profile-meter"><div><span>${label}</span><b>${Number(val||0).toFixed(1)}</b></div><i><em style="width:${Math.max(0,Math.min(100,Number(val||0)*10))}%"></em></i></div>`).join('');
@@ -889,7 +889,181 @@ function ucsShowAdminTab(tab){
   if(news)renderNews();
 }
 function ucsFormatEarnings(value){
-  return Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  return '
+}
+async function ucsLoadEarnings(){
+  if(!db||!state.isAdmin)return;
+  const {data,error}=await db.from('fighter_earnings').select('fighter_id,amount');
+  if(error)return toast('Could not load earnings: '+error.message,true);
+  ucsEarningsState.records=new Map((data||[]).map(x=>[x.fighter_id,Number(x.amount)]));
+  state.fighterEarnings=new Map(ucsEarningsState.records);
+  const shownProfile=$('#fighterModal')?.classList.contains('open')?state.fighters.find(f=>f.name===$('#profileName')?.textContent):null;
+  if(shownProfile)$('#profileEarnings').textContent=ucsFormatEarnings(state.fighterEarnings.get(shownProfile.id)||0);
+  ucsEarningsState.loaded=true;
+  ucsRenderEarnings();
+}
+function ucsRenderEarnings(){
+  if(!ucsEarningsState.loaded)return;
+  const tbody=$('#adminEarningsRows');
+  if(!tbody)return;
+  tbody.innerHTML=state.fighters.length?state.fighters.map(f=>{
+    const amount=ucsEarningsState.records.get(f.id)||0;
+    return `<tr><td><div class="rank-fighter-cell">${avatarHtml(f)}<strong>${esc(f.name)}</strong></div></td><td>${esc(f.wins+'-'+f.losses+'-'+f.draws)}</td><td class="ucs-earnings-value">${ucsFormatEarnings(amount)}</td><td><button type="button" class="mini-action" data-earnings-fighter="${esc(f.id)}">EDIT</button></td></tr>`;
+  }).join(''):'<tr><td colspan="4">No fighters on roster yet.</td></tr>';
+  const selected=$('#earningsFighterSelect')?.value;
+  if(selected)ucsPopulateEarningsInput(selected);
+}
+function ucsPopulateEarningsInput(fighterId){
+  const f=fighterById(fighterId);
+  if(!f)return;
+  $('#earningsFighterSelect').value=f.id;
+  $('#earningsAmount').value=String(ucsEarningsState.records.get(f.id)||0);
+}
+$('#adminOperationsTab')?.addEventListener('click',()=>ucsShowAdminTab('operations'));
+$('#adminEarningsTab')?.addEventListener('click',()=>ucsShowAdminTab('earnings'));
+$('#adminNewsTab')?.addEventListener('click',()=>ucsShowAdminTab('news'));
+$('#earningsFighterSelect')?.addEventListener('change',e=>ucsPopulateEarningsInput(e.target.value));
+$('#adminEarningsRows')?.addEventListener('click',e=>{
+  const button=e.target.closest('[data-earnings-fighter]');
+  if(!button)return;
+  ucsPopulateEarningsInput(button.dataset.earningsFighter);
+  $('#fighterEarningsForm')?.scrollIntoView({block:'nearest',behavior:'smooth'});
+});
+$('#fighterEarningsForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!db||!state.isAdmin)return toast('Admin permission required.',true);
+  const form=e.currentTarget,d=new FormData(form),fighter_id=d.get('fighter_id');
+  const amount=Number(d.get('amount'));
+  if(!fighterById(fighter_id))return toast('Choose a valid fighter.',true);
+  if(!Number.isFinite(amount)||amount<0||!Number.isInteger(amount*100))return toast('Enter a valid non-negative amount with at most 2 decimals.',true);
+  const submit=$('#saveFighterEarnings');submit.disabled=true;
+  try{
+    const {error}=await db.from('fighter_earnings').upsert({fighter_id,amount,updated_at:new Date().toISOString()},{onConflict:'fighter_id'});
+    if(error)throw error;
+    await ucsLoadEarnings();
+    toast('Fighter earnings saved.');
+  }catch(error){toast(error.message||'Could not save earnings.',true);}
+  finally{submit.disabled=false;}
+});
+
+$('#recordForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);await adminUpdate('fighters',{wins:+d.get('wins'),losses:+d.get('losses'),draws:+d.get('draws'),updated_at:new Date().toISOString()},{id:d.get('fighter_id')},'Record updated.');if(state.isAdmin){await db.rpc('recalculate_ucs_rankings');await loadPublicData();}});
+function populateFighterDetailsEditor(){
+  const form=$('#fighterDetailsForm'),id=$('#fighterDetailsSelect')?.value;
+  if(!form)return;
+  const fighter=fighterById(id);
+  form.elements.fighter_bio.value=fighter?.fighter_bio||'';
+  form.elements.server_icon_url.value=fighter?.server_icon_url||'';
+  form.elements.is_underdog.value=fighter?.is_underdog?'true':'false';
+}
+$('#fighterDetailsSelect')?.addEventListener('change',populateFighterDetailsEditor);
+$('#fighterDetailsForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!db||!state.isAdmin)return toast('Admin permission required.',true);
+  const d=new FormData(e.currentTarget),id=d.get('fighter_id');
+  if(!fighterById(id))return toast('Choose a fighter.',true);
+  const iconUrl=String(d.get('server_icon_url')||'').trim();
+  if(iconUrl&&!safeHttps(iconUrl))return toast('Server icon must be HTTPS.',true);
+  const {error}=await db.from('fighters').update({
+    fighter_bio:String(d.get('fighter_bio')||'').trim(),
+    server_icon_url:iconUrl||null,
+    is_underdog:d.get('is_underdog')==='true',
+    updated_at:new Date().toISOString()
+  }).eq('id',id);
+  if(error)return toast(error.message,true);
+  await loadPublicData();toast('Fighter About page updated.');
+});
+$('#simDivisionForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!db||!state.isAdmin)return toast('UCS admin permission required.',true);
+  const d=new FormData(e.currentTarget);
+  const fighter_id=d.get('fighter_id');
+  const sim_division=d.get('sim_division')==='true';
+  const {error}=await db.from('fighters').update({sim_division,updated_at:new Date().toISOString()}).eq('id',fighter_id);
+  if(error)return toast(error.message,true);
+  await loadPublicData();
+  toast(sim_division?'Fighter added to UCS SIM World.':'Fighter removed from UCS SIM World.');
+});
+$('#championForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);if(!state.isAdmin)return;const payload={division:d.get('division'),fighter_id:d.get('fighter_id'),defenses:+d.get('defenses')||0,granted_at:new Date().toISOString()};const {error}=await db.from('champions').upsert(payload,{onConflict:'division'});if(error)return toast(error.message,true);await db.rpc('recalculate_ucs_rankings');toast(`${d.get('division')} champion granted.`);await loadPublicData();});
+$('#vacateTitleBtn')?.addEventListener('click',async()=>{const f=$('#championForm'),division=new FormData(f).get('division');if(!state.isAdmin)return;const {error}=await db.from('champions').upsert({division,fighter_id:null,defenses:0,granted_at:new Date().toISOString()},{onConflict:'division'});if(error)return toast(error.message,true);await db.rpc('recalculate_ucs_rankings');toast(`${division} title vacated.`);await loadPublicData();});
+$('#resultForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);if(d.get('winner_id')===d.get('loser_id'))return toast('Winner and loser must be different.',true);if(!state.isAdmin)return toast('Admin permission required.',true);const {error}=await db.rpc('publish_ucs_result',{p_winner_id:d.get('winner_id'),p_loser_id:d.get('loser_id'),p_method:d.get('method'),p_event_date:d.get('event_date')});if(error)return toast(error.message,true);toast('Result published, records and rankings updated.');await loadPublicData();});
+$('#scheduleBoutForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db||!state.isAdmin)return toast('UCS admin required.',true);
+  const d=new FormData(e.currentTarget),a=d.get('fighter_a_id'),b=d.get('fighter_b_id');
+  if(a===b)return toast('Select two different fighters.',true);
+  const url=(d.get('contribution_url')||'').trim();
+  if(url&&!safeHttps(url))return toast('Use a valid HTTPS contribution link.',true);
+  const payload={fighter_a_id:a,fighter_b_id:b,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,contribution_url:url||null,is_co_main:d.get('is_co_main')==='true'};
+  const {error}=await db.from('scheduled_bouts').insert(payload);
+  if(error)return toast(error.message,true);
+  e.currentTarget.reset();await loadPublicData();toast('Bout scheduled. Fight records unchanged.');
+});
+$('#editScheduledBoutForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db||!state.isAdmin)return toast('UCS admin required.',true);
+  const form=e.currentTarget,d=new FormData(form),boutId=d.get('bout_id');
+  const original=state.scheduledBouts.find(x=>x.id===boutId);
+  if(!original)return toast('Select a scheduled bout.',true);
+  const posterFile=d.get('poster_file'),contribution=(d.get('contribution_url')||'').trim();
+  let posterUrl=(d.get('poster_url')||'').trim();
+  if(contribution&&!safeHttps(contribution))return toast('Use a valid HTTPS contribution link.',true);
+  if(posterUrl&&!safeHttps(posterUrl))return toast('Use an HTTPS poster image URL.',true);
+  const button=form.querySelector('[type="submit"]');button.disabled=true;
+  try{
+    if(posterFile instanceof File&&posterFile.size){
+      const types={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'},ext=types[posterFile.type];
+      if(!ext)throw Error('Poster must be PNG, JPG, or WebP.');
+      if(posterFile.size>5*1024*1024)throw Error('Poster must be under 5 MB.');
+      const path=`bout-posters/${boutId}/${crypto.randomUUID()}.${ext}`;
+      const {error:uploadError}=await db.storage.from('fighter-avatars').upload(path,posterFile,{contentType:posterFile.type,upsert:false});
+      if(uploadError)throw uploadError;
+      posterUrl=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
+    }
+    const payload={event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,poster_url:posterUrl||null,contribution_url:contribution||null,is_co_main:d.get('is_co_main')==='true',updated_at:new Date().toISOString()};
+    const {error}=await db.from('scheduled_bouts').update(payload).eq('id',boutId);
+    if(error)throw error;
+    await loadPublicData();toast('Scheduled bout updated. No result recorded.');
+  }catch(error){toast(error.message||'Could not save bout.',true);}finally{button.disabled=false;}
+});
+$('#cancelScheduledBout')?.addEventListener('click',async()=>{
+  if(!db||!state.isAdmin)return toast('UCS admin required.',true);
+  const id=$('#scheduledBoutSelect').value;if(!id)return;
+  if(!confirm('Cancel this scheduled bout? Fight records will not change.'))return;
+  const {error}=await db.from('scheduled_bouts').update({status:'cancelled',updated_at:new Date().toISOString()}).eq('id',id);
+  if(error)return toast(error.message,true);await loadPublicData();toast('Scheduled bout cancelled.');
+});
+$('#eventForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);await adminInsert('events',{name:d.get('name').trim(),event_date:d.get('event_date'),details:d.get('details').trim()||null,status:d.get('status')},'Event created.');});
+$('#contractForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);await adminInsert('contract_activity',{fighter_id:d.get('fighter_id'),action:d.get('action')},'Contract activity posted.');});
+$('#betForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);if(d.get('fighter_a_id')===d.get('fighter_b_id'))return toast('Choose two different fighters.',true);await adminInsert('betting_markets',{fighter_a_id:d.get('fighter_a_id'),fighter_b_id:d.get('fighter_b_id'),odds_a:d.get('odds_a'),odds_b:d.get('odds_b'),is_open:true},'Betting market opened.');});
+$('#featureForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);if(d.get('champion_id')===d.get('challenger_id'))return toast('Choose two different fighters.',true);if(!state.isAdmin)return;const {error}=await db.from('league_settings').upsert({key:'featured_main_event',value:{champion_id:d.get('champion_id'),challenger_id:d.get('challenger_id'),event_label:d.get('event_label')},updated_at:new Date().toISOString()},{onConflict:'key'});if(error)return toast(error.message,true);toast('Featured fight updated.');await loadPublicData();});
+
+function renderAdminRows(){if(!$('#adminFighterRows'))return;$('#adminFighterRows').innerHTML=state.fighters.length?state.fighters.map(f=>{const titles=state.champions.filter(c=>c.fighter_id===f.id).map(c=>c.division).join(', ')||'—';return `<tr><td><div class="rank-fighter-cell">${avatarHtml(f)}<strong>${esc(f.name)}</strong></div></td><td>${esc(record(f))}</td><td>${esc(f.region||'—')} · ${esc(f.platform||'—')}</td><td>${esc(titles)}</td><td><button class="mini-action" data-load-record="${f.id}">Edit record</button><button class="mini-action danger" data-delete-fighter="${f.id}">Delete</button></td></tr>`;}).join(''):`<tr><td colspan="5">${empty('No fighters yet.')}</td></tr>`;}
+$('#adminFighterRows')?.addEventListener('click',async e=>{const edit=e.target.closest('[data-load-record]'),del=e.target.closest('[data-delete-fighter]');if(edit){const f=fighterById(edit.dataset.loadRecord),form=$('#recordForm');form.elements.fighter_id.value=f.id;form.elements.wins.value=f.wins;form.elements.losses.value=f.losses;form.elements.draws.value=f.draws;form.scrollIntoView({behavior:'smooth',block:'center'});}if(del){const f=fighterById(del.dataset.deleteFighter);if(!confirm(`Delete ${f?.name||'this fighter'}? Related rows may also be affected.`))return;const {error}=await db.from('fighters').delete().eq('id',del.dataset.deleteFighter);if(error)return toast(error.message,true);toast('Fighter deleted.');await loadPublicData();}});
+$('#clearLeagueData')?.addEventListener('click',async()=>{if(!state.isAdmin)return;if(prompt('Type DELETE UCS DATA to clear the entire league database.')!=='DELETE UCS DATA')return toast('Clear cancelled.',true);for(const table of ['league_settings','betting_markets','contract_activity','results','champions','events','fighters']){const {error}=await db.from(table).delete().neq('created_at','1900-01-01T00:00:00Z');if(error&&table!=='champions'&&table!=='league_settings')return toast(`${table}: ${error.message}`,true);if(error&&(table==='champions'||table==='league_settings')){const key=table==='champions'?'division':'key';const {error:retry}=await db.from(table).delete().neq(key,'__never__');if(retry)return toast(`${table}: ${retry.message}`,true);}}toast('League data cleared.');await loadPublicData();});
+
+if(db)db.auth.onAuthStateChange(()=>setTimeout(refreshSession,0));
+// Supabase change events refresh the recommendations after the official record is saved.
+let marqueeRefreshPending=false;
+async function refreshMatchupsFromDb(){
+  if(marqueeRefreshPending)return;
+  marqueeRefreshPending=true;
+  try{await loadPublicData();}finally{marqueeRefreshPending=false;}
+}
+if(db){
+  db.channel('ucs-marquee-live-records')
+    .on('postgres_changes',{event:'*',schema:'public',table:'fighters'},refreshMatchupsFromDb)
+    .on('postgres_changes',{event:'*',schema:'public',table:'results'},refreshMatchupsFromDb)
+    .on('postgres_changes',{event:'*',schema:'public',table:'fighter_earnings'},refreshMatchupsFromDb)
+    .on('postgres_changes',{event:'*',schema:'public',table:'ucs_news'},refreshMatchupsFromDb)
+    .on('postgres_changes',{event:'*',schema:'public',table:'scheduled_bouts'},refreshMatchupsFromDb)
+    .on('postgres_changes',{event:'*',schema:'public',table:'league_settings'},refreshMatchupsFromDb)
+    .on('postgres_changes',{event:'*',schema:'public',table:'champions'},refreshMatchupsFromDb)
+    .on('postgres_changes',{event:'*',schema:'public',table:'ucs_former_championships'},refreshMatchupsFromDb)
+    .subscribe();
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible')refreshMatchupsFromDb();
+  });
+}
+(async function init(){renderAll();updateAdminUI();await refreshSession();await loadPublicData();if(location.hash.startsWith('#fighter/')){showPage('rankings');openFighterProfile(decodeURIComponent(location.hash.slice(9)));}else if(location.hash&&$(location.hash))showPage(location.hash.slice(1));})();
++Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 async function ucsLoadEarnings(){
   if(!db||!state.isAdmin)return;
