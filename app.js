@@ -109,6 +109,11 @@ function fighterById(id){ return state.fighters.find(f=>f.id===id); }
 function empty(msg){ return `<div class="data-empty">${esc(msg)}</div>`; }
 function chip(v){ const n=Number(v||0); return `<span class="score-chip ${n<8?'mid':''}">${n.toFixed(1)}</span>`; }
 function initials(name='UCS'){ return name.trim().split(/\s+/).map(x=>x[0]||'').join('').slice(0,2).toUpperCase() || 'UCS'; }
+function ucsFighterFlag(region){
+  const key=String(region||'').trim().toUpperCase();
+  const flags={'UK':'🇬🇧','GB':'🇬🇧','UNITED KINGDOM':'🇬🇧','USA':'🇺🇸','US':'🇺🇸','UNITED STATES':'🇺🇸','CANADA':'🇨🇦','IRELAND':'🇮🇪','AUSTRALIA':'🇦🇺','FRANCE':'🇫🇷','GERMANY':'🇩🇪','SPAIN':'🇪🇸','ITALY':'🇮🇹','NETHERLANDS':'🇳🇱','BRAZIL':'🇧🇷','MEXICO':'🇲🇽','JAPAN':'🇯🇵','PHILIPPINES':'🇵🇭','NEW ZEALAND':'🇳🇿','NIGERIA':'🇳🇬'};
+  return flags[key]||'';
+}
 function avatarHtml(f,size='rank-avatar'){
   return f?.avatar_url ? `<img class="${size}" src="${esc(f.avatar_url)}" alt="${esc(f.name)} profile picture" loading="lazy">` : `<div class="${size} avatar-fallback">${esc(initials(f?.name))}</div>`;
 }
@@ -480,7 +485,7 @@ function renderHome(){
 function renderRanks(filter=''){
   const platform=(state.rankingDivision==='UCS World'||state.rankingDivision==='UCS International'||state.rankingDivision==='UCS SIM World')?null:state.rankingDivision.replace('UCS ','');
   const rows=state.fighters.filter(f=>f.name.toLowerCase().includes(filter.toLowerCase())&&(state.rankingDivision!=='UCS SIM World'||f.sim_division===true)&&(!platform||(f.platform||'').toUpperCase()===platform));
-  $('#rankRows').innerHTML=rows.length?rows.map((f,i)=>`<tr class="fighter-rank-row" data-fighter-profile="${f.id}" tabindex="0"><td><span class="rank-number">${i+1}</span></td><td class="rank-name"><div class="rank-fighter-cell">${avatarHtml(f)}<div><strong>${esc(f.name)}</strong><span>${esc(record(f))} · ${esc(f.platform||'UNASSIGNED')}</span></div></div></td><td>${chip(f.resume)}</td><td>${chip(f.momentum)}</td><td>${chip(f.finishing)}</td><td>${chip(f.activity)}</td><td>${chip(f.big_fight)}</td><td class="overall">${Number(f.score||0).toFixed(1)}</td></tr>`).join(''):`<tr><td colspan="8">${empty(`No ${state.rankingDivision} fighters in the database yet.`)}</td></tr>`;
+  $('#rankRows').innerHTML=rows.length?rows.map((f,i)=>`<tr class="fighter-rank-row" data-fighter-profile="${f.id}" tabindex="0"><td><span class="rank-number">${i+1}</span></td><td class="rank-name"><div class="rank-fighter-cell">${avatarHtml(f)}<div><strong>${ucsFighterFlag(f.region)?'<span class="ucs-rank-flag" title="'+esc(f.region)+'">'+ucsFighterFlag(f.region)+'</span> ':''}${esc(f.name)}</strong><span>${esc(record(f))} · ${esc(f.platform||'UNASSIGNED')}</span></div></div></td><td>${chip(f.resume)}</td><td>${chip(f.momentum)}</td><td>${chip(f.finishing)}</td><td>${chip(f.activity)}</td><td>${chip(f.big_fight)}</td><td class="overall">${Number(f.score||0).toFixed(1)}</td></tr>`).join(''):`<tr><td colspan="8">${empty(`No ${state.rankingDivision} fighters in the database yet.`)}</td></tr>`;
   renderRankingChampion();
 }
 function renderRankingTitleFights(){
