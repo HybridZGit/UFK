@@ -124,7 +124,32 @@ function fighterForm(f){
 }
 
 async function loadPublicData(){
-  if(!db){renderAll();return;}
+  if(!db){
+    // The Supabase client is loaded from a CDN. Keep public rankings alive
+    // even if that CDN is blocked, using the public REST API and anon key.
+    const base=window.UFK_SUPABASE_URL,key=window.UFK_SUPABASE_ANON_KEY;
+    if(base&&key&&typeof fetch==='function'){
+      const headers={apikey:key,Authorization:'Bearer '+key};
+      const read=async(table,params='select=*')=>{
+        const response=await fetch(base+'/rest/v1/'+table+'?'+params,{headers});
+        if(!response.ok)throw Error('UCS '+table+' HTTP '+response.status);
+        return response.json();
+      };
+      const data=await Promise.allSettled([
+        read('fighters','select=*&active=eq.true&order=score.desc'),
+        read('champions'),
+        read('events','select=*&order=event_date.asc'),
+        read('scheduled_bouts','select=*&status=eq.scheduled&order=bout_date.asc'),
+        read('league_settings')
+      ]);
+      const set=(idx,field)=>{if(data[idx].status==='fulfilled'&&Array.isArray(data[idx].value))state[field]=data[idx].value;};
+      set(0,'fighters');set(1,'champions');set(2,'events');set(3,'scheduledBouts');
+      if(data[4].status==='fulfilled')state.settings=Object.fromEntries(data[4].value.map(x=>[x.key,x.value]));
+      data.filter(x=>x.status==='rejected').forEach(x=>console.error('UCS public REST:',x.reason));
+    }
+    renderAll();
+    return;
+  }
   // Fighters load separately and render immediately, never waiting for optional data.
   try{
     const fighterRequest=db.from('fighters').select('*').eq('active',true).order('score',{ascending:false});
