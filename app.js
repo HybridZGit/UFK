@@ -68,6 +68,94 @@ async function loadPublicData(){
 
 function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateScheduledBoutSelect(); renderAdminRows(); updateAccountUI(); }
 
+// Client-side matchup recommender: compares official records and ranking scores.
+// Suggestions are not bookings, predictions, or real fight results.
+let marqueeMatchups=[];
+let marqueeIndex=0;
+let marqueeSignature='';
+function marqueeRecord(f){return `${Number(f.wins||0)}-${Number(f.losses||0)}-${Number(f.draws||0)}`;}
+function marqueePlatformCompatible(a,b){
+  const platforms=f=>String(f.platform||'').toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean);
+  const aPlatforms=platforms(a),bPlatforms=platforms(b);
+  return !aPlatforms.length||!bPlatforms.length||aPlatforms.some(p=>bPlatforms.includes(p));
+}
+function marqueeCandidates(){
+  const undefeated=state.fighters.filter(f=>f.active!==false&&Number(f.losses||0)===0);
+  const booked=new Set(state.scheduledBouts.map(b=>[b.fighter_a_id,b.fighter_b_id].sort().join(':')));
+  const pairs=[];
+  for(let i=0;i<undefeated.length;i++)for(let j=i+1;j<undefeated.length;j++){
+    const a=undefeated[i],b=undefeated[j];
+    if(booked.has([a.id,b.id].sort().join(':')))continue;
+    const samePlatform=marqueePlatformCompatible(a,b);
+    if(!samePlatform)continue;
+    const totalWins=Number(a.wins||0)+Number(b.wins||0);
+    const points=(Number(a.score||0)+Number(b.score||0));
+    const bothHaveWins=Number(a.wins||0)>0&&Number(b.wins||0)>0;
+    const ratingGap=Math.abs(Number(a.score||0)-Number(b.score||0));
+    const winGap=Math.abs(Number(a.wins||0)-Number(b.wins||0));
+    // Proven undefeated fighters rise above 0-0 prospects, close records and rankings break ties.
+    const value=(bothHaveWins?10000:0)+totalWins*400+points*12-ratingGap*3-winGap*35;
+    pairs.push({a,b,value,totalWins,bothHaveWins,key:[a.id,b.id].sort().join(':')});
+  }
+  pairs.sort((x,y)=>y.value-x.value||x.key.localeCompare(y.key));
+  // Avoid showing the same fighter repeatedly in the carousel.
+  const used=new Set(),selected=[];
+  for(const pair of pairs){
+    if(used.has(pair.a.id)||used.has(pair.b.id))continue;
+    selected.push(pair);used.add(pair.a.id);used.add(pair.b.id);
+    if(selected.length===5)break;
+  }
+  return selected;
+}
+function renderMarquee(){
+  const stage=$('#ucsMarqueeStage'),dots=$('#ucsMarqueeDots');
+  if(!stage||!dots)return;
+  const next=marqueeCandidates();
+  const signature=next.map(p=>[p.key,marqueeRecord(p.a),marqueeRecord(p.b),p.a.score,p.b.score,p.a.avatar_url,p.b.avatar_url].join('|')).join(';');
+  if(signature!==marqueeSignature){marqueeIndex=0;marqueeSignature=signature;}
+  marqueeMatchups=next;
+  if(!next.length){
+    stage.innerHTML=empty('No eligible undefeated pairings yet. New options will appear as records are updated.');
+    dots.innerHTML='';
+    $('#ucsMarqueePrev').disabled=true;$('#ucsMarqueeNext').disabled=true;
+    return;
+  }
+  marqueeIndex=(marqueeIndex+next.length)%next.length;
+  const pair=next[marqueeIndex],label=pair.bothHaveWins?'UNDEFEATED CONTENDERS':'UNDEFEATED PROSPECTS';
+  const side=(f,sideName)=>`<div class="ucs-marquee-fighter">
+    <div class="ucs-marquee-avatar">${avatarHtml(f,'ucs-marquee-profile-pic')}</div>
+    <span class="ucs-marquee-corner">${sideName}</span>
+    <h3>${esc(f.name)}</h3>
+    <strong class="ucs-marquee-record">${esc(marqueeRecord(f))}</strong>
+    <span class="ucs-marquee-meta">${esc(f.region||'UCS')} · ${esc(f.platform||'Platform TBA')}</span>
+    <span class="ucs-marquee-score">RATING ${Number(f.score||0).toFixed(1)}</span>
+  </div>`;
+  stage.innerHTML=`<div class="ucs-marquee-slide" key="${esc(pair.key)}">
+    <div class="ucs-marquee-tag"><span class="ucs-marquee-pulse"></span> ${label} · MATCHUP PICK ${marqueeIndex+1}/${next.length}</div>
+    <div class="ucs-marquee-versus">${side(pair.a,'RED CORNER')}<div class="ucs-marquee-middle"><small>UCS</small><strong>VS</strong><span>AI-STYLE MATCHUP PICK</span></div>${side(pair.b,'BLUE CORNER')}</div>
+    <div class="ucs-marquee-bottom">Picked from fighter records and ratings · Not an official booked fight</div>
+  </div>`;
+  dots.innerHTML=next.map((p,i)=>`<button type="button" class="${i===marqueeIndex?'active':''}" data-marquee-index="${i}" aria-label="Show matchup ${i+1}" aria-pressed="${i===marqueeIndex}"></button>`).join('');
+  $('#ucsMarqueePrev').disabled=next.length<2;$('#ucsMarqueeNext').disabled=next.length<2;
+}
+function marqueeStep(delta){
+  if(marqueeMatchups.length<2)return;
+  marqueeIndex=(marqueeIndex+delta+marqueeMatchups.length)%marqueeMatchups.length;
+  renderMarquee();
+}
+$('#ucsMarqueePrev')?.addEventListener('click',()=>marqueeStep(-1));
+$('#ucsMarqueeNext')?.addEventListener('click',()=>marqueeStep(1));
+$('#ucsMarqueeDots')?.addEventListener('click',e=>{
+  const b=e.target.closest('[data-marquee-index]');
+  if(!b)return;
+  marqueeIndex=Number(b.dataset.marqueeIndex)||0;
+  renderMarquee();
+});
+const reducedMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+if(!reducedMotion)setInterval(()=>{
+  if(document.visibilityState==='visible'&&$('#home')?.classList.contains('active'))marqueeStep(1);
+},7000);
+
 function renderHome(){
   const featured=state.settings.featured_main_event||{};
   const left=fighterById(featured.champion_id), right=fighterById(featured.challenger_id);
@@ -92,6 +180,7 @@ function renderHome(){
 
   renderRankingChampion();
   renderUpcomingSpotlight();
+  renderMarquee();
 }
 
 function renderRanks(filter=''){
@@ -491,4 +580,21 @@ $('#adminFighterRows')?.addEventListener('click',async e=>{const edit=e.target.c
 $('#clearLeagueData')?.addEventListener('click',async()=>{if(!state.isAdmin)return;if(prompt('Type DELETE UCS DATA to clear the entire league database.')!=='DELETE UCS DATA')return toast('Clear cancelled.',true);for(const table of ['league_settings','betting_markets','contract_activity','results','champions','events','fighters']){const {error}=await db.from(table).delete().neq('created_at','1900-01-01T00:00:00Z');if(error&&table!=='champions'&&table!=='league_settings')return toast(`${table}: ${error.message}`,true);if(error&&(table==='champions'||table==='league_settings')){const key=table==='champions'?'division':'key';const {error:retry}=await db.from(table).delete().neq(key,'__never__');if(retry)return toast(`${table}: ${retry.message}`,true);}}toast('League data cleared.');await loadPublicData();});
 
 if(db)db.auth.onAuthStateChange(()=>setTimeout(refreshSession,0));
+// Supabase change events refresh the recommendations after the official record is saved.
+let marqueeRefreshPending=false;
+async function refreshMatchupsFromDb(){
+  if(marqueeRefreshPending)return;
+  marqueeRefreshPending=true;
+  try{await loadPublicData();}finally{marqueeRefreshPending=false;}
+}
+if(db){
+  db.channel('ucs-marquee-live-records')
+    .on('postgres_changes',{event:'*',schema:'public',table:'fighters'},refreshMatchupsFromDb)
+    .on('postgres_changes',{event:'*',schema:'public',table:'results'},refreshMatchupsFromDb)
+    .on('postgres_changes',{event:'*',schema:'public',table:'scheduled_bouts'},refreshMatchupsFromDb)
+    .subscribe();
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible')refreshMatchupsFromDb();
+  });
+}
 (async function init(){renderAll();updateAdminUI();await refreshSession();await loadPublicData();if(location.hash&&$(location.hash))showPage(location.hash.slice(1));})();
