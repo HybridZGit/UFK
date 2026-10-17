@@ -1009,6 +1009,7 @@ if(db){
     .on('postgres_changes',{event:'*',schema:'public',table:'fighter_earnings'},refreshMatchupsFromDb)
     .on('postgres_changes',{event:'*',schema:'public',table:'ucs_news'},refreshMatchupsFromDb)
     .on('postgres_changes',{event:'*',schema:'public',table:'scheduled_bouts'},refreshMatchupsFromDb)
+    .on('postgres_changes',{event:'*',schema:'public',table:'league_settings'},refreshMatchupsFromDb)
     .subscribe();
   document.addEventListener('visibilitychange',()=>{
     if(document.visibilityState==='visible')refreshMatchupsFromDb();
