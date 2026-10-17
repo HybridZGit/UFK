@@ -454,6 +454,12 @@
               <label>Headline<input name="headline" maxlength="160" minlength="5" required placeholder="BIG UCS TITLE FIGHT ANNOUNCED"></label>
               <label>Short introduction<textarea name="summary" rows="3" maxlength="350" placeholder="A short teaser shown on the article card"></textarea></label>
               <label>Full article<textarea name="body" rows="9" required maxlength="15000" placeholder="Write the full news story here..."></textarea></label>
+              <fieldset class="ucs-news-tag-fieldset">
+                <legend>Tag fighters in this article</legend>
+                <p>Select everyone mentioned in your post. Their names will link directly to their UCS fighter profiles.</p>
+                <div class="ucs-news-tag-actions"><button class="mini-action" type="button" id="ucsNewsClearTags">CLEAR TAGS</button><span id="ucsNewsTagCount">0 fighters tagged</span></div>
+                <div id="ucsNewsFighterTags" class="ucs-news-fighter-tags" role="group" aria-label="Fighters tagged in news article">Loading fighters…</div>
+              </fieldset>
               <label>Cover image<input type="file" name="news_image" accept="image/jpeg,image/png,image/webp"></label>
               <label>Or image URL<input type="url" name="image_url" placeholder="https://..."></label>
               <label class="ucs-news-check"><input type="checkbox" name="is_published" checked> Publish article publicly</label>
