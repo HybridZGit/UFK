@@ -141,7 +141,7 @@ $('#ucsMyPhotoList')?.addEventListener('click',async e=>{
   await loadPublicData();toast('Photo visibility updated.');
 });
 
-function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -569,6 +569,50 @@ function renderTopEarners(){
       <strong class="ucs-earner-value">${ucsFormatEarnings(earnings)}</strong>
     </div>`).join('');
 }
+function renderNewsTagOptions(){
+  const grid=$('#ucsNewsFighterTags');if(!grid)return;
+  const selected=new Set($('#ucsNewsFighterTags input[name="tagged_fighters"]:checked').map(node=>node.value));
+  grid.innerHTML=state.fighters.length?state.fighters
+    .slice().sort((a,b)=>a.name.localeCompare(b.name)).map(f=>`
+      <label class="ucs-news-tag-option">
+        <input type="checkbox" name="tagged_fighters" value="${esc(f.id)}" ${selected.has(f.id)?'checked':''}>
+        <span>${esc(f.name)} <small>${esc(f.platform||'UCS')}</small></span>
+      </label>`).join(''):'<p>No active fighters to tag.</p>';
+  updateNewsTagCount();
+}
+function updateNewsTagCount(){
+  const count=$('#ucsNewsFighterTags input[name="tagged_fighters"]:checked').length;
+  const node=$('#ucsNewsTagCount');
+  if(node)node.textContent=count+' fighter'+(count===1?'':'s')+' tagged';
+}
+function setNewsTaggedFighters(ids){
+  const selected=new Set(Array.isArray(ids)?ids:[]);
+  $('#ucsNewsFighterTags input[name="tagged_fighters"]').forEach(node=>{node.checked=selected.has(node.value);});
+  updateNewsTagCount();
+}
+function renderNewsTaggedFighters(item){
+  const fighterIds=Array.isArray(item.tagged_fighter_ids)?item.tagged_fighter_ids:[];
+  const fighters=fighterIds.map(fighterById).filter(Boolean);
+  if(!fighters.length)return '';
+  return `<section class="ucs-news-listed-fighters" aria-label="Fighters listed in this article">
+    <h3>FIGHTERS LISTED</h3>
+    <div class="ucs-news-listed-grid">${fighters.map(f=>`<a class="ucs-news-fighter-link" href="#rankings" data-news-fighter="${esc(f.id)}">
+      ${avatarHtml(f,'ucs-news-tag-avatar')}
+      <span><strong>${esc(f.name)}</strong><small>VIEW FIGHTER PROFILE ↗</small></span>
+    </a>`).join('')}</div>
+  </section>`;
+}
+$('#ucsNewsFighterTags')?.addEventListener('change',updateNewsTagCount);
+$('#ucsNewsClearTags')?.addEventListener('click',()=>setNewsTaggedFighters([]));
+$('#ucsNewsReader')?.addEventListener('click',event=>{
+  const link=event.target.closest('[data-news-fighter]');if(!link)return;
+  event.preventDefault();
+  const fighter=fighterById(link.dataset.newsFighter);
+  if(!fighter)return toast('This fighter is no longer active.',true);
+  showPage('rankings');
+  history.replaceState(null,'','#rankings');
+  openFighterProfile(fighter.id);
+});
 function renderNews(){
   const grid=$('#ucsNewsGrid');if(!grid)return;
   const published=state.news.filter(x=>x.is_published);
@@ -584,14 +628,14 @@ $('#ucsNewsGrid')?.addEventListener('click',e=>{
   const btn=e.target.closest('[data-news-open]');if(!btn)return;
   const item=state.news.find(x=>x.id===btn.dataset.newsOpen&&x.is_published);if(!item)return;
   const reader=$('#ucsNewsReader');
-  reader.innerHTML=`<button type="button" class="btn ghost" id="ucsNewsBack">← ALL NEWS</button><small>${esc(ucsNewsDate(item))} · ${item.is_auto_report?'OFFICIAL FIGHT RESULT':'UCS NEWS'}</small><h2>${esc(item.headline)}</h2>${safeHttps(item.image_url)?`<img class="ucs-news-feature-image" src="${esc(item.image_url)}" alt="">`:''}<p class="ucs-news-summary">${esc(item.summary||'')}</p><div class="ucs-news-body">${esc(item.body)}</div>`;
+  reader.innerHTML=`<button type="button" class="btn ghost" id="ucsNewsBack">← ALL NEWS</button><small>${esc(ucsNewsDate(item))} · ${item.is_auto_report?'OFFICIAL FIGHT RESULT':'UCS NEWS'}</small><h2>${esc(item.headline)}</h2>${safeHttps(item.image_url)?`<img class="ucs-news-feature-image" src="${esc(item.image_url)}" alt="">`:''}<p class="ucs-news-summary">${esc(item.summary||'')}</p><div class="ucs-news-body">${esc(item.body)}</div>${renderNewsTaggedFighters(item)}`;
   reader.classList.remove('hidden');$('#ucsNewsGrid').classList.add('hidden');
   $('#ucsNewsBack').addEventListener('click',()=>{reader.classList.add('hidden');$('#ucsNewsGrid').classList.remove('hidden');});
   reader.scrollIntoView({behavior:'smooth',block:'start'});
 });
 function resetNewsEditor(){
   const form=$('#ucsNewsForm');form?.reset();
-  if(form){form.elements.article_id.value='';form.elements.is_published.checked=true;}
+  if(form){form.elements.article_id.value='';form.elements.is_published.checked=true;setNewsTaggedFighters([]);}
   $('#ucsNewsEditorHeading').textContent='New article';
   $('#ucsNewsSave').textContent='PUBLISH ARTICLE';
 }
@@ -605,6 +649,7 @@ $('#ucsAdminNewsList')?.addEventListener('click',async e=>{
     f.elements.article_id.value=item.id;f.elements.headline.value=item.headline;
     f.elements.summary.value=item.summary||'';f.elements.body.value=item.body;
     f.elements.image_url.value=item.image_url||'';f.elements.is_published.checked=item.is_published;
+    setNewsTaggedFighters(item.tagged_fighter_ids);
     $('#ucsNewsEditorHeading').textContent='Edit article';
     $('#ucsNewsSave').textContent='SAVE CHANGES';
     f.scrollIntoView({behavior:'smooth',block:'center'});
@@ -632,7 +677,8 @@ $('#ucsNewsForm')?.addEventListener('submit',async e=>{
       url=db.storage.from('ucs-news').getPublicUrl(path).data.publicUrl;
     }
     const id=String(d.get('article_id')||'');
-    const payload={headline:String(d.get('headline')||'').trim(),summary:String(d.get('summary')||'').trim(),body:String(d.get('body')||'').trim(),image_url:url||null,is_published:d.has('is_published'),updated_at:new Date().toISOString()};
+    const taggedIds=$('#ucsNewsFighterTags input[name="tagged_fighters"]:checked').map(el=>el.value).filter(id=>state.fighters.some(f=>f.id===id));
+    const payload={headline:String(d.get('headline')||'').trim(),summary:String(d.get('summary')||'').trim(),body:String(d.get('body')||'').trim(),image_url:url||null,tagged_fighter_ids:taggedIds,is_published:d.has('is_published'),updated_at:new Date().toISOString()};
     if(payload.is_published)payload.published_at=new Date().toISOString();
     const q=id?db.from('ucs_news').update(payload).eq('id',id):db.from('ucs_news').insert(payload);
     const {error}=await q;if(error)throw error;
