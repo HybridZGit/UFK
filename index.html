@@ -301,6 +301,15 @@
             <button class="btn primary" id="adminFighterAvatarSubmit" type="submit">UPLOAD FIGHTER PICTURE</button>
           </form>
 
+          <form class="admin-card" id="adminFighterBannerForm">
+            <h3>Upload fighter banner</h3>
+            <p>Choose a fighter and upload a wide profile cover image. Recommended 1600 × 600 pixels; PNG, JPG or WebP (maximum 5 MB).</p>
+            <label>Fighter<select name="fighter_id" class="fighter-select" required></select></label>
+            <label>Profile banner<input id="adminFighterBannerFile" name="banner" type="file" accept="image/png,image/jpeg,image/webp" required></label>
+            <div id="adminFighterBannerPreview" class="ucs-banner-admin-preview" aria-live="polite"></div>
+            <button class="btn primary" id="adminFighterBannerSubmit" type="submit">UPLOAD FIGHTER BANNER</button>
+          </form>
+
           <form class="admin-card" id="recordForm">
             <h3>Update record</h3><p>Set a fighter's official W-L-D record.</p>
             <label>Fighter<select name="fighter_id" class="fighter-select" required></select></label>
@@ -480,6 +489,7 @@
       <button class="profile-close" type="button" data-close-profile aria-label="Close fighter profile">×</button>
       <div class="profile-sponsor"><span>RANKINGS PRESENTED BY</span><img src="assets/ufk-fight-kit.png" alt="UFK Fight Kit"></div>
       <header class="profile-hero">
+        <div id="profileBanner" class="ucs-profile-banner hidden" aria-hidden="true"><img id="profileBannerImage" src="" alt=""></div>
         <div class="profile-avatar" id="profileAvatar"><span>UCS</span></div>
         <div class="profile-identity"><div class="profile-overline" id="profilePlatform">UCS WORLD</div><div class="ucs-fighter-name-row"><h2 id="profileName">FIGHTER</h2><span id="profileServerIcon" class="ucs-fighter-server-icon hidden"></span></div><p id="profileRegion">—</p><span id="profileUnderdog" class="ucs-underdog-badge hidden">★ UNDERDOG</span></div>
         <div class="profile-rank-actions">
