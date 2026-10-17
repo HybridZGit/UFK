@@ -224,9 +224,10 @@ function ucsTottFeaturedBouts(){
   const bouts=state.scheduledBouts||[],featured=state.settings.featured_main_event||{};
   const featuredMatch=b=>!b.is_co_main&&((b.fighter_a_id===featured.champion_id&&b.fighter_b_id===featured.challenger_id)||(b.fighter_b_id===featured.champion_id&&b.fighter_a_id===featured.challenger_id));
   const main=bouts.find(featuredMatch)||bouts.find(b=>!b.is_co_main&&b.belt)||bouts.find(b=>!b.is_co_main)||null;
-  const sameEvent=b=>main&&b.event_name?.trim().toLowerCase()===main.event_name?.trim().toLowerCase()&&b.bout_date===main.bout_date;
+  const sameEvent=b=>main&&b.bout_date===main.bout_date;
   const co=bouts.find(b=>b.is_co_main&&sameEvent(b))||bouts.find(b=>b.is_co_main)||null;
-  return {main,co};
+  const undercard=bouts.filter(b=>b.id!==main?.id&&b.id!==co?.id&&sameEvent(b));
+  return {main,co,undercard};
 }
 function ucsTottKoWins(f){
   if(!f)return 0;
@@ -250,17 +251,22 @@ function ucsTottEdge(a,b,key){
   return {winner:Math.abs(delta)<0.35?null:delta>0?a:b,note:Math.abs(delta)<0.35?'EVEN':delta>0?'LEFT':'RIGHT'};
 }
 function renderTaleOfTheTape(){
-  const root=$('#ucsTottStage'),tabMain=$('#ucsTottMainTab'),tabCo=$('#ucsTottCoMainTab');
+  const root=$('#ucsTottStage'),tabMain=$('#ucsTottMainTab'),tabCo=$('#ucsTottCoMainTab'),underTabs=$('#ucsTottUndercardTabs');
   if(!root||!tabMain||!tabCo)return;
   try{
-    const {main,co}=ucsTottFeaturedBouts();
+    const {main,co,undercard}=ucsTottFeaturedBouts();
     tabCo.classList.toggle('hidden',!co);
     if(!co&&ucsTottSelection==='co')ucsTottSelection='main';
+    if(ucsTottSelection.startsWith('under:')&&!undercard.some(b=>b.id===ucsTottSelection.slice(6)))ucsTottSelection='main';
     for(const [tab,id] of [[tabMain,'main'],[tabCo,'co']]){
       tab.classList.toggle('active',ucsTottSelection===id);
       tab.setAttribute('aria-selected',String(ucsTottSelection===id));
     }
-    const bout=ucsTottSelection==='co'?co:main;
+    if(underTabs)underTabs.innerHTML=undercard.map((b,i)=>{
+      const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id),selected=ucsTottSelection==='under:'+b.id;
+      return `<button type="button" role="tab" aria-controls="ucsTottStage" aria-selected="${selected}" class="${selected?'active':''}" data-tott-bout="${esc(b.id)}">UNDERCARD ${i+1} · ${esc(a?.name||'TBA')} VS ${esc(c?.name||'TBA')}</button>`;
+    }).join('');
+    const bout=ucsTottSelection==='co'?co:ucsTottSelection.startsWith('under:')?undercard.find(b=>b.id===ucsTottSelection.slice(6)):main;
     if(!bout){
       root.innerHTML=empty('No main event scheduled yet. The official comparison will appear automatically when an admin schedules a fight.');
       return;
@@ -308,7 +314,7 @@ function renderTaleOfTheTape(){
     };
     const row=(label,key)=>stat(label,a[key],b[key]);
     root.innerHTML=`<article class="ucs-tott-card">
-      <div class="ucs-tott-card-heading"><span>${ucsTottSelection==='main'?'★ MAIN EVENT':'★ CO-MAIN EVENT'}</span><strong>${esc(bout.belt?bout.belt.toUpperCase()+' TITLE FIGHT':bout.event_name||'UCS MATCHUP')}</strong><small>${esc(bout.bout_date?fmtDate(bout.bout_date):'DATE TBA')}</small></div>
+      <div class="ucs-tott-card-heading"><span>${ucsTottSelection==='main'?'★ MAIN EVENT':ucsTottSelection==='co'?'★ CO-MAIN EVENT':'★ UNDERCARD'}</span><strong>${esc(bout.belt?bout.belt.toUpperCase()+' TITLE FIGHT':bout.event_name||'UCS MATCHUP')}</strong><small>${esc(bout.bout_date?fmtDate(bout.bout_date):'DATE TBA')}</small></div>
       <div class="ucs-tott-main-grid">
         ${side(a,'RED CORNER')}
         <div class="ucs-tott-center"><span class="ucs-tott-vs">VS</span><div class="ucs-tott-stat-table">
@@ -332,6 +338,12 @@ $('#ucsTottTabs')?.addEventListener('click',event=>{
   const tab=event.target.closest('[data-tott-slot]');
   if(!tab)return;
   ucsTottSelection=tab.dataset.tottSlot;
+  renderTaleOfTheTape();
+});
+$('#ucsTottUndercardTabs')?.addEventListener('click',event=>{
+  const tab=event.target.closest('[data-tott-bout]');
+  if(!tab)return;
+  ucsTottSelection='under:'+tab.dataset.tottBout;
   renderTaleOfTheTape();
 });
 $('#ucsTottStage')?.addEventListener('click',event=>{
