@@ -233,6 +233,11 @@
       <div id="adminLocked" class="admin-locked">Sign in with an account marked as an admin in Supabase to unlock league controls.</div>
 
       <div id="adminControls" class="hidden">
+        <div class="ucs-admin-tabs" role="tablist" aria-label="Admin tools">
+          <button type="button" class="ucs-admin-tab active" id="adminOperationsTab" role="tab" aria-controls="adminOperationsPanel" aria-selected="true">LEAGUE OPERATIONS</button>
+          <button type="button" class="ucs-admin-tab" id="adminEarningsTab" role="tab" aria-controls="adminEarningsPanel" aria-selected="false">FIGHTER EARNINGS</button>
+        </div>
+        <div id="adminOperationsPanel" role="tabpanel" aria-labelledby="adminOperationsTab">
         <div class="admin-toolbar">
           <strong>UCS LEAGUE OPERATIONS</strong>
           <div><button class="btn ghost" type="button" id="smartRankingsBtn">RECALCULATE RANKINGS</button><button class="btn ghost" type="button" id="refreshAdmin">REFRESH DATA</button><button class="btn danger-btn" type="button" id="clearLeagueData">CLEAR LEAGUE DATA</button></div>
@@ -347,6 +352,24 @@
         <section class="admin-data">
           <div class="section-title-row"><h2>LIVE DATABASE</h2><span>Delete fighters or inspect current records</span></div>
           <div class="rank-table-wrap"><table class="rank-table admin-table"><thead><tr><th>Fighter</th><th>Record</th><th>Region</th><th>Champion</th><th>Actions</th></tr></thead><tbody id="adminFighterRows"></tbody></table></div>
+        </section>
+        </div>
+
+        <section id="adminEarningsPanel" role="tabpanel" aria-labelledby="adminEarningsTab" class="hidden" aria-hidden="true">
+          <div class="ucs-earnings-header"><div class="section-kicker">LEAGUE FINANCES</div><h2>FIGHTER EARNINGS</h2><p>Set each fighter's recorded earnings. These figures are separate from UCS Credits and do not transfer or pay money.</p></div>
+          <div class="ucs-earnings-layout">
+            <form class="admin-card" id="fighterEarningsForm">
+              <h3>Update fighter earnings</h3>
+              <label>Fighter<select id="earningsFighterSelect" class="fighter-select" name="fighter_id" required></select></label>
+              <label>Total earnings <input id="earningsAmount" name="amount" type="number" inputmode="decimal" min="0" step="0.01" value="0" required></label>
+              <p class="ucs-earnings-hint">Enter a non-negative total. Currency/unit is determined by your league; no wallet funds are changed.</p>
+              <button class="btn primary" type="submit" id="saveFighterEarnings">SAVE EARNINGS</button>
+            </form>
+            <section class="admin-card ucs-earnings-table">
+              <h3>Fighter earnings list</h3>
+              <div class="rank-table-wrap"><table class="rank-table"><thead><tr><th>Fighter</th><th>Record</th><th>Total earnings</th><th></th></tr></thead><tbody id="adminEarningsRows"><tr><td colspan="4">Open the earnings tab to load records.</td></tr></tbody></table></div>
+            </section>
+          </div>
         </section>
       </div>
     </section>
