@@ -573,27 +573,146 @@ function renderTopEarners(){
       <strong class="ucs-earner-value">${ucsFormatEarnings(earnings)}</strong>
     </div>`).join('');
 }
+const selectedNewsFighters = new Set();
+let newsMentionActiveInput = null;
+let newsMentionHighlightedIndex = 0;
+function newsMentionPopup(input){
+  if(input?.id==='ucsNewsMentionInput')return $('#ucsNewsMentionResults');
+  if(input?.name!=='body')return null;
+  let popup=$('#ucsNewsBodyMentionResults');
+  if(!popup){
+    popup=document.createElement('div');
+    popup.id='ucsNewsBodyMentionResults';
+    popup.className='ucs-mention-popup ucs-mention-body-popup hidden';
+    popup.setAttribute('role','listbox');
+    popup.setAttribute('aria-label','Matching UCS fighters');
+    input.parentElement.appendChild(popup);
+  }
+  return popup;
+}
+function newsMentionQuery(input){
+  if(input?.id==='ucsNewsMentionInput')return input.value.replace(/^@/,'').trim();
+  if(input?.name==='body'){
+    const cursor=input.selectionStart??input.value.length;
+    const before=input.value.slice(0,cursor);
+    const match=before.match(/(?:^|[\s(])@([^@\n]{0,45})$/);
+    return match?match[1].trim():null;
+  }
+  return null;
+}
+function closeNewsMentions(){
+  ['#ucsNewsMentionResults','#ucsNewsBodyMentionResults'].forEach(selector=>{
+    const el=$(selector);
+    if(el){el.classList.add('hidden');el.innerHTML='';}
+  });
+  $('#ucsNewsMentionInput')?.setAttribute('aria-expanded','false');
+  newsMentionActiveInput=null;
+}
+function showNewsMentionSuggestions(input){
+  const query=newsMentionQuery(input);
+  const popup=newsMentionPopup(input);
+  if(!popup)return;
+  const others=input?.id==='ucsNewsMentionInput'?'#ucsNewsBodyMentionResults':'#ucsNewsMentionResults';
+  $(others)?.classList.add('hidden');
+  if(query===null||(!state.fighters.length&&query==='')){
+    closeNewsMentions();return;
+  }
+  const matching=state.fighters.filter(f=>!selectedNewsFighters.has(f.id)&&
+    String(f.name||'').toLowerCase().includes(query.toLowerCase())).slice(0,8);
+  newsMentionHighlightedIndex=0;
+  newsMentionActiveInput=input;
+  popup.classList.remove('hidden');
+  input.setAttribute('aria-expanded','true');
+  popup.innerHTML=`<div class="ucs-mention-popup-header">FIGHTERS MATCHING @${esc(query)}</div>`+
+    (matching.length?matching.map((f,i)=>`
+      <button type="button" role="option" class="ucs-mention-option ${i===0?'ucs-mention-selected':''}" data-mention-fighter="${esc(f.id)}" aria-selected="${i===0?'true':'false'}">
+        ${avatarHtml(f,'ucs-mention-avatar')}
+        <span><strong>${esc(f.name)}</strong><small>${esc(f.platform||'UCS FIGHTER')}</small></span>
+      </button>`).join(''):'<p class="ucs-mention-empty">No matching fighters</p>');
+}
 function renderNewsTagOptions(){
   const grid=$('#ucsNewsFighterTags');if(!grid)return;
-  const selected=new Set($('#ucsNewsFighterTags input[name="tagged_fighters"]:checked').map(node=>node.value));
-  grid.innerHTML=state.fighters.length?state.fighters
-    .slice().sort((a,b)=>a.name.localeCompare(b.name)).map(f=>`
-      <label class="ucs-news-tag-option">
-        <input type="checkbox" name="tagged_fighters" value="${esc(f.id)}" ${selected.has(f.id)?'checked':''}>
-        <span>${esc(f.name)} <small>${esc(f.platform||'UCS')}</small></span>
-      </label>`).join(''):'<p>No active fighters to tag.</p>';
+  for(const id of [...selectedNewsFighters])if(!fighterById(id))selectedNewsFighters.delete(id);
+  const fighters=[...selectedNewsFighters].map(fighterById).filter(Boolean);
+  grid.innerHTML=fighters.map(f=>`<span class="ucs-news-selected-fighter">
+    ${avatarHtml(f,'ucs-news-selected-avatar')}
+    <strong>@${esc(f.name)}</strong>
+    <button type="button" data-untag-fighter="${esc(f.id)}" aria-label="Remove ${esc(f.name)} tag">×</button>
+  </span>`).join('');
   updateNewsTagCount();
 }
 function updateNewsTagCount(){
-  const count=$('#ucsNewsFighterTags input[name="tagged_fighters"]:checked').length;
-  const node=$('#ucsNewsTagCount');
+  const count=selectedNewsFighters.size,node=$('#ucsNewsTagCount');
   if(node)node.textContent=count+' fighter'+(count===1?'':'s')+' tagged';
 }
 function setNewsTaggedFighters(ids){
-  const selected=new Set(Array.isArray(ids)?ids:[]);
-  $('#ucsNewsFighterTags input[name="tagged_fighters"]').forEach(node=>{node.checked=selected.has(node.value);});
-  updateNewsTagCount();
+  selectedNewsFighters.clear();
+  (Array.isArray(ids)?ids:[]).forEach(id=>{if(fighterById(id))selectedNewsFighters.add(id);});
+  renderNewsTagOptions();
+  closeNewsMentions();
+  const input=$('#ucsNewsMentionInput');
+  if(input)input.value='';
 }
+function newsMentionPick(id){
+  const fighter=fighterById(id);
+  if(!fighter)return;
+  const input=newsMentionActiveInput;
+  if(input?.name==='body'){
+    const pos=input.selectionStart??input.value.length;
+    const prefix=input.value.slice(0,pos);
+    const match=prefix.match(/(?:^|[\s(])@([^@\n]{0,45})$/);
+    if(match){
+      const beginning=pos-match[0].length+(match[0][0]==='@'?0:1);
+      input.setRangeText('@'+fighter.name+' ',beginning,pos,'end');
+      input.dispatchEvent(new Event('input',{bubbles:false}));
+    }
+  }
+  selectedNewsFighters.add(fighter.id);
+  renderNewsTagOptions();
+  closeNewsMentions();
+  if(input?.id==='ucsNewsMentionInput')input.value='';
+  input?.focus();
+}
+function newsMentionKeydown(e){
+  const popup=newsMentionPopup(e.currentTarget);
+  if(!popup||popup.classList.contains('hidden'))return;
+  const options=[...popup.querySelectorAll('[data-mention-fighter]')];
+  if(e.key==='Escape'){e.preventDefault();closeNewsMentions();return;}
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+    e.preventDefault();
+    if(!options.length)return;
+    newsMentionHighlightedIndex=(newsMentionHighlightedIndex+(e.key==='ArrowDown'?1:-1)+options.length)%options.length;
+    options.forEach((option,i)=>{
+      option.classList.toggle('ucs-mention-selected',i===newsMentionHighlightedIndex);
+      option.setAttribute('aria-selected',String(i===newsMentionHighlightedIndex));
+    });
+    options[newsMentionHighlightedIndex]?.scrollIntoView({block:'nearest'});
+  }else if((e.key==='Enter'||e.key==='Tab')&&options.length){
+    e.preventDefault();
+    newsMentionPick(options[newsMentionHighlightedIndex]?.dataset.mentionFighter);
+  }
+}
+$('#ucsNewsMentionInput')?.addEventListener('input',e=>showNewsMentionSuggestions(e.currentTarget));
+$('#ucsNewsMentionInput')?.addEventListener('focus',e=>{
+  if(e.currentTarget.value)showNewsMentionSuggestions(e.currentTarget);
+});
+$('#ucsNewsMentionInput')?.addEventListener('keydown',newsMentionKeydown);
+$('#ucsNewsForm textarea[name="body"]')?.addEventListener('input',e=>showNewsMentionSuggestions(e.currentTarget));
+$('#ucsNewsForm textarea[name="body"]')?.addEventListener('keydown',newsMentionKeydown);
+$('#ucsNewsForm')?.addEventListener('click',e=>{
+  const pick=e.target.closest('[data-mention-fighter]');
+  if(pick){newsMentionPick(pick.dataset.mentionFighter);return;}
+  const remove=e.target.closest('[data-untag-fighter]');
+  if(remove){
+    selectedNewsFighters.delete(remove.dataset.untagFighter);
+    renderNewsTagOptions();
+  }
+});
+document.addEventListener('pointerdown',e=>{
+  if(!e.target.closest('.ucs-news-mention-wrap, .ucs-mention-popup, #ucsNewsFighterTags, #ucsNewsMentionInput, #ucsNewsForm textarea[name="body"]'))
+    closeNewsMentions();
+});
+$('#ucsNewsClearTags')?.addEventListener('click',()=>setNewsTaggedFighters([]));
 function renderNewsTaggedFighters(item){
   const fighterIds=Array.isArray(item.tagged_fighter_ids)?item.tagged_fighter_ids:[];
   const fighters=fighterIds.map(fighterById).filter(Boolean);
@@ -606,8 +725,6 @@ function renderNewsTaggedFighters(item){
     </a>`).join('')}</div>
   </section>`;
 }
-$('#ucsNewsFighterTags')?.addEventListener('change',updateNewsTagCount);
-$('#ucsNewsClearTags')?.addEventListener('click',()=>setNewsTaggedFighters([]));
 $('#ucsNewsReader')?.addEventListener('click',event=>{
   const link=event.target.closest('[data-news-fighter]');if(!link)return;
   event.preventDefault();
@@ -706,7 +823,7 @@ $('#ucsNewsForm')?.addEventListener('submit',async e=>{
       bannerUrl=db.storage.from('ucs-news').getPublicUrl(path).data.publicUrl;
     }
     const id=String(d.get('article_id')||'');
-    const taggedIds=$('#ucsNewsFighterTags input[name="tagged_fighters"]:checked').map(el=>el.value).filter(id=>state.fighters.some(f=>f.id===id));
+    const taggedIds=[...selectedNewsFighters].filter(id=>state.fighters.some(f=>f.id===id));
     const payload={headline:String(d.get('headline')||'').trim(),summary:String(d.get('summary')||'').trim(),body:String(d.get('body')||'').trim(),image_url:url||null,banner_url:bannerUrl||null,tagged_fighter_ids:taggedIds,is_published:d.has('is_published'),updated_at:new Date().toISOString()};
     if(payload.is_published)payload.published_at=new Date().toISOString();
     const q=id?db.from('ucs_news').update(payload).eq('id',id):db.from('ucs_news').insert(payload);
