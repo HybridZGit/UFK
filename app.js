@@ -3,7 +3,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
 
 const state = {
-  fighters: [], champions: [], results: [], events: [], contracts: [], bets: [], scheduledBouts: [], settings: {},
+  fighters: [], champions: [], results: [], events: [], contracts: [], bets: [], scheduledBouts: [], news: [], settings: {},
   user: null, isAdmin: false, profile: null, myFighter: null, wallet: null, userBets: [],
   fighterEarnings: new Map(), fighterContracts: [], contractTab: 'incoming', contractTarget: null,
   rankingDivision: 'UCS World', betSelection: null
@@ -57,7 +57,8 @@ async function loadPublicData(){
     db.from('betting_markets').select('*').eq('is_open',true).order('created_at',{ascending:false}),
     db.from('league_settings').select('*'),
     db.from('scheduled_bouts').select('*').eq('status','scheduled').order('bout_date',{ascending:true,nullsFirst:false}),
-    db.from('fighter_earnings').select('fighter_id,amount')
+    db.from('fighter_earnings').select('fighter_id,amount'),
+    db.from('ucs_news').select('*').order('published_at',{ascending:false})
   ]);
   const firstError = queries.find(x=>x.error)?.error;
   if(firstError) toast(`Supabase: ${firstError.message}`,true);
@@ -65,10 +66,11 @@ async function loadPublicData(){
   state.settings=Object.fromEntries((queries[6].data||[]).map(x=>[x.key,x.value]));
   state.scheduledBouts=queries[7].data||[];
   state.fighterEarnings=new Map((queries[8].data||[]).map(row=>[row.fighter_id,Number(row.amount)]));
+  state.news=queries[9].data||[];
   renderAll();
 }
 
-function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); updateAccountUI(); }
+function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNews(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -308,9 +310,11 @@ function renderUpcomingSpotlight(){
   const b=state.scheduledBouts.find(x=>x.event_name==='RAFA vs BBK')||state.scheduledBouts[0];
   if(!b){root.innerHTML=empty('No upcoming fight announced yet.');return;}
   const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
-  const poster=safeHttps(b.poster_url)?`<img class="ucs-bout-poster" src="${esc(b.poster_url)}" alt="${esc(a?.name||'Fighter')} versus ${esc(c?.name||'Fighter')} fight poster" loading="lazy">`:'';
-  root.innerHTML=`${poster}<div class="ucs-bout-info"><span class="section-kicker">SCHEDULED · ${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</span><h2>${esc(a?.name||'TBA')} <em>VS</em> ${esc(c?.name||'TBA')}</h2><p>${esc(b.event_name)} · ${esc(b.belt?b.belt+' CHAMPIONSHIP':'Belt / title TBA')}</p><p>Fight scheduled — result not recorded.</p><div class="ucs-bout-links"><button class="btn ghost" type="button" data-jump="fights" id="seeUpcomingBouts">VIEW UPCOMING FIGHTS →</button>${boutLink(b)}</div></div>`;
-  $('#seeUpcomingBouts')?.addEventListener('click',()=>showPage('fights'));
+  const special=b.event_name==='RAFA vs BBK' && b.bout_date==='2026-10-21';
+  const poster=safeHttps(b.poster_url)?`<div class="ucs-poster-shell"><img class="ucs-bout-poster" src="${esc(b.poster_url)}" alt="${esc(a?.name||'Fighter')} versus ${esc(c?.name||'Fighter')} fight poster" loading="lazy">${special?'<div class="ucs-poster-hover"><span>UCS FIGHT NIGHT</span><h3>WANT TO FIGHT ON THE UNDERCARD?</h3><button type="button" class="btn primary" data-open-undercard>APPLY FOR UNDERCARD</button><button type="button" class="btn ghost" data-open-fights>SEE EVENT</button></div>':''}</div>`:'';
+  root.innerHTML=`${poster}<div class="ucs-bout-info"><span class="section-kicker">SCHEDULED · ${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</span><h2>${esc(a?.name||'TBA')} <em>VS</em> ${esc(c?.name||'TBA')}</h2><p>${esc(b.event_name)} · ${esc(b.belt?b.belt+' CHAMPIONSHIP':'Belt / title TBA')}</p><p>Fight scheduled — result not recorded.</p><div class="ucs-bout-links"><button class="btn ghost" type="button" data-open-fights>VIEW UPCOMING FIGHTS →</button>${special?'<button class="btn primary" type="button" data-open-undercard>APPLY FOR UNDERCARD</button>':''}${boutLink(b)}</div></div>`;
+  root.querySelectorAll('[data-open-fights]').forEach(btn=>btn.addEventListener('click',()=>showPage('fights')));
+  root.querySelectorAll('[data-open-undercard]').forEach(btn=>btn.addEventListener('click',()=>openUndercardForm(b.id)));
 }
 function renderEvents(){
   const upcoming=state.scheduledBouts.map(b=>{
@@ -320,6 +324,114 @@ function renderEvents(){
   const events=state.events.map(e=>`<article class="event-row"><time>${esc(fmtDate(e.event_date))}</time><strong>${esc(e.name)}</strong><span>${esc(e.details||e.status)}</span></article>`).join('');
   $('#fightList').innerHTML=upcoming+events||empty('No fight cards or results have been added yet.');
 }
+// Undercard application is handled by a secure Supabase Edge Function; Discord webhook never reaches browser.
+function openUndercardForm(boutId){
+  const modal=$('#ucsUndercardModal');if(!modal)return;
+  $('#ucsUndercardBoutId').value=boutId;
+  $('#ucsUndercardFeedback').textContent='';
+  modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');
+  document.body.classList.add('modal-open');
+  modal.querySelector('input[name="discord_name"]')?.focus();
+}
+function closeUndercardForm(){
+  const modal=$('#ucsUndercardModal');modal?.classList.add('hidden');modal?.setAttribute('aria-hidden','true');
+  if(!$('#fighterModal')?.classList.contains('open')&&!$('#contractModal')?.classList.contains('open'))document.body.classList.remove('modal-open');
+}
+$$('[data-close-undercard]').forEach(el=>el.addEventListener('click',closeUndercardForm));
+$('#ucsUndercardForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db)return toast('UCS connection unavailable.',true);
+  const form=e.currentTarget,d=new FormData(form),button=$('#ucsUndercardSubmit'),message=$('#ucsUndercardFeedback');
+  if(d.get('website'))return;
+  button.disabled=true;message.textContent='Sending your application...';
+  try{
+    const resp=await fetch(window.UFK_SUPABASE_URL+'/functions/v1/ucs-undercard-apply',{
+      method:'POST',headers:{'Content-Type':'application/json','apikey':window.UFK_SUPABASE_ANON_KEY},
+      body:JSON.stringify({bout_id:d.get('bout_id'),discord_name:String(d.get('discord_name')||'').trim(),wants_to_participate:d.get('wants_to_participate')==='true',available_at_8pm_eastern:d.get('available_at_8pm_eastern')==='true',website:''})
+    });
+    const data=await resp.json().catch(()=>({}));
+    if(!resp.ok)throw Error(data.error||'Could not submit application.');
+    form.reset();message.textContent='Application sent to the UCS team!';
+    toast('Undercard application sent!');
+  }catch(error){message.textContent=error.message||'Please try again.';}
+  finally{button.disabled=false;}
+});
+// News page and admin publishing tools.
+function ucsNewsDate(item){
+  const stamp=item.published_at||item.created_at;
+  return stamp?new Date(stamp).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}):'UCS NEWS';
+}
+function renderNews(){
+  const grid=$('#ucsNewsGrid');if(!grid)return;
+  const published=state.news.filter(x=>x.is_published);
+  grid.innerHTML=published.length?published.map(item=>`
+    <button type="button" class="ucs-news-card" data-news-open="${esc(item.id)}">
+      <span class="ucs-news-image">${safeHttps(item.image_url)?`<img src="${esc(item.image_url)}" loading="lazy" alt="">`:'<span class="ucs-news-placeholder">UCS NEWS</span>'}</span>
+      <span class="ucs-news-card-copy"><small>${esc(ucsNewsDate(item))}</small><strong>${esc(item.headline)}</strong><span>${esc(item.summary||item.body.slice(0,150))}</span><b>READ ARTICLE →</b></span>
+    </button>`).join(''):empty('No UCS articles have been published yet.');
+  const adminList=$('#ucsAdminNewsList');
+  if(adminList)adminList.innerHTML=state.news.length?state.news.map(item=>`<div class="ucs-news-admin-item"><div><strong>${esc(item.headline)}</strong><small>${item.is_published?'Published':'Draft'} · ${esc(ucsNewsDate(item))}</small></div><div><button type="button" class="mini-action" data-news-edit="${esc(item.id)}">EDIT</button><button type="button" class="mini-action danger" data-news-delete="${esc(item.id)}">DELETE</button></div></div>`).join(''):empty('No articles yet.');
+}
+$('#ucsNewsGrid')?.addEventListener('click',e=>{
+  const btn=e.target.closest('[data-news-open]');if(!btn)return;
+  const item=state.news.find(x=>x.id===btn.dataset.newsOpen&&x.is_published);if(!item)return;
+  const reader=$('#ucsNewsReader');
+  reader.innerHTML=`<button type="button" class="btn ghost" id="ucsNewsBack">← ALL NEWS</button><small>${esc(ucsNewsDate(item))} · UCS NEWS</small><h2>${esc(item.headline)}</h2>${safeHttps(item.image_url)?`<img class="ucs-news-feature-image" src="${esc(item.image_url)}" alt="">`:''}<p class="ucs-news-summary">${esc(item.summary||'')}</p><div class="ucs-news-body">${esc(item.body)}</div>`;
+  reader.classList.remove('hidden');$('#ucsNewsGrid').classList.add('hidden');
+  $('#ucsNewsBack').addEventListener('click',()=>{reader.classList.add('hidden');$('#ucsNewsGrid').classList.remove('hidden');});
+  reader.scrollIntoView({behavior:'smooth',block:'start'});
+});
+function resetNewsEditor(){
+  const form=$('#ucsNewsForm');form?.reset();
+  if(form){form.elements.article_id.value='';form.elements.is_published.checked=true;}
+  $('#ucsNewsEditorHeading').textContent='New article';
+  $('#ucsNewsSave').textContent='PUBLISH ARTICLE';
+}
+$('#ucsNewsReset')?.addEventListener('click',resetNewsEditor);
+$('#ucsAdminNewsList')?.addEventListener('click',async e=>{
+  if(!state.isAdmin)return;
+  const edit=e.target.closest('[data-news-edit]'),del=e.target.closest('[data-news-delete]');
+  if(edit){
+    const item=state.news.find(x=>x.id===edit.dataset.newsEdit);if(!item)return;
+    const f=$('#ucsNewsForm');
+    f.elements.article_id.value=item.id;f.elements.headline.value=item.headline;
+    f.elements.summary.value=item.summary||'';f.elements.body.value=item.body;
+    f.elements.image_url.value=item.image_url||'';f.elements.is_published.checked=item.is_published;
+    $('#ucsNewsEditorHeading').textContent='Edit article';
+    $('#ucsNewsSave').textContent='SAVE CHANGES';
+    f.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  if(del){
+    const item=state.news.find(x=>x.id===del.dataset.newsDelete);
+    if(!item||!confirm('Delete the article "'+item.headline+'"?'))return;
+    const {error}=await db.from('ucs_news').delete().eq('id',item.id);
+    if(error)return toast(error.message,true);
+    resetNewsEditor();await loadPublicData();toast('Article deleted.');
+  }
+});
+$('#ucsNewsForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db||!state.isAdmin)return toast('Admin required.',true);
+  const form=e.currentTarget,d=new FormData(form),file=d.get('news_image');
+  let url=String(d.get('image_url')||'').trim();const button=$('#ucsNewsSave');button.disabled=true;
+  try{
+    if(url&&!safeHttps(url))throw Error('Use a secure HTTPS image URL.');
+    if(file instanceof File&&file.size){
+      const types={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'},ext=types[file.type];
+      if(!ext||file.size>5*1024*1024)throw Error('Image must be PNG, JPG or WebP, maximum 5 MB.');
+      const path='articles/'+crypto.randomUUID()+'.'+ext;
+      const {error}=await db.storage.from('ucs-news').upload(path,file,{contentType:file.type,upsert:false});
+      if(error)throw error;
+      url=db.storage.from('ucs-news').getPublicUrl(path).data.publicUrl;
+    }
+    const id=String(d.get('article_id')||'');
+    const payload={headline:String(d.get('headline')||'').trim(),summary:String(d.get('summary')||'').trim(),body:String(d.get('body')||'').trim(),image_url:url||null,is_published:d.has('is_published'),updated_at:new Date().toISOString()};
+    if(payload.is_published)payload.published_at=new Date().toISOString();
+    const q=id?db.from('ucs_news').update(payload).eq('id',id):db.from('ucs_news').insert(payload);
+    const {error}=await q;if(error)throw error;
+    resetNewsEditor();await loadPublicData();toast(id?'Article updated.':'Article published.');
+  }catch(error){toast(error.message||'Could not save article.',true);}
+  finally{button.disabled=false;}
+});
+
 function populateScheduledBoutSelect(){
   const select=$('#scheduledBoutSelect');if(!select)return;
   const current=select.value;
@@ -512,15 +624,18 @@ $('#adminFighterAvatarForm')?.addEventListener('submit',async e=>{
 
 const ucsEarningsState={records:new Map(),loaded:false};
 function ucsShowAdminTab(tab){
-  const earnings=tab==='earnings'&&state.isAdmin;
-  $('#adminOperationsPanel')?.classList.toggle('hidden',earnings);
+  const earnings=tab==='earnings'&&state.isAdmin,news=tab==='news'&&state.isAdmin;
+  $('#adminOperationsPanel')?.classList.toggle('hidden',earnings||news);
   $('#adminEarningsPanel')?.classList.toggle('hidden',!earnings);
+  $('#adminNewsPanel')?.classList.toggle('hidden',!news);
   $('#adminEarningsPanel')?.setAttribute('aria-hidden',String(!earnings));
-  $('#adminOperationsTab')?.classList.toggle('active',!earnings);
-  $('#adminEarningsTab')?.classList.toggle('active',earnings);
-  $('#adminOperationsTab')?.setAttribute('aria-selected',String(!earnings));
-  $('#adminEarningsTab')?.setAttribute('aria-selected',String(earnings));
+  $('#adminNewsPanel')?.setAttribute('aria-hidden',String(!news));
+  for(const [id,active] of [['adminOperationsTab',!earnings&&!news],['adminEarningsTab',earnings],['adminNewsTab',news]]){
+    $('#'+id)?.classList.toggle('active',active);
+    $('#'+id)?.setAttribute('aria-selected',String(active));
+  }
   if(earnings)ucsLoadEarnings();
+  if(news)renderNews();
 }
 function ucsFormatEarnings(value){
   return Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -555,6 +670,7 @@ function ucsPopulateEarningsInput(fighterId){
 }
 $('#adminOperationsTab')?.addEventListener('click',()=>ucsShowAdminTab('operations'));
 $('#adminEarningsTab')?.addEventListener('click',()=>ucsShowAdminTab('earnings'));
+$('#adminNewsTab')?.addEventListener('click',()=>ucsShowAdminTab('news'));
 $('#earningsFighterSelect')?.addEventListener('change',e=>ucsPopulateEarningsInput(e.target.value));
 $('#adminEarningsRows')?.addEventListener('click',e=>{
   const button=e.target.closest('[data-earnings-fighter]');
