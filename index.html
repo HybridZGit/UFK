@@ -448,28 +448,7 @@
         </section>
       </div>
     </section>
-  <section class="page shell section-space ucs-fighter-page" id="fighter">
-    <div class="ucs-fighter-back"><button type="button" class="btn ghost" data-close-profile>← BACK TO RANKINGS</button><span>UCS FIGHTER PROFILE</span></div>
-    <article class="fighter-profile-panel" role="dialog" aria-modal="true" aria-labelledby="profileName">
 
-      <div class="profile-sponsor"><span>RANKINGS PRESENTED BY</span><img src="assets/ufk-fight-kit.png" alt="UFK Fight Kit"></div>
-      <header class="profile-hero">
-        <div class="profile-avatar" id="profileAvatar"><span>UCS</span></div>
-        <div class="profile-identity"><div class="profile-overline" id="profilePlatform">UCS WORLD</div><div class="ucs-fighter-name-row"><h2 id="profileName">FIGHTER</h2><span id="profileServerIcon" class="ucs-fighter-server-icon hidden"></span></div><p id="profileRegion">—</p><span id="profileUnderdog" class="ucs-underdog-badge hidden">★ UNDERDOG</span></div>
-        <div class="profile-rank-actions">
-          <div class="profile-rank-badge"><small>WORLD RANK</small><strong id="profileRank">#—</strong></div>
-          <button class="btn contract-challenge-btn hidden" id="profileContractBtn" type="button">SEND CONTRACT</button>
-        </div>
-      </header>
-      <section id="profileChampionSpotlight" class="ucs-champion-spotlight hidden" aria-label="Fighter championship titles">
-        <div class="ucs-champion-emblem" aria-hidden="true">🏆</div>
-        <div class="ucs-champion-details">
-          <span class="ucs-champion-eyebrow">OFFICIAL UCS TITLE HOLDER</span>
-          <strong id="profileChampionHeading">UCS CHAMPION</strong>
-          <div id="profileChampionBelts" class="ucs-champion-belts"></div>
-        </div>
-        <div class="ucs-champion-seal" aria-hidden="true">CHAMPION</div>
-      </section>
       <div class="profile-stat-grid">
         <div><strong id="profileRecord">0-0-0</strong><span>RECORD</span></div>
         <div><strong id="profileScore">0.0</strong><span>RATING</span></div>
@@ -519,6 +498,29 @@
       </form>
     </div>
   </div>
+
+  <div class="fighter-modal" id="fighterModal" aria-hidden="true">
+    <div class="fighter-modal-backdrop" data-close-profile></div>
+    <article class="fighter-profile-panel" role="dialog" aria-modal="true" aria-labelledby="profileName">
+      <button class="profile-close" type="button" data-close-profile aria-label="Close fighter profile">×</button>
+      <div class="profile-sponsor"><span>RANKINGS PRESENTED BY</span><img src="assets/ufk-fight-kit.png" alt="UFK Fight Kit"></div>
+      <header class="profile-hero">
+        <div class="profile-avatar" id="profileAvatar"><span>UCS</span></div>
+        <div class="profile-identity"><div class="profile-overline" id="profilePlatform">UCS WORLD</div><div class="ucs-fighter-name-row"><h2 id="profileName">FIGHTER</h2><span id="profileServerIcon" class="ucs-fighter-server-icon hidden"></span></div><p id="profileRegion">—</p><span id="profileUnderdog" class="ucs-underdog-badge hidden">★ UNDERDOG</span></div>
+        <div class="profile-rank-actions">
+          <div class="profile-rank-badge"><small>WORLD RANK</small><strong id="profileRank">#—</strong></div>
+          <button class="btn contract-challenge-btn hidden" id="profileContractBtn" type="button">SEND CONTRACT</button>
+        </div>
+      </header>
+      <section id="profileChampionSpotlight" class="ucs-champion-spotlight hidden" aria-label="Fighter championship titles">
+        <div class="ucs-champion-emblem" aria-hidden="true">🏆</div>
+        <div class="ucs-champion-details">
+          <span class="ucs-champion-eyebrow">OFFICIAL UCS TITLE HOLDER</span>
+          <strong id="profileChampionHeading">UCS CHAMPION</strong>
+          <div id="profileChampionBelts" class="ucs-champion-belts"></div>
+        </div>
+        <div class="ucs-champion-seal" aria-hidden="true">CHAMPION</div>
+      </div>
 
   <div class="contract-modal" id="contractModal" aria-hidden="true">
     <div class="contract-modal-backdrop" data-close-contract></div>
