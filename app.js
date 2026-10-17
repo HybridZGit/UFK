@@ -218,7 +218,99 @@ $('#ucsMyPhotoList')?.addEventListener('click',async e=>{
   await loadPublicData();toast('Photo visibility updated.');
 });
 
-function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+// Tale of the Tape: interpretable data-driven scouting, never fabricated matchup odds.
+let ucsTottSelection='main';
+function ucsTottFeaturedBouts(){
+  const bouts=state.scheduledBouts||[],featured=state.settings.featured_main_event||{};
+  const featuredMatch=b=>!b.is_co_main&&((b.fighter_a_id===featured.champion_id&&b.fighter_b_id===featured.challenger_id)||(b.fighter_b_id===featured.champion_id&&b.fighter_a_id===featured.challenger_id));
+  const main=bouts.find(featuredMatch)||bouts.find(b=>!b.is_co_main&&b.belt)||bouts.find(b=>!b.is_co_main)||null;
+  const sameEvent=b=>main&&b.event_name?.trim().toLowerCase()===main.event_name?.trim().toLowerCase()&&b.bout_date===main.bout_date;
+  const co=bouts.find(b=>b.is_co_main&&sameEvent(b))||bouts.find(b=>b.is_co_main)||null;
+  return {main,co};
+}
+function ucsTottKoWins(f){
+  if(!f)return 0;
+  return state.results.filter(r=>r.winner_id===f.id&&/ko|tko|knockout/i.test(String(r.method||''))).length;
+}
+function ucsTottRank(f){
+  if(!f)return '—';
+  const order=[...state.fighters].sort((a,b)=>Number(b.score||0)-Number(a.score||0)||String(a.name).localeCompare(String(b.name)));
+  const index=order.findIndex(x=>x.id===f.id);
+  return index<0?'—':'#'+(index+1);
+}
+function ucsTottEdge(a,b,key){
+  const x=Number(a?.[key]),y=Number(b?.[key]);
+  if(!a||!b||!Number.isFinite(x)||!Number.isFinite(y))return {winner:null,note:'N/A'};
+  const gap=x-y;
+  return {winner:Math.abs(gap)<0.35?null:gap>0?a:b,note:Math.abs(gap)<0.35?'EVEN':gap>0?'LEFT':'RIGHT'};
+}
+function renderTaleOfTheTape(){
+  const root=$('#ucsTottStage'),tabMain=$('#ucsTottMainTab'),tabCo=$('#ucsTottCoMainTab');
+  if(!root||!tabMain||!tabCo)return;
+  const {main,co}=ucsTottFeaturedBouts();
+  tabCo.classList.toggle('hidden',!co);
+  if(!co&&ucsTottSelection==='co')ucsTottSelection='main';
+  tabMain.classList.toggle('active',ucsTottSelection==='main');
+  tabCo.classList.toggle('active',ucsTottSelection==='co');
+  tabMain.setAttribute('aria-selected',String(ucsTottSelection==='main'));
+  tabCo.setAttribute('aria-selected',String(ucsTottSelection==='co'));
+  const bout=ucsTottSelection==='co'?co:main;
+  if(!bout){root.innerHTML=empty('Tale of the Tape will appear once an admin schedules a main event.');return;}
+  const a=fighterById(bout.fighter_a_id),b=fighterById(bout.fighter_b_id);
+  if(!a||!b){root.innerHTML=empty('Waiting for both scheduled fighters to appear on the active roster.');return;}
+  const keys=[['Resume','resume'],['Momentum','momentum'],['Finishing','finishing'],['Activity','activity'],['Big Fight','big_fight']];
+  const safeScore=f=>Number.isFinite(Number(f.score))?Number(f.score).toFixed(1):'—';
+  const ko=f=>ucsTottKoWins(f),wins=f=>Number(f.wins||0);
+  const pct=f=>wins(f)>0?Math.round(100*ko(f)/wins(f))+'%':'—';
+  const side=(f,corner)=>`<div class="ucs-tott-fighter">
+    <span class="ucs-tott-corner">${corner}</span>
+    ${avatarHtml(f,'ucs-tott-avatar')}
+    <h3>${esc(f.name)}</h3>
+    <strong>${esc(record(f))}</strong>
+    <p>${esc(f.platform||'UCS')} · ${esc(f.region||'REGION TBA')}</p>
+    <span class="ucs-tott-rank">WORLD RANK ${ucsTottRank(f)} · RATING ${safeScore(f)}</span>
+    <button type="button" data-tott-fighter="${esc(f.id)}" class="ucs-tott-view">VIEW PROFILE ↗</button>
+  </div>`;
+  const stat=(label,l,r,format=v=>Number.isFinite(Number(v))?Number(v).toFixed(1):'—')=>{
+    const e=ucsTottEdge({value:l},{value:r},'value');
+    return `<div class="ucs-tott-stat"><strong class="${e.note==='LEFT'?'ucs-tott-stat-edge':''}">${esc(format(l))}</strong><span>${esc(label)}</span><strong class="${e.note==='RIGHT'?'ucs-tott-stat-edge':''}">${esc(format(r))}</strong></div>`;
+  };
+  const metricRows=keys.map(([name,key])=>stat(name,a[key],b[key])).join('');
+  const comparison=keys.map(([label,key])=>({label,...ucsTottEdge(a,b,key)}));
+  const leftWins=comparison.filter(x=>x.winner?.id===a.id).length;
+  const rightWins=comparison.filter(x=>x.winner?.id===b.id).length;
+  const scoreA=Number(a.score||0),scoreB=Number(b.score||0);
+  const gap=Math.abs(scoreA-scoreB);
+  const lean=gap<0.4?null:scoreA>scoreB?a:b;
+  const ratingLabel=lean?`The overall rating leans towards ${lean.name} (${Math.abs(scoreA-scoreB).toFixed(1)}-point edge).`:'The fighters are closely matched in overall UCS rating.';
+  const strengthA=comparison.filter(x=>x.winner?.id===a.id).map(x=>x.label);
+  const strengthB=comparison.filter(x=>x.winner?.id===b.id).map(x=>x.label);
+  const read=f=>f.length?f.slice(0,2).join(' and ').toLowerCase():'no clear recorded category edge';
+  const callout=gap<0.4?'TOO CLOSE TO CALL':gap<1.5?'SLIGHT RATING EDGE':'CLEAR RATING ADVANTAGE';
+  const report=`${ratingLabel} ${a.name}'s strengths: ${read(strengthA)}. ${b.name}'s strengths: ${read(strengthB)}. ${leftWins===rightWins?'Neither fighter dominates the recorded skill categories.':leftWins>rightWins?a.name:b.name} ${leftWins===rightWins?'': 'has the edge in more rated categories.'} This analysis uses current UCS ratings only.`;
+  root.innerHTML=`
+    <div class="ucs-tott-card">
+      <div class="ucs-tott-card-heading"><span>${ucsTottSelection==='main'?'★ MAIN EVENT':'★ CO-MAIN EVENT'}</span><strong>${esc(bout.belt?bout.belt.toUpperCase()+' TITLE FIGHT':bout.event_name||'UCS MATCHUP')}</strong><small>${esc(bout.bout_date?fmtDate(bout.bout_date):'DATE TBA')}</small></div>
+      <div class="ucs-tott-main-grid">
+        ${side(a,'RED CORNER')}
+        <div class="ucs-tott-center"><span class="ucs-tott-vs">VS</span><div class="ucs-tott-stat-table">${stat('Official record',record(a),record(b),v=>v)}${stat('KO wins',ko(a),ko(b),v=>String(v))}${stat('KO win rate',pct(a),pct(b),v=>v)}${metricRows}${stat('Overall rating',scoreA,scoreB)}</div></div>
+        ${side(b,'BLUE CORNER')}
+      </div>
+      <div class="ucs-tott-verdict"><div class="ucs-tott-verdict-head"><span>✦ UCS DATA-DRIVEN SCOUTING REPORT</span><strong>${esc(callout)}</strong></div><p>${esc(report)}</p><small>KO figures use recorded UCS results only. This is descriptive analysis, not a simulated fight or a prediction guarantee.</small></div>
+    </div>`;
+}
+$('#ucsTottTabs')?.addEventListener('click',event=>{
+  const tab=event.target.closest('[data-tott-slot]');
+  if(!tab)return;
+  ucsTottSelection=tab.dataset.tottSlot;
+  renderTaleOfTheTape();
+});
+$('#ucsTottStage')?.addEventListener('click',event=>{
+  const btn=event.target.closest('[data-tott-fighter]');
+  if(btn?.dataset.tottFighter)openFighterProfile(btn.dataset.tottFighter);
+});
+
+function renderAll(){ renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
