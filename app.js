@@ -480,8 +480,10 @@ function renderEvents(){
   const matchesFeatured=b=>
     (b.fighter_a_id===featured.champion_id&&b.fighter_b_id===featured.challenger_id)||
     (b.fighter_b_id===featured.champion_id&&b.fighter_a_id===featured.challenger_id);
-  const main=scheduled.find(matchesFeatured)||scheduled.find(b=>b.belt)||scheduled[0]||null;
-  const ordered=main?[main,...scheduled.filter(b=>b.id!==main.id)]:scheduled;
+  const main=scheduled.find(b=>!b.is_co_main&&matchesFeatured(b))||scheduled.find(b=>!b.is_co_main&&b.belt)||scheduled.find(b=>!b.is_co_main)||null;
+  const sameCard=b=>main&&b.event_name?.trim().toLowerCase()===main.event_name?.trim().toLowerCase()&&b.bout_date===main.bout_date;
+  const coMain=scheduled.find(b=>b.is_co_main&&sameCard(b))||scheduled.find(b=>b.is_co_main)||null;
+  const ordered=[...(main?[main]:[]),...(coMain?[coMain]:[]),...scheduled.filter(b=>b.id!==main?.id&&b.id!==coMain?.id)];
   const portrait=f=>{
     const img=f?.avatar_url&&safeHttps(f.avatar_url)
       ?`<img src="${esc(f.avatar_url)}" loading="lazy" alt="${esc(f.name)} profile picture" style="display:block;width:64px;height:64px;max-width:64px;max-height:64px;object-fit:cover;border-radius:50%;flex-shrink:0">`
@@ -490,9 +492,9 @@ function renderEvents(){
   };
   const boutCard=b=>{
     const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
-    const isMain=b.id===main?.id;
-    return `<article class="ucs-match-card${isMain?' ucs-match-featured':''}">
-      <div class="ucs-match-top"><span>${isMain?'★ MAIN EVENT':'UCS FIGHT NIGHT'}</span><span>${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</span></div>
+    const isMain=b.id===main?.id,isCoMain=b.id===coMain?.id;
+    return `<article class="ucs-match-card${isMain?' ucs-match-featured':''}${isCoMain?' ucs-match-co-main':''}">
+      <div class="ucs-match-top"><span>${isMain?'★ MAIN EVENT':isCoMain?'★ CO-MAIN EVENT':'UCS FIGHT NIGHT'}</span><span>${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</span></div>
       <div class="ucs-match-contest">
         <div class="ucs-match-person">${portrait(a)}<div class="ucs-match-person-info"><strong>${esc(a?.name||'TBA')}</strong><small>${a?esc(record(a)):'Fighter TBA'}</small></div></div>
         <div class="ucs-match-versus">VS</div>
@@ -654,6 +656,7 @@ function fillScheduledBoutEditor(){
   const form=$('#editScheduledBoutForm');if(!form)return;
   const b=state.scheduledBouts.find(x=>x.id===$('#scheduledBoutSelect').value);
   for(const field of ['event_name','bout_date','belt','poster_url','contribution_url'])form.elements[field].value=b?.[field]||'';
+  form.elements.is_co_main.value=b?.is_co_main?'true':'false';
 }
 $('#scheduledBoutSelect')?.addEventListener('change',fillScheduledBoutEditor);
 
@@ -989,7 +992,7 @@ $('#scheduleBoutForm')?.addEventListener('submit',async e=>{
   if(a===b)return toast('Select two different fighters.',true);
   const url=(d.get('contribution_url')||'').trim();
   if(url&&!safeHttps(url))return toast('Use a valid HTTPS contribution link.',true);
-  const payload={fighter_a_id:a,fighter_b_id:b,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,contribution_url:url||null};
+  const payload={fighter_a_id:a,fighter_b_id:b,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,contribution_url:url||null,is_co_main:d.get('is_co_main')==='true'};
   const {error}=await db.from('scheduled_bouts').insert(payload);
   if(error)return toast(error.message,true);
   e.currentTarget.reset();await loadPublicData();toast('Bout scheduled. Fight records unchanged.');
@@ -1014,7 +1017,7 @@ $('#editScheduledBoutForm')?.addEventListener('submit',async e=>{
       if(uploadError)throw uploadError;
       posterUrl=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
     }
-    const payload={event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,poster_url:posterUrl||null,contribution_url:contribution||null,updated_at:new Date().toISOString()};
+    const payload={event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,poster_url:posterUrl||null,contribution_url:contribution||null,is_co_main:d.get('is_co_main')==='true',updated_at:new Date().toISOString()};
     const {error}=await db.from('scheduled_bouts').update(payload).eq('id',boutId);
     if(error)throw error;
     await loadPublicData();toast('Scheduled bout updated. No result recorded.');
