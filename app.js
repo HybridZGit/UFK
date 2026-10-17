@@ -72,6 +72,73 @@ async function loadPublicData(){
   renderAll();
 }
 
+// UCS Photography: public read-only gallery; approved users can upload.
+function renderPhotoGallery(){
+  const root=$('#ucsPhotoGallery');if(!root)return;
+  const published=state.photos.filter(p=>p.published);
+  root.innerHTML=published.length?published.map(p=>{
+    const image=safeHttps(p.image_url)?`<img src="${esc(p.image_url)}" alt="${esc(p.caption||p.event_name||'UCS event photo')}" loading="lazy">`:'';
+    return `<figure class="ucs-photo-card">${image}<figcaption><strong>${esc(p.event_name||'UCS Photography')}</strong><span>${esc(p.caption||'Official UCS event photo')}</span></figcaption></figure>`;
+  }).join(''):'<p class="data-empty">No photography has been published yet.</p>';
+  const mine=$('#ucsMyPhotoList');if(!mine)return;
+  const own=state.photos.filter(p=>p.photographer_id===state.user?.id);
+  mine.innerHTML=own.length?own.map(p=>`<div class="ucs-photo-my-row"><span>${esc(p.event_name||'UCS photo')} · ${new Date(p.created_at).toLocaleDateString()}</span><button type="button" class="mini-action" data-photo-publish="${esc(p.id)}">${p.published?'UNPUBLISH':'PUBLISH'}</button></div>`).join(''):'';
+}
+function updatePhotographerUI(){
+  const guest=$('#ucsPhotographerGuest'),pending=$('#ucsPhotographerPending'),tools=$('#ucsPhotographerTools');
+  if(!guest||!pending||!tools)return;
+  guest.classList.toggle('hidden',Boolean(state.user));
+  pending.classList.toggle('hidden',!state.user||state.canPhotograph);
+  tools.classList.toggle('hidden',!state.user||!state.canPhotograph);
+  renderPhotoGallery();
+}
+$('#ucsPhotographerLoginForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db)return toast('Supabase unavailable.',true);
+  const d=new FormData(e.currentTarget);
+  const {error}=await db.auth.signInWithPassword({email:d.get('email'),password:d.get('password')});
+  if(error)return toast(error.message,true);
+  await refreshSession();
+  toast(state.canPhotograph?'Photographer studio unlocked!':'Signed in. Awaiting photographer approval.');
+});
+$('#ucsPhotographerApprovalForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db||!state.isAdmin)return toast('Admin access required.',true);
+  const d=new FormData(e.currentTarget);
+  const {data,error}=await db.rpc('set_ucs_photographer',{p_email:String(d.get('email')||'').trim(),p_approved:d.get('approved')==='true'});
+  if(error)return toast(error.message,true);
+  toast(data||'Photographer permissions updated.');
+});
+$('#ucsPhotographerUploadForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db||!state.user||!state.canPhotograph)return toast('Approved photographer login required.',true);
+  const form=e.currentTarget,files=[...form.elements.images.files];
+  if(!files.length)return toast('Choose one or more photos.',true);
+  if(files.length>12)return toast('Upload up to 12 photos at a time.',true);
+  const btn=$('#ucsPhotoUploadButton'),types={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'};
+  const eventName=String(form.elements.event_name.value||'').trim().slice(0,100);
+  const caption=String(form.elements.caption.value||'').trim().slice(0,350);
+  btn.disabled=true;
+  try{
+    for(const file of files){
+      if(!types[file.type]||file.size>10*1024*1024||!file.size)throw Error('Each photo must be JPG, PNG or WebP and under 10 MB.');
+      const storagePath=state.user.id+'/'+crypto.randomUUID()+'.'+types[file.type];
+      const {error:uploadErr}=await db.storage.from('ucs-photography').upload(storagePath,file,{contentType:file.type,upsert:false});
+      if(uploadErr)throw uploadErr;
+      const url=db.storage.from('ucs-photography').getPublicUrl(storagePath).data.publicUrl;
+      const {error:saveErr}=await db.from('ucs_photos').insert({photographer_id:state.user.id,image_url:url,event_name:eventName,caption,published:true});
+      if(saveErr)throw saveErr;
+    }
+    form.reset();await loadPublicData();toast(files.length+' photo(s) published!');
+  }catch(error){toast(error.message||'Photo upload failed.',true);await loadPublicData();}
+  finally{btn.disabled=false;}
+});
+$('#ucsMyPhotoList')?.addEventListener('click',async e=>{
+  const btn=e.target.closest('[data-photo-publish]');if(!btn||!db||!state.canPhotograph)return;
+  const photo=state.photos.find(p=>p.id===btn.dataset.photoPublish&&p.photographer_id===state.user?.id);
+  if(!photo)return;
+  const {error}=await db.from('ucs_photos').update({published:!photo.published}).eq('id',photo.id);
+  if(error)return toast(error.message,true);
+  await loadPublicData();toast('Photo visibility updated.');
+});
+
 function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNews(); renderPhotoGallery(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
