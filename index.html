@@ -24,13 +24,14 @@
       <a href="#rankings" data-page="rankings">Rankings</a>
       <a href="#betting" data-page="betting">Betting</a>
       <a href="#fights" data-page="fights">Fights</a>
+      <a href="#watch" data-page="watch">WATCH LIVE</a>
       <a href="#news" data-page="news">News</a>
       <a href="#photography" data-page="photography">Photography</a>
       <a href="#account" data-page="account">Fighter Account</a>
       <a href="#admin" data-page="admin">Admin</a>
     </nav>
-    <a class="ucs-watch-button" href="https://www.twitch.tv/hymass21" target="_blank" rel="noopener noreferrer" aria-label="Watch UCS number 001 on Twitch">
-      <span class="ucs-watch-live-dot" aria-hidden="true"></span> WATCH UCS#001 <span class="ucs-watch-arrow" aria-hidden="true">↗</span>
+    <a class="ucs-watch-button" href="#watch" data-page="watch" aria-label="Watch UCS live stream on this website">
+      <span class="ucs-watch-live-dot" aria-hidden="true"></span> WATCH UCS#001 <span class="ucs-watch-arrow" aria-hidden="true">▶</span>
     </a>
 
   </header>
@@ -54,6 +55,7 @@
       </section>
 
       <div class="ticker"><div class="shell ticker-inner"><strong>UCS LIVE</strong><span>Official fight cards • Rankings • Results • Champions</span><b>POWERED BY UFK FIGHT KIT</b></div></div>
+      <div class="ucs-home-countdown-strip shell"><div><span class="ucs-home-countdown-label">UCS#001 · OCT 21 · 8 PM ET</span><strong>FIGHT NIGHT COUNTDOWN</strong></div><div class="ucs-home-countdown-numbers" id="ucsHomeCountdown" aria-label="Live time until fight night">--d --h --m --s</div><a href="#watch" data-page="watch" class="ucs-home-countdown-link">WATCH THE EVENT →</a></div>
 
       <section class="shell ucs-marquee-section" aria-labelledby="ucsMarqueeHeading">
         <div class="ucs-marquee-header">
@@ -170,6 +172,25 @@
           <div class="my-bets" id="myBets"><div class="my-bets-title">MY OPEN BETS</div><div id="myBetRows" class="data-empty">Sign in to view your bets.</div></div>
         </aside>
       </div>
+    </section>
+
+    <section class="page shell section-space ucs-watch-page" id="watch">
+      <div class="ucs-watch-heading"><div><div class="section-kicker">THE UCS ARENA</div><h1>WATCH <em>UCS LIVE</em></h1><p>Catch every round on the official UCS Twitch channel — without leaving the league website.</p></div><span class="ucs-stream-channel"><span class="ucs-watch-live-dot" aria-hidden="true"></span> HYMASS21 / TWITCH</span></div>
+      <section class="ucs-watch-countdown-wrap" aria-labelledby="ucsCountTitle">
+        <div class="ucs-watch-event-overline"><span>UCS#001 • FIGHT NIGHT</span><span>WEDNESDAY · OCT 21 · 2026</span></div>
+        <h2 id="ucsCountTitle">THE ROAD TO <em>FIGHT NIGHT</em></h2>
+        <p class="ucs-watch-countdown-sub">October 21, 2026 at 8:00 PM Eastern (EDT) · Countdown updates live</p>
+        <div class="ucs-watch-countdown" id="ucsWatchCountdown" role="timer" aria-label="Time remaining until UCS Fight Night">
+          <div class="ucs-count-unit"><strong id="ucsCDays">00</strong><span>DAYS</span></div><div class="ucs-count-divider">:</div>
+          <div class="ucs-count-unit"><strong id="ucsCHours">00</strong><span>HOURS</span></div><div class="ucs-count-divider">:</div>
+          <div class="ucs-count-unit"><strong id="ucsCMinutes">00</strong><span>MINUTES</span></div><div class="ucs-count-divider">:</div>
+          <div class="ucs-count-unit"><strong id="ucsCSeconds">00</strong><span>SECONDS</span></div>
+        </div>
+        <p id="ucsCountdownStatus" class="ucs-count-status">COUNTING DOWN TO THE FIRST BELL</p>
+      </section>
+      <div class="ucs-watch-stream-label"><div><span class="ucs-watch-stream-pulse"></span><strong>OFFICIAL UCS STREAM</strong><span>Live when the channel is broadcasting</span></div><a href="https://www.twitch.tv/hymass21" target="_blank" rel="noopener noreferrer">OPEN ON TWITCH ↗</a></div>
+      <div class="ucs-twitch-layout"><div class="ucs-twitch-player"><div id="ucsTwitchPlayer" class="ucs-twitch-placeholder"><span>▶</span><strong>UCS LIVE BROADCAST</strong><p>Open the Watch tab to load the Twitch player.</p></div></div><aside class="ucs-twitch-chat-wrap"><div class="ucs-twitch-chat-title">STREAM CHAT <span>● LIVE CHAT</span></div><div id="ucsTwitchChat" class="ucs-twitch-chat"><p>Chat loads alongside the stream.</p></div></aside></div>
+      <p class="ucs-watch-disclaimer">Twitch playback and chat depend on Twitch availability and browser privacy settings. If an embed is blocked, use the Twitch link above.</p>
     </section>
 
     <section class="page shell section-space" id="fights">
