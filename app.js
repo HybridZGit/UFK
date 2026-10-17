@@ -404,7 +404,7 @@ function populateUcsEventAdmin(){
   select.innerHTML='<option value="">+ CREATE NEW EVENT</option>'+state.events.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+' · '+esc(fmtDate(e.event_date))+'</option>').join('');
   if(state.events.some(e=>e.id===previous))select.value=previous;
   if(select.value)fillUcsEventEditor();
-  $('.ucs-event-bout-select').forEach(drop=>{
+  $$('.ucs-event-bout-select').forEach(drop=>{
     const current=drop.value;
     drop.innerHTML='<option value="">No event linked</option>'+state.events.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+' · '+esc(fmtDate(e.event_date))+'</option>').join('');
     if(state.events.some(e=>e.id===current))drop.value=current;
@@ -462,7 +462,7 @@ $('#ucsEventEditorForm')?.addEventListener('submit',async e=>{
     toast(id?'UCS event updated.':'UCS event created!');
   }catch(error){toast(error.message||'Could not save UCS event.',true);}finally{button.disabled=false;}
 });
-$('.ucs-event-bout-select').forEach(drop=>drop.addEventListener('change',()=>{
+$$('.ucs-event-bout-select').forEach(drop=>drop.addEventListener('change',()=>{
   const event=state.events.find(x=>x.id===drop.value);if(!event)return;
   const form=drop.closest('form');
   if(form?.elements.event_name)form.elements.event_name.value=event.name;
