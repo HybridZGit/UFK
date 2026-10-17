@@ -57,6 +57,19 @@
       <div class="ticker"><div class="shell ticker-inner"><strong>UCS LIVE</strong><span>Official fight cards • Rankings • Results • Champions</span><b>POWERED BY UFK FIGHT KIT</b></div></div>
       <div class="ucs-home-countdown-strip shell"><div><span class="ucs-home-countdown-label">UCS#001 · OCT 21 · 8 PM ET</span><strong>FIGHT NIGHT COUNTDOWN</strong></div><div class="ucs-home-countdown-numbers" id="ucsHomeCountdown" aria-label="Live time until fight night">--d --h --m --s</div><a href="#watch" data-page="watch" class="ucs-home-countdown-link">WATCH THE EVENT →</a></div>
 
+      <section class="shell ucs-tott-section" aria-labelledby="ucsTottHeading">
+        <div class="ucs-tott-header">
+          <div><span class="section-kicker">OFFICIAL UCS MATCHUP INTELLIGENCE</span><h2 id="ucsTottHeading">TALE OF <em>THE TAPE</em></h2><p>Data-driven scouting of the official main and co-main events.</p></div>
+          <span class="ucs-tott-engine-label">✦ UCS SCOUTING ENGINE</span>
+        </div>
+        <div class="ucs-tott-tabs" id="ucsTottTabs" role="tablist" aria-label="Select featured fight analysis">
+          <button type="button" id="ucsTottMainTab" role="tab" aria-controls="ucsTottStage" aria-selected="true" data-tott-slot="main" class="active">★ MAIN EVENT</button>
+          <button type="button" id="ucsTottCoMainTab" role="tab" aria-controls="ucsTottStage" aria-selected="false" data-tott-slot="co" class="hidden">★ CO-MAIN EVENT</button>
+        </div>
+        <div id="ucsTottStage" class="ucs-tott-stage" role="tabpanel" aria-live="polite"><p class="data-empty">Loading official matchup analysis…</p></div>
+        <p class="ucs-tott-disclaimer">UCS AI-style scouting is calculated from recorded fighter ratings and results, not a guarantee, official prediction or betting odds. Missing stats aren't estimated.</p>
+      </section>
+
       <section class="shell ucs-marquee-section" aria-labelledby="ucsMarqueeHeading">
         <div class="ucs-marquee-header">
           <div><span class="section-kicker">RECORD-DRIVEN MATCHMAKING</span><h2 id="ucsMarqueeHeading">MARQUEE MATCHUPS</h2></div>
