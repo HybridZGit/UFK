@@ -136,3 +136,23 @@
 .profile-stat-grid .profile-earnings-number{color:#efc65b;font-size:clamp(15px,2.5vw,22px);overflow-wrap:anywhere}
 @media(max-width:800px){.profile-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.profile-stat-grid>div:nth-child(3n){border-right:0}}
 @media(max-width:420px){.profile-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-stat-grid>div:nth-child(3n){border-right:1px solid #30333e}.profile-stat-grid>div:nth-child(2n){border-right:0}}
+
+/* Distinct gold earnings and champion-only profile hero */
+#fighterModal .profile-earnings-number{color:#f4ca59!important;text-shadow:0 0 17px rgba(244,193,68,.24);font-weight:900!important}
+#fighterModal .ucs-champion-spotlight{display:flex;position:relative;align-items:center;gap:18px;margin:0 24px 18px;padding:18px 22px;overflow:hidden;border:1px solid rgba(255,211,101,.73);border-radius:12px;background:radial-gradient(ellipse at 9% 20%,rgba(255,216,106,.22),transparent 48%),linear-gradient(115deg,#29200d 0%,#14120e 54%,#2e220c 100%);box-shadow:inset 0 1px rgba(255,237,178,.24),0 10px 34px rgba(189,139,24,.15)}
+#fighterModal .ucs-champion-spotlight.hidden{display:none!important}
+#fighterModal .ucs-champion-spotlight::after{content:'';pointer-events:none;position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,231,153,.13) 48%,transparent 61%);transform:translateX(-130%);animation:ucsChampionShine 6s ease-in-out infinite}
+#fighterModal .ucs-champion-emblem{flex:0 0 auto;font-size:clamp(30px,5vw,50px);filter:drop-shadow(0 0 13px rgba(247,201,74,.44))}
+#fighterModal .ucs-champion-details{min-width:0;flex:1}
+#fighterModal .ucs-champion-eyebrow{display:block;font-size:10px;font-weight:900;letter-spacing:.18em;color:#e5ba4b;margin-bottom:5px}
+#fighterModal #profileChampionHeading{display:block;font-family:'Barlow Condensed',Impact,sans-serif;color:#ffdc7c;font-size:clamp(23px,4vw,37px);font-weight:900;line-height:1.1;text-shadow:0 2px 14px rgba(239,196,69,.22)}
+#fighterModal .ucs-champion-belts{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+#fighterModal .ucs-champion-belt{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(221,176,61,.55);border-radius:999px;padding:5px 10px;color:#f6d988;background:rgba(11,10,7,.45);font-size:11px;font-weight:800}
+#fighterModal .ucs-champion-belt small{color:#bcb095;font-size:10px;font-weight:600}
+#fighterModal .ucs-champion-seal{flex:0 0 auto;color:#ffe5a2;border:1px solid rgba(255,215,118,.46);transform:rotate(-6deg);font-weight:900;font-family:'Barlow Condensed',Impact,sans-serif;font-size:18px;letter-spacing:.12em;padding:9px 12px}
+#fighterModal.ucs-is-champion .fighter-profile-panel{border-top-color:#f4c454;box-shadow:0 36px 110px rgba(0,0,0,.7),0 0 35px rgba(235,181,57,.2)}
+#fighterModal.ucs-is-champion .profile-overline{color:#f2c752}
+#fighterModal.ucs-is-champion #profileTitles{color:#f3c354}
+@keyframes ucsChampionShine{0%,68%,100%{transform:translateX(-130%)}85%{transform:translateX(130%)}}
+@media(max-width:600px){#fighterModal .ucs-champion-spotlight{margin:0 12px 14px;padding:14px;gap:10px}#fighterModal .ucs-champion-seal{display:none}}
+@media(prefers-reduced-motion:reduce){#fighterModal .ucs-champion-spotlight::after{animation:none}}
