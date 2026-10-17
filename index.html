@@ -116,6 +116,14 @@
       <input id="fighterSearch" class="search" placeholder="Search fighters..." />
       <div class="champion-banner" id="worldChampionBanner"><small>UCS WORLD CHAMPION</small><strong>VACANT</strong><span>No champion assigned</span></div>
       <div class="rank-table-wrap"><table class="rank-table"><thead><tr><th>#</th><th>Fighter</th><th>Resume</th><th>Momentum</th><th>Finishing</th><th>Activity</th><th>Big Fight</th><th>Score</th></tr></thead><tbody id="rankRows"></tbody></table></div>
+      <section class="ucs-earners-section" aria-labelledby="ucsEarnersHeading">
+        <div class="ucs-earners-head">
+          <div><span class="section-kicker">UCS LEAGUE FINANCES</span><h3 id="ucsEarnersHeading">HIGHEST EARNERS</h3><p>Official recorded fighter earnings · Updates when admins save new totals</p></div>
+          <span class="ucs-earners-live"><span aria-hidden="true">●</span> LIVE RANKINGS</span>
+        </div>
+        <div id="ucsTopEarners" class="ucs-earners-list" aria-live="polite"><p class="data-empty">Loading fighter earnings…</p></div>
+        <p class="ucs-earners-note">Earnings are admin-recorded amounts, not UCS Credits or verified payouts.</p>
+      </section>
     </section>
 
     <section class="page shell section-space" id="betting">
