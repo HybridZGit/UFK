@@ -149,7 +149,7 @@ async function loadPublicData(){
   state.news=results[9].data||[];
   state.photos=results[10].data||[];
   state.formerChampionships=results[11].data||[];
-  renderAll();
+  renderAll();ucsRenderEventTags();
 }
 
 // UCS Photography: public read-only gallery; approved users can upload.
@@ -724,14 +724,31 @@ function ucsRenderEventCards(){
   }).join(''):'<div class="data-empty">No events announced yet.</div>';
   if(list)list.innerHTML=events.map(event=>'<div class="ucs-admin-event-row"><strong>'+esc(event.name)+'</strong><span>'+esc(fmtDate(event.event_date))+'</span><button type="button" class="mini-action" data-ucs-edit-event="'+esc(event.id)+'">EDIT / REPLACE POSTER</button></div>').join('');
 }
+const ucsEventTags=new Set();
+function ucsRenderEventTags(){
+  const search=$('#ucsEventFighterSearch'),suggestions=$('#ucsEventFighterSuggestions'),selected=$('#ucsEventSelectedFighters');
+  if(!suggestions||!selected)return;
+  const query=(search?.value||'').replace(/^@/,'').trim().toLowerCase();
+  const roster=state.fighters.filter(f=>!ucsEventTags.has(f.id)&&(!query||f.name.toLowerCase().includes(query))).slice(0,12);
+  suggestions.innerHTML=roster.map(f=>'<button type="button" class="ucs-event-tag-option" data-ucs-event-add="'+esc(f.id)+'">'+avatarHtml(f,'ucs-mention-avatar')+'<span>'+esc(f.name)+'</span></button>').join('')||'<p class="ucs-mention-empty">No matching fighters</p>';
+  selected.innerHTML=[...ucsEventTags].map(id=>fighterById(id)).filter(Boolean).map(f=>'<span class="ucs-event-tag-chip">'+avatarHtml(f,'ucs-mention-avatar')+' @'+esc(f.name)+' <button type="button" data-ucs-event-remove="'+esc(f.id)+'" aria-label="Remove '+esc(f.name)+'">×</button></span>').join('');
+}
+$('#ucsEventFighterSearch')?.addEventListener('input',ucsRenderEventTags);
+$('#ucsEventFighterSuggestions')?.addEventListener('click',e=>{const btn=e.target.closest('[data-ucs-event-add]');if(!btn)return;ucsEventTags.add(btn.dataset.ucsEventAdd);$('#ucsEventFighterSearch').value='';ucsRenderEventTags();});
+$('#ucsEventSelectedFighters')?.addEventListener('click',e=>{const btn=e.target.closest('[data-ucs-event-remove]');if(!btn)return;ucsEventTags.delete(btn.dataset.ucsEventRemove);ucsRenderEventTags();});
 $('#ucsAdminEventsList')?.addEventListener('click',e=>{
   const button=e.target.closest('[data-ucs-edit-event]');if(!button)return;
   const event=state.events.find(x=>x.id===button.dataset.ucsEditEvent),form=$('#ucsEventEditor');
   if(!event||!form)return;
   for(const key of ['event_id','name','event_date','details','status'])form.elements[key].value=event[key]||'';
+  ucsEventTags.clear();
+  (state.scheduledBouts||[]).filter(b=>b.event_id===event.id).forEach(b=>{ucsEventTags.add(b.fighter_a_id);ucsEventTags.add(b.fighter_b_id);});
+  const taggedNames=(event.details||'').match(/@([\\w .-]+)/g)||[];
+  taggedNames.forEach(name=>{const f=state.fighters.find(f=>f.name.toLowerCase()===name.slice(1).trim().toLowerCase());if(f)ucsEventTags.add(f.id);});
+  ucsRenderEventTags();
   form.scrollIntoView({behavior:'smooth',block:'center'});
 });
-$('#ucsEventNew')?.addEventListener('click',()=>{$('#ucsEventEditor')?.reset();$('#ucsEventEditor').elements.event_id.value='';});
+$('#ucsEventNew')?.addEventListener('click',()=>{$('#ucsEventEditor')?.reset();$('#ucsEventEditor').elements.event_id.value='';ucsEventTags.clear();ucsRenderEventTags();});
 $('#ucsEventEditor')?.addEventListener('submit',async e=>{
   e.preventDefault();
   if(!db||!state.isAdmin)return toast('Admin permission required.',true);
@@ -757,7 +774,8 @@ $('#ucsEventEditor')?.addEventListener('submit',async e=>{
     const eventId=savedEvent.id,marker='[UCS_EVENT:'+eventId+']';
     const eventNumber=(payload.name.match(/UCS\\s*#?\\s*\\d+/i)||[])[0]||payload.name;
     const fight=(payload.name.match(/([A-Za-z0-9][A-Za-z0-9 .'-]{0,55})\\s+VS?\\s+([A-Za-z0-9][A-Za-z0-9 .'-]{0,55})/i)||payload.details?.match(/([A-Za-z0-9][A-Za-z0-9 .'-]{0,55})\\s+VS?\\s+([A-Za-z0-9][A-Za-z0-9 .'-]{0,55})/i));
-    const matchLabel=fight?(fight[1].trim()+' V '+fight[2].trim()):'FIGHTER V FIGHTER';
+    const taggedFighters=[...ucsEventTags].map(fighterById).filter(Boolean);
+    const matchLabel=taggedFighters.length>=2?(taggedFighters[0].name+' V '+taggedFighters[1].name):(fight?(fight[1].trim()+' V '+fight[2].trim()):'FIGHTER V FIGHTER');
     const headline=(eventNumber+' HAS JUST BEEN ANNOUNCED WITH '+matchLabel+' AS THE HEADLINE').slice(0,160);
     const summary=(payload.details||'The next UCS fight night has been officially announced.').slice(0,450);
     const body=payload.name+' has officially been announced!\\n\\n'+(payload.details||'The main event will be confirmed soon.')+'\\n\\nEvent date: '+payload.event_date+'. Visit the Events tab for the official fight poster and updated fight card.\\n\\n'+marker;
@@ -765,7 +783,7 @@ $('#ucsEventEditor')?.addEventListener('submit',async e=>{
     try{
       const {data:existing,error:findError}=await db.from('ucs_news').select('id').ilike('body','%'+marker+'%').limit(1);
       if(findError)throw findError;
-      const article={headline,summary,body,image_url:payload.poster_url||null,banner_url:payload.poster_url||null,is_published:true,updated_at:new Date().toISOString()};
+      const article={headline,summary,body,image_url:payload.poster_url||null,banner_url:payload.poster_url||null,tagged_fighter_ids:taggedFighters.map(f=>f.id),is_published:true,updated_at:new Date().toISOString()};
       if(existing?.length){
         // Do not erase an existing news poster when an admin edits text without uploading a new one.
         if(!payload.poster_url){delete article.image_url;delete article.banner_url;}
@@ -775,7 +793,7 @@ $('#ucsEventEditor')?.addEventListener('submit',async e=>{
         const {error:newsError}=await db.from('ucs_news').insert(article);if(newsError)throw newsError;
       }
     }catch(error){announcementError=error;console.error('UCS event news publication:',error);}
-    form.reset();form.elements.event_id.value='';
+    form.reset();form.elements.event_id.value='';ucsEventTags.clear();ucsRenderEventTags();
     await loadPublicData();
     toast(announcementError?'Event saved, but news announcement failed: '+announcementError.message:(id?'Event and news updated.':'Event published to Events and News.'),!!announcementError);
   }catch(error){toast(error.message||'Could not save event.',true);}
