@@ -5,7 +5,7 @@ const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;'
 const state = {
   fighters: [], champions: [], results: [], events: [], contracts: [], bets: [], scheduledBouts: [], settings: {},
   user: null, isAdmin: false, profile: null, myFighter: null, wallet: null, userBets: [],
-  fighterContracts: [], contractTab: 'incoming', contractTarget: null,
+  fighterEarnings: new Map(), fighterContracts: [], contractTab: 'incoming', contractTarget: null,
   rankingDivision: 'UCS World', betSelection: null
 };
 
@@ -56,13 +56,15 @@ async function loadPublicData(){
     db.from('contract_activity').select('*').order('created_at',{ascending:false}).limit(20),
     db.from('betting_markets').select('*').eq('is_open',true).order('created_at',{ascending:false}),
     db.from('league_settings').select('*'),
-    db.from('scheduled_bouts').select('*').eq('status','scheduled').order('bout_date',{ascending:true,nullsFirst:false})
+    db.from('scheduled_bouts').select('*').eq('status','scheduled').order('bout_date',{ascending:true,nullsFirst:false}),
+    db.from('fighter_earnings').select('fighter_id,amount')
   ]);
   const firstError = queries.find(x=>x.error)?.error;
   if(firstError) toast(`Supabase: ${firstError.message}`,true);
   [state.fighters,state.champions,state.results,state.events,state.contracts,state.bets]=queries.slice(0,6).map(x=>x.data||[]);
   state.settings=Object.fromEntries((queries[6].data||[]).map(x=>[x.key,x.value]));
   state.scheduledBouts=queries[7].data||[];
+  state.fighterEarnings=new Map((queries[8].data||[]).map(row=>[row.fighter_id,Number(row.amount)]));
   renderAll();
 }
 
@@ -201,6 +203,7 @@ function openFighterProfile(id){
   $('#profileStreak').textContent=fighterForm(f);
   $('#profileTitles').textContent=String(titles.length);
   $('#profileFights').textContent=String((f.wins||0)+(f.losses||0)+(f.draws||0));
+  $('#profileEarnings').textContent=Number(state.fighterEarnings.get(f.id)||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   $('#profileAvatar').innerHTML=f.avatar_url?`<img src="${esc(f.avatar_url)}" alt="${esc(f.name)}">`:`<span>${esc(initials(f.name))}</span>`;
   const metrics=[['Resume',f.resume],['Momentum',f.momentum],['Finishing',f.finishing],['Activity',f.activity],['Big fight',f.big_fight]];
   $('#profileRatingBars').innerHTML=metrics.map(([label,val])=>`<div class="profile-meter"><div><span>${label}</span><b>${Number(val||0).toFixed(1)}</b></div><i><em style="width:${Math.max(0,Math.min(100,Number(val||0)*10))}%"></em></i></div>`).join('');
@@ -518,6 +521,9 @@ async function ucsLoadEarnings(){
   const {data,error}=await db.from('fighter_earnings').select('fighter_id,amount');
   if(error)return toast('Could not load earnings: '+error.message,true);
   ucsEarningsState.records=new Map((data||[]).map(x=>[x.fighter_id,Number(x.amount)]));
+  state.fighterEarnings=new Map(ucsEarningsState.records);
+  const shownProfile=$('#fighterModal')?.classList.contains('open')?state.fighters.find(f=>f.name===$('#profileName')?.textContent):null;
+  if(shownProfile)$('#profileEarnings').textContent=ucsFormatEarnings(state.fighterEarnings.get(shownProfile.id)||0);
   ucsEarningsState.loaded=true;
   ucsRenderEarnings();
 }
