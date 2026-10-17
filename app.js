@@ -3,7 +3,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
 
 const state = {
-  fighters: [], champions: [], results: [], events: [], contracts: [], bets: [], scheduledBouts: [], news: [], settings: {},
+  fighters: [], champions: [], results: [], events: [], contracts: [], bets: [], scheduledBouts: [], news: [], communityPredictions: [], settings: {},
   user: null, isAdmin: false, profile: null, myFighter: null, wallet: null, userBets: [],
   fighterEarnings: new Map(), fighterContracts: [], contractTab: 'incoming', contractTarget: null,
   rankingDivision: 'UCS World', betSelection: null
@@ -58,7 +58,8 @@ async function loadPublicData(){
     db.from('league_settings').select('*'),
     db.from('scheduled_bouts').select('*').eq('status','scheduled').order('bout_date',{ascending:true,nullsFirst:false}),
     db.from('fighter_earnings').select('fighter_id,amount'),
-    db.from('ucs_news').select('*').order('published_at',{ascending:false})
+    db.from('ucs_news').select('*').order('published_at',{ascending:false}),
+    db.from('ucs_community_predictions').select('id,display_name,avatar_url,message,posted_at').order('posted_at',{ascending:false}).limit(25)
   ]);
   const firstError = queries.find(x=>x.error)?.error;
   if(firstError) toast(`Supabase: ${firstError.message}`,true);
@@ -67,10 +68,26 @@ async function loadPublicData(){
   state.scheduledBouts=queries[7].data||[];
   state.fighterEarnings=new Map((queries[8].data||[]).map(row=>[row.fighter_id,Number(row.amount)]));
   state.news=queries[9].data||[];
+  state.communityPredictions=queries[10].data||[];
   renderAll();
 }
 
-function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNews(); updateAccountUI(); }
+function renderCommunityPredictions(){
+  const root=$('#ucsCommunityFeed');if(!root)return;
+  const messages=state.communityPredictions||[];
+  if(!messages.length){
+    root.innerHTML='<p class="ucs-community-empty">Predictions will appear here when the Discord channel is connected.</p>';
+    return;
+  }
+  root.innerHTML=messages.map(m=>{
+    const initialsText=initials(m.display_name||'UCS');
+    const avatar=safeHttps(m.avatar_url)?`<img src="${esc(m.avatar_url)}" alt="" loading="lazy">`:`<span>${esc(initialsText)}</span>`;
+    const when=new Date(m.posted_at);
+    const timestamp=Number.isFinite(when.getTime())?when.toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'}):'';
+    return `<article class="ucs-community-message"><div class="ucs-community-avatar">${avatar}</div><div class="ucs-community-message-body"><div class="ucs-community-message-meta"><strong>${esc(m.display_name||'Discord member')}</strong><time>${esc(timestamp)}</time></div><p>${esc(m.message||'')}</p></div></article>`;
+  }).join('');
+}
+function renderAll(){ renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNews(); renderCommunityPredictions(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
