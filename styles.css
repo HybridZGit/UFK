@@ -983,3 +983,12 @@ a{accent-color:#d5ad48}
 .ucs-event-overlay-title{font-size:clamp(29px,3.2vw,48px)}
 .ucs-event-overlay-detail{font-size:clamp(12px,1.1vw,16px)}
 @media(max-width:720px){.ucs-event-poster{min-height:260px}}
+
+
+/* Critical poster layering fix: image must sit ABOVE the tile background. */
+.ucs-event-poster{position:relative;isolation:isolate;overflow:hidden;background:#111}
+.ucs-event-poster>.ucs-event-bg{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-height:none!important;object-fit:cover!important;display:block!important;z-index:0!important;opacity:1!important;pointer-events:none}
+.ucs-event-poster::before{z-index:1!important;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.38),rgba(0,0,0,.28) 45%,rgba(0,0,0,.55))!important}
+.ucs-event-overlay-date,.ucs-event-overlay-title,.ucs-event-overlay-detail{position:relative;z-index:2}
+.ucs-event-overlay-date{position:absolute}
+.ucs-event-content{display:none!important}
