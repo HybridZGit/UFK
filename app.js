@@ -707,8 +707,21 @@ function fillScheduledBoutEditor(){
   const b=state.scheduledBouts.find(x=>x.id===$('#scheduledBoutSelect').value);
   for(const field of ['event_name','bout_date','belt','poster_url','contribution_url'])form.elements[field].value=b?.[field]||'';
   form.elements.is_co_main.value=b?.is_co_main?'true':'false';
+  if(form.elements.poster_file)form.elements.poster_file.value='';
+  updateBoutPosterPreview();
 }
 $('#scheduledBoutSelect')?.addEventListener('change',fillScheduledBoutEditor);
+function updateBoutPosterPreview(file=null){
+  const box=$('#ucsBoutPosterPreview');
+  if(!box)return;
+  if(window._ucsBoutPosterPreviewUrl)URL.revokeObjectURL(window._ucsBoutPosterPreviewUrl);
+  window._ucsBoutPosterPreviewUrl=file?URL.createObjectURL(file):null;
+  const existing=state.scheduledBouts.find(b=>b.id===$('#scheduledBoutSelect')?.value);
+  const url=window._ucsBoutPosterPreviewUrl||(safeHttps(existing?.poster_url)?existing.poster_url:null);
+  box.innerHTML=url?`<img src="${esc(url)}" alt="Fight poster banner preview" loading="lazy"><span>${file?'NEW BANNER PREVIEW':'CURRENT FIGHT POSTER'}</span>`:'<small>No fight poster uploaded for this bout yet.</small>';
+}
+$('#ucsBoutPosterFile')?.addEventListener('change',e=>updateBoutPosterPreview(e.target.files?.[0]||null));
+
 
 function populateFighterSelects(){const html=`<option value="">Select fighter</option>`+state.fighters.map(f=>`<option value="${f.id}">${esc(f.name)} (${f.wins}-${f.losses}-${f.draws})</option>`).join('');$$('.fighter-select').forEach(s=>{const current=s.value;s.innerHTML=html;if([...s.options].some(o=>o.value===current))s.value=current;});}
 
@@ -1070,7 +1083,7 @@ $('#editScheduledBoutForm')?.addEventListener('submit',async e=>{
     const payload={event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,poster_url:posterUrl||null,contribution_url:contribution||null,is_co_main:d.get('is_co_main')==='true',updated_at:new Date().toISOString()};
     const {error}=await db.from('scheduled_bouts').update(payload).eq('id',boutId);
     if(error)throw error;
-    await loadPublicData();toast('Scheduled bout updated. No result recorded.');
+    await loadPublicData();updateBoutPosterPreview();toast('Scheduled bout updated. Poster banner refreshed.');
   }catch(error){toast(error.message||'Could not save bout.',true);}finally{button.disabled=false;}
 });
 $('#cancelScheduledBout')?.addEventListener('click',async()=>{
