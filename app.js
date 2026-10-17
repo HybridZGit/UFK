@@ -349,6 +349,32 @@ function renderRanks(filter=''){
   $('#rankRows').innerHTML=rows.length?rows.map((f,i)=>`<tr class="fighter-rank-row" data-fighter-profile="${f.id}" tabindex="0"><td><span class="rank-number">${i+1}</span></td><td class="rank-name"><div class="rank-fighter-cell">${avatarHtml(f)}<div><strong>${esc(f.name)}</strong><span>${esc(record(f))} · ${esc(f.platform||'UNASSIGNED')}</span></div></div></td><td>${chip(f.resume)}</td><td>${chip(f.momentum)}</td><td>${chip(f.finishing)}</td><td>${chip(f.activity)}</td><td>${chip(f.big_fight)}</td><td class="overall">${Number(f.score||0).toFixed(1)}</td></tr>`).join(''):`<tr><td colspan="8">${empty(`No ${state.rankingDivision} fighters in the database yet.`)}</td></tr>`;
   renderRankingChampion();
 }
+function renderRankingTitleFights(){
+  const box=$('#ucsRankingsTitleFights');
+  if(!box)return;
+  const division=state.rankingDivision;
+  const bouts=(state.scheduledBouts||[]).filter(b=>b.status!=='cancelled'&&b.belt===division);
+  if(!bouts.length){box.innerHTML='';box.classList.add('hidden');return;}
+  box.classList.remove('hidden');
+  const face=(fighter)=>fighter?avatarHtml(fighter,'ucs-title-contender-avatar'):'<span class="ucs-title-contender-avatar ucs-title-avatar-placeholder">?</span>';
+  box.innerHTML=bouts.map(b=>{
+    const left=fighterById(b.fighter_a_id),right=fighterById(b.fighter_b_id);
+    const date=b.bout_date?fmtDate(b.bout_date):'DATE TO BE ANNOUNCED';
+    const name=f=>esc(f?.name||'FIGHTER TBA');
+    const contender=f=>`<button type="button" class="ucs-title-contender" data-title-fighter="${esc(f?.id||'')}" ${f?'':'disabled'} aria-label="View ${name(f)} fighter profile">
+      ${face(f)}<span class="ucs-title-contender-copy"><strong>${name(f)}</strong><small>${f?esc(record(f)):'TO BE ANNOUNCED'}</small></span>
+    </button>`;
+    return `<article class="ucs-rank-title-match" aria-label="${esc(division)} championship fight">
+      <header class="ucs-rank-title-heading"><span>★ TITLE ON THE LINE</span><strong>${esc(division.toUpperCase())} CHAMPIONSHIP</strong></header>
+      <div class="ucs-rank-title-fighters">${contender(left)}<div class="ucs-rank-title-versus"><span>CHAMPIONSHIP</span><strong>VS</strong><small>${esc(date)}</small></div>${contender(right)}</div>
+      <footer class="ucs-rank-title-footer"><span>${esc(b.event_name||'UCS FIGHT NIGHT')} · SCHEDULED TITLE FIGHT</span></footer>
+    </article>`;
+  }).join('');
+}
+$('#ucsRankingsTitleFights')?.addEventListener('click',e=>{
+  const button=e.target.closest('[data-title-fighter]');
+  if(button?.dataset.titleFighter)openFighterProfile(button.dataset.titleFighter);
+});
 function renderRankingChampion(){
   const c=state.champions.find(x=>x.division===state.rankingDivision&&x.fighter_id);
   const f=c&&fighterById(c.fighter_id);
@@ -356,6 +382,7 @@ function renderRankingChampion(){
   $('#worldChampionBanner').innerHTML=f
     ? `<small>${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><div class="champion-inline">${avatarHtml(f,'champion-avatar')}<div><strong>${esc(f.name)}</strong><span>${esc(record(f))} · ${c.defenses||0} title defenses</span></div></div>`
     : `<small>${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><strong>VACANT</strong><span>No champion assigned</span>`;
+  renderRankingTitleFights();
 }
 $('#fighterSearch')?.addEventListener('input',e=>renderRanks(e.target.value));
 $('#rankingTabs')?.addEventListener('click',e=>{if(e.target.tagName==='BUTTON'){ $$('#rankingTabs button').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.rankingDivision=e.target.dataset.div;renderRanks($('#fighterSearch')?.value||'');}});
