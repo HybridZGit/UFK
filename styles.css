@@ -1024,3 +1024,8 @@ a{accent-color:#d5ad48}
 .ucs-sponsor-banner{display:flex;flex-direction:column;align-items:center;justify-content:center;margin:32px auto 44px;text-align:center}
 .ucs-sponsor-original{display:block;width:82%;max-width:960px;height:auto;margin:0 auto;object-fit:contain;border-radius:6px}
 @media(max-width:700px){.ucs-sponsor-original{width:94%;max-width:100%}.ucs-sponsor-banner{margin:24px auto 32px}}
+
+/* Sponsor overflow hotfix: constrain the banner to the viewport and preserve the full artwork */
+#home .ucs-sponsor-banner{box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0 16px!important;margin:28px auto 42px!important}
+#home .ucs-sponsor-banner .ucs-sponsor-original{box-sizing:border-box!important;display:block!important;flex:0 1 auto!important;width:100%!important;max-width:min(850px,100%)!important;min-width:0!important;height:auto!important;max-height:none!important;object-fit:contain!important;margin:0 auto!important;position:static!important;transform:none!important}
+@media(max-width:700px){#home .ucs-sponsor-banner{padding:0 8px!important}#home .ucs-sponsor-banner .ucs-sponsor-original{max-width:100%!important}}
