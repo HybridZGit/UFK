@@ -571,3 +571,35 @@ a{accent-color:#d5ad48}
 .ucs-featured-poster-bottom strong{flex:0 0 auto;color:#d0d0d4;font-size:12px;letter-spacing:.055em}
 @media(max-width:720px){.ucs-featured-poster-top,.ucs-featured-poster-bottom{padding:13px 15px}.ucs-featured-poster-brand{font-size:23px}.ucs-featured-poster-brand small{font-size:8px}.ucs-featured-poster-match{grid-template-columns:minmax(0,1fr) 68px minmax(0,1fr);gap:2px;padding:18px 9px}.ucs-featured-portrait{width:clamp(78px,21vw,125px);height:clamp(78px,21vw,125px)}.ucs-featured-fighter h3{font-size:clamp(22px,5.5vw,36px)}.ucs-featured-vs strong{font-size:57px}.ucs-featured-vs span{font-size:8px}.ucs-featured-vs small{font-size:9px}.ucs-featured-fighter p{font-size:11px}}
 @media(max-width:450px){.ucs-featured-poster-brand small{display:none}.ucs-featured-poster-tag{font-size:9px}.ucs-featured-poster-bottom{flex-direction:column;gap:6px;text-align:center}.ucs-featured-fighter h3{font-size:22px}.ucs-featured-portrait{width:79px;height:79px}.ucs-featured-poster-match{grid-template-columns:minmax(0,1fr) 58px minmax(0,1fr)}.ucs-featured-vs strong{font-size:48px}}
+
+
+/* Former champions retain an earned legacy status after a title is vacated or transferred. */
+.ucs-former-titles{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:9px}
+.ucs-former-titles.hidden{display:none!important}
+.ucs-former-champion-badge{display:inline-flex;align-items:center;padding:7px 11px;border:1px solid rgba(219,182,99,.68);border-radius:7px;background:linear-gradient(115deg,#302819,#18191d);color:#f4d795;letter-spacing:.065em;font-size:10px;font-weight:850;text-shadow:0 1px 4px #0008}
+/* Fights tab: live poster for selected main event with remaining undercard unchanged. */
+#fights #fightList{display:flex;flex-direction:column;gap:13px}
+#fights .ucs-fights-main-poster{position:relative;isolation:isolate;overflow:hidden;border:1px solid #9c7b3c;border-radius:13px;background:radial-gradient(ellipse at 50% 10%,rgba(199,152,52,.2),transparent 50%),linear-gradient(105deg,#191918,#080a0f 51%,#191713);box-shadow:0 19px 50px #0007}
+#fights .ucs-fights-main-poster:before{content:"UCS";position:absolute;inset:5% 0 0;display:grid;place-items:center;z-index:-1;color:#d4b56709;font:900 clamp(100px,23vw,310px)/1 'Barlow Condensed',Impact,sans-serif;pointer-events:none}
+#fights .ucs-fights-main-top,#fights .ucs-fights-main-bottom{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 22px;background:#07080ab8}
+#fights .ucs-fights-main-top{border-bottom:1px solid #6d5737}
+#fights .ucs-fights-main-top>strong{color:#f7dd99;font:900 30px/1 'Barlow Condensed',Impact,sans-serif}
+#fights .ucs-fights-main-top>strong small{font-size:12px;color:#dbc385}
+#fights .ucs-fights-main-top>span{color:#d6c4a0;font-size:12px;font-weight:800;text-align:center}
+#fights .ucs-fights-main-top>b{font-size:10px;color:#f9db8a;letter-spacing:.12em;border:1px solid #9a7940;background:#2f2618;padding:7px 10px;border-radius:4px}
+#fights .ucs-fights-main-content{display:grid;grid-template-columns:minmax(0,1fr) 140px minmax(0,1fr);gap:10px;align-items:center;min-height:295px;padding:22px 24px}
+#fights .ucs-fights-main-fighter{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;min-width:0}
+#fights .ucs-fights-main-fighter>img,#fights .ucs-fights-main-fighter>span{height:clamp(100px,14vw,180px);width:clamp(100px,14vw,180px);border-radius:50%;border:2px solid #bb9851;box-shadow:0 0 0 6px #c09a2815,0 10px 33px #000a;object-fit:cover;object-position:center 18%;background:#26221e}
+#fights .ucs-fights-main-fighter>span{display:grid;place-items:center;font:900 46px 'Barlow Condensed',Impact,sans-serif;color:#f2d998}
+#fights .ucs-fights-main-fighter>strong{color:#fff8e9;font:900 clamp(30px,4vw,51px)/1 'Barlow Condensed',Impact,sans-serif;overflow-wrap:anywhere}
+#fights .ucs-fights-main-fighter>small{color:#c6c0b5;font-size:12px}
+#fights .ucs-fights-main-middle{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+#fights .ucs-fights-main-middle>span{font-size:11px;letter-spacing:.15em;font-weight:900;color:#dcc28a}
+#fights .ucs-fights-main-middle>strong{font:900 clamp(62px,8vw,99px)/1 'Barlow Condensed',Impact,sans-serif;color:#f1ce77;font-style:italic;text-shadow:0 0 35px #d5a45b50}
+#fights .ucs-fights-main-middle>small{font-size:11px;line-height:1.5;font-weight:800;color:#e0c58a}
+#fights .ucs-fights-main-bottom{border-top:1px solid #655334;flex-wrap:wrap}
+#fights .ucs-fights-main-bottom>strong{font-size:14px;color:#f6d587;letter-spacing:.04em}
+#fights .ucs-fights-main-bottom>span{font-size:11px;color:#c9c1b1}
+#fights .ucs-fights-main-bottom .btn{margin:0;font-size:12px}
+#fights .event-row{width:100%}
+@media(max-width:720px){#fights .ucs-fights-main-top,#fights .ucs-fights-main-bottom{padding:12px}#fights .ucs-fights-main-top>span{display:none}#fights .ucs-fights-main-content{grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);min-height:220px;gap:4px;padding:19px 9px}#fights .ucs-fights-main-fighter>img,#fights .ucs-fights-main-fighter>span{width:clamp(76px,19vw,125px);height:clamp(76px,19vw,125px)}#fights .ucs-fights-main-fighter>strong{font-size:clamp(21px,5vw,34px)}#fights .ucs-fights-main-middle>strong{font-size:57px}#fights .ucs-fights-main-middle>span,#fights .ucs-fights-main-middle>small{font-size:9px}}
