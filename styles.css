@@ -830,3 +830,27 @@ a{accent-color:#d5ad48}
 .ucs-home-twitch-footer{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-top:12px;font-size:11px;line-height:1.55;color:#b9bdc8}
 .ucs-home-twitch-footer>span:first-child{color:#e9c577;font-weight:900;letter-spacing:.08em}
 @media(max-width:650px){.ucs-home-twitch-summary{padding:13px;min-height:0}.ucs-home-twitch-identity{gap:9px}.ucs-home-twitch-symbol{width:36px;height:36px;flex-basis:36px;font-size:15px}.ucs-home-twitch-identity strong{font-size:23px}.ucs-home-twitch-identity small{font-size:9px}.ucs-home-twitch-identity>span:last-child>span{font-size:11px}.ucs-home-twitch-content{padding:0 9px 12px}.ucs-home-twitch-player{min-height:0;aspect-ratio:16/9}.ucs-home-twitch-footer{gap:6px;font-size:10px}}
+
+
+/* UCS title fights appear automatically for whichever championship division is selected. */
+#rankings .ucs-rankings-title-fights{display:grid;gap:13px;margin:-2px 0 19px}
+#rankings .ucs-rankings-title-fights.hidden{display:none!important}
+#rankings .ucs-rank-title-match{overflow:hidden;border:1px solid #b18d47;border-radius:12px;background:radial-gradient(ellipse at 50% 12%,#5c44252e,transparent 70%),linear-gradient(105deg,#1d1a16,#0e1015 51%,#1d1a16);box-shadow:0 13px 32px #0006}
+#rankings .ucs-rank-title-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;padding:13px 19px;border-bottom:1px solid #72603c;background:#1b1815}
+#rankings .ucs-rank-title-heading>span{font-size:11px;font-weight:900;letter-spacing:.12em;color:#ebc876}
+#rankings .ucs-rank-title-heading>strong{font-size:11px;letter-spacing:.075em;color:#f9e1a1}
+#rankings .ucs-rank-title-fighters{display:grid;grid-template-columns:minmax(0,1fr) 104px minmax(0,1fr);align-items:center;gap:10px;padding:19px 26px}
+#rankings .ucs-title-contender{display:flex;flex-direction:row;align-items:center;gap:15px;width:100%;min-width:0;padding:9px;border:0;border-radius:10px;background:none;text-align:left;cursor:pointer;color:inherit;transition:background .15s}
+#rankings .ucs-title-contender:hover,#rankings .ucs-title-contender:focus-visible{background:#edbd5020;outline:1px solid #d1ae57}
+#rankings .ucs-title-contender:last-child{flex-direction:row-reverse;text-align:right}
+#rankings .ucs-title-contender-avatar{display:grid;place-items:center;flex:0 0 78px;width:78px;height:78px;max-width:78px;max-height:78px;object-fit:cover;object-position:center 18%;border:2px solid #c6a35e;border-radius:50%;background:#27201a;color:#f9dd8e;box-shadow:0 0 0 4px #c69d4218}
+#rankings .ucs-title-avatar-placeholder{font:900 32px 'Barlow Condensed',Impact,sans-serif}
+#rankings .ucs-title-contender-copy{display:flex;flex-direction:column;gap:8px;min-width:0}
+#rankings .ucs-title-contender-copy strong{font:900 clamp(23px,3vw,37px)/1.04 'Barlow Condensed',Impact,sans-serif;overflow-wrap:anywhere;color:#fcf2da}
+#rankings .ucs-title-contender-copy small{font-size:12px;color:#c3bfb9}
+#rankings .ucs-rank-title-versus{display:flex;align-items:center;flex-direction:column;gap:5px;text-align:center}
+#rankings .ucs-rank-title-versus span{font-size:9px;font-weight:900;letter-spacing:.1em;color:#d7b66d}
+#rankings .ucs-rank-title-versus strong{font:900 52px/1 'Barlow Condensed',Impact,sans-serif;color:#f8d27d;text-shadow:0 0 23px #d1a0476c}
+#rankings .ucs-rank-title-versus small{font-size:10px;line-height:1.5;color:#c9c2b7}
+#rankings .ucs-rank-title-footer{border-top:1px solid #55442c;padding:10px 19px;text-align:center;color:#d4bb83;font-size:11px;letter-spacing:.045em}
+@media(max-width:680px){#rankings .ucs-rank-title-heading{padding:11px}#rankings .ucs-rank-title-fighters{grid-template-columns:minmax(0,1fr) 52px minmax(0,1fr);padding:12px 5px;gap:2px}#rankings .ucs-title-contender,#rankings .ucs-title-contender:last-child{flex-direction:column;text-align:center;gap:8px}#rankings .ucs-title-contender-avatar{flex:0 0 58px;width:58px;height:58px;max-width:58px;max-height:58px}#rankings .ucs-title-contender-copy strong{font-size:clamp(19px,4.5vw,27px)}#rankings .ucs-title-contender-copy small{font-size:10px}#rankings .ucs-rank-title-versus strong{font-size:37px}#rankings .ucs-rank-title-versus span{font-size:8px}#rankings .ucs-rank-title-versus small{font-size:9px}}
