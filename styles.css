@@ -224,3 +224,62 @@
 @media(max-width:700px){.topbar .ucs-watch-button{order:1;margin-left:auto;padding:10px 11px;font-size:10px;border-radius:7px}.topbar .menu-btn{order:2}.ucs-watch-arrow{font-size:12px}}
 @media(max-width:370px){.topbar .ucs-watch-button{font-size:9px;padding:9px 8px;gap:5px}.brand span{display:none}.brand strong{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.ucs-watch-live-dot{animation:none}.ucs-watch-button{transition:none}}
+
+
+/* UCS legibility upgrade: preserve the black/red/gold visual identity. */
+:root{--muted:#aeb5c5;--text:#f9f9fd}
+body{font-size:14px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input,select,textarea{font-family:Inter,Arial,sans-serif}
+.topbar nav a{color:#c6cad5;font-weight:600}
+.brand span{font-size:9px;color:#c2c6d2}
+.hero p,.betting-heading p,.ucs-news-heading p,.ucs-marquee-description{color:#c1c6d1;font-size:clamp(13px,1.2vw,15px)}
+.eyebrow,.section-kicker{font-size:11px;letter-spacing:2px}
+.section-title-row>span{font-size:12px;color:#bcc1ce}
+.ticker-inner{font-size:11px;color:#cfd2da}
+.ticker b{font-size:10px}
+.panel header a{font-size:11px;color:#d0d3dd}
+.panel h3{font-size:14px}
+.mini-copy strong{font-size:12px}
+.mini-copy span,.mini-time{font-size:11px;color:#b4bbca}
+.rank-table th{font-size:10px;color:#bdc3d0;letter-spacing:.1em}
+.rank-table td{font-size:13px}
+.rank-name strong{font-size:13px}
+.rank-name span{font-size:11px;color:#b8bfcd}
+.score-chip{font-size:11px}
+.profile-overline{font-size:10px}
+.profile-identity p{font-size:12px;color:#c1c5d1}
+.profile-rank-badge small{font-size:9px;color:#dfc379}
+.profile-stat-grid span{font-size:10px;color:#aeb5c5;letter-spacing:.09em}
+.profile-section-title small{font-size:11px;color:#b3bac8}
+.profile-fight-row strong{font-size:13px}
+.profile-fight-row small{font-size:11px;color:#abb3c2}
+.profile-meter>div{font-size:11px;color:#b6bdca}
+.profile-section-title span{font-size:19px}
+.ucs-inline-date,.ucs-inline-event,.ucs-inline-status{color:#c4cad6!important}
+#profileUpcomingFights .ucs-inline-bout-details>span,
+#profileUpcomingFights .ucs-inline-bout-details>a{font-size:12px}
+.admin-card label{font-size:12px;color:#c6cad5}
+.admin-card p,.form-help,.ucs-earnings-hint{font-size:12px;color:#b7becb}
+.admin-login input,.admin-card input,.admin-card select,
+.admin-card textarea{font-size:14px;color:#fff;background:#13141b;border-color:#515768}
+.admin-login input::placeholder,.admin-card input::placeholder,.admin-card textarea::placeholder{color:#9fa7b7}
+.btn{font-size:12px;font-weight:800}
+.ucs-news-card-copy>span{color:#d0d3df;font-size:14px}
+.ucs-news-card-copy b{font-size:12px}
+.ucs-news-reader>small{font-size:12px}
+.ucs-news-body{color:#d1d5df}
+.ucs-marquee-corner,.ucs-marquee-score,.ucs-marquee-meta{color:#bdc3d0}
+.ucs-marquee-score{font-size:12px}
+.ucs-marquee-subtitle,.ucs-marquee-disclaimer{color:#c0c5d0;font-size:12px}
+.ucs-bout-info p{color:#d3d7e0}
+.ucs-news-admin-item small{color:#bcc2cf;font-size:11px}
+.ucs-news-admin-item strong{font-size:14px}
+.ucs-undercard-dialog>p{color:#c1c7d3}
+#ucsUndercardForm label{color:#d0d5df;font-size:13px}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #f0c55b;outline-offset:3px}
+@media(max-width:700px){
+ .topbar nav a{font-size:14px;padding:12px 14px}
+ .rank-table td{font-size:12px}
+ .profile-stat-grid span{font-size:9px}
+ .ucs-news-card-copy>span{font-size:13px}
+}
