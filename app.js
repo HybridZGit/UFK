@@ -305,6 +305,37 @@ async function refreshWallet(){if(!db||!state.user){state.wallet=null;state.user
 
 function safeHttps(url){try{return new URL(url).protocol==='https:';}catch{return false;}}
 function boutLink(b){return safeHttps(b.contribution_url)?`<a class="btn outline" href="${esc(b.contribution_url)}" target="_blank" rel="noopener noreferrer">CONTRIBUTE TO FIGHT ↗</a>`:'';}
+// Read the current Matcherino prize-pool total through our server-side proxy.
+// The official tournament remains the source of truth; no guessed values.
+let ucsMatcherinoRequest=null;
+async function refreshMatcherinoTotal(){
+  const node=$('#ucsMatcherinoAmount');
+  if(!db||!node||!window.UFK_SUPABASE_URL)return;
+  if(ucsMatcherinoRequest)return ucsMatcherinoRequest;
+  ucsMatcherinoRequest=(async()=>{
+    try{
+      const resp=await fetch(window.UFK_SUPABASE_URL+'/functions/v1/ucs-matcherino-total',{headers:{'apikey':window.UFK_SUPABASE_ANON_KEY},cache:'no-store'});
+      if(!resp.ok)throw Error('Matcherino not available');
+      const data=await resp.json();
+      const amount=Number(data.amount);
+      const current=$('#ucsMatcherinoAmount');
+      if(!current)return;
+      if(data.available===true&&data.currency==='USD'&&Number.isFinite(amount)&&amount>=0){
+        current.textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(amount);
+        current.title='Latest verified prize pool reported by Matcherino';
+      }else{
+        current.textContent='Live total unavailable';
+        current.title='Open Matcherino to see its current total';
+      }
+    }catch(error){
+      const current=$('#ucsMatcherinoAmount');
+      if(current){current.textContent='Live total unavailable';current.title='Open Matcherino to see its current total';}
+    }finally{ucsMatcherinoRequest=null;}
+  })();
+  return ucsMatcherinoRequest;
+}
+setInterval(()=>{if($('#home')?.classList.contains('active')&&$('#ucsMatcherinoAmount'))refreshMatcherinoTotal();},300000);
+
 function renderUpcomingSpotlight(){
   const root=$('#upcomingBoutSpotlight');if(!root)return;
   const b=state.scheduledBouts.find(x=>x.event_name==='RAFA vs BBK')||state.scheduledBouts[0];
@@ -312,7 +343,8 @@ function renderUpcomingSpotlight(){
   const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
   const special=b.event_name==='RAFA vs BBK' && b.bout_date==='2026-10-21';
   const poster=safeHttps(b.poster_url)?`<div class="ucs-poster-shell"><img class="ucs-bout-poster" src="${esc(b.poster_url)}" alt="${esc(a?.name||'Fighter')} versus ${esc(c?.name||'Fighter')} fight poster" loading="lazy">${special?'<div class="ucs-poster-hover"><span>UCS FIGHT NIGHT</span><h3>WANT TO FIGHT ON THE UNDERCARD?</h3><button type="button" class="btn primary" data-open-undercard>APPLY FOR UNDERCARD</button><button type="button" class="btn ghost" data-open-fights>SEE EVENT</button></div>':''}</div>`:'';
-  root.innerHTML=`${poster}<div class="ucs-bout-info"><span class="section-kicker">SCHEDULED · ${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</span><h2>${esc(a?.name||'TBA')} <em>VS</em> ${esc(c?.name||'TBA')}</h2><p>${esc(b.event_name)} · ${esc(b.belt?b.belt+' CHAMPIONSHIP':'Belt / title TBA')}</p><p>Fight scheduled — result not recorded.</p><div class="ucs-bout-links"><button class="btn ghost" type="button" data-open-fights>VIEW UPCOMING FIGHTS →</button>${special?'<button class="btn primary" type="button" data-open-undercard>APPLY FOR UNDERCARD</button>':''}${boutLink(b)}</div></div>`;
+  root.innerHTML=`${poster}<div class="ucs-bout-info"><span class="section-kicker">SCHEDULED · ${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</span><h2>${esc(a?.name||'TBA')} <em>VS</em> ${esc(c?.name||'TBA')}</h2><p>${esc(b.event_name)} · ${esc(b.belt?b.belt+' CHAMPIONSHIP':'Belt / title TBA')}</p><p>Fight scheduled — result not recorded.</p>${special?'<div class="ucs-matcherino-total" id="ucsMatcherinoTotal" aria-live="polite"><span class="ucs-matcherino-total-label">MATCHERINO PRIZE POOL</span><strong id="ucsMatcherinoAmount">Checking current total…</strong><a href="https://matcherino.com/tournaments/225104" target="_blank" rel="noopener noreferrer">View on Matcherino ↗</a></div>':''}<div class="ucs-bout-links"><button class="btn ghost" type="button" data-open-fights>VIEW UPCOMING FIGHTS →</button>${special?'<button class="btn primary" type="button" data-open-undercard>APPLY FOR UNDERCARD</button>':''}${boutLink(b)}</div></div>`;
+  if(special)refreshMatcherinoTotal();
   root.querySelectorAll('[data-open-fights]').forEach(btn=>btn.addEventListener('click',()=>showPage('fights')));
   root.querySelectorAll('[data-open-undercard]').forEach(btn=>btn.addEventListener('click',()=>openUndercardForm(b.id)));
 }
