@@ -465,12 +465,48 @@ function renderUpcomingSpotlight(){
   root.querySelectorAll('[data-open-undercard]').forEach(btn=>btn.addEventListener('click',()=>openUndercardForm(b.id)));
 }
 function renderEvents(){
-  const upcoming=state.scheduledBouts.map(b=>{
+  const root=$('#fightList');
+  if(!root)return;
+  const scheduled=state.scheduledBouts||[];
+  const featured=state.settings.featured_main_event||{};
+  const preference=b=>
+    (b.fighter_a_id===featured.champion_id&&b.fighter_b_id===featured.challenger_id)||
+    (b.fighter_b_id===featured.champion_id&&b.fighter_a_id===featured.challenger_id);
+  // The selected main event takes priority. Otherwise choose a scheduled title bout.
+  const main=scheduled.find(preference)||scheduled.find(b=>b.belt)||scheduled[0]||null;
+  const portrait=f=>f?.avatar_url&&safeHttps(f.avatar_url)
+    ?`<img src="${esc(f.avatar_url)}" loading="lazy" alt="">`
+    :`<span>${esc(initials(f?.name||'UCS'))}</span>`;
+  const headline=(a,b)=>`${esc(a?.name||'TBA')} <em>VS</em> ${esc(b?.name||'TBA')}`;
+  const card=b=>{
     const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
-    return `<article class="event-row ucs-scheduled-row"><time>${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</time><strong>${esc(a?.name||'TBA')} vs ${esc(c?.name||'TBA')}</strong><span>${esc(b.event_name)} · ${esc(b.belt?b.belt+' TITLE FIGHT':'Non-title / TBA')} · UPCOMING</span>${boutLink(b)}</article>`;
+    const date=b.bout_date?fmtDate(b.bout_date):'DATE TBA';
+    const title=b.belt?`${esc(b.belt)} CHAMPIONSHIP`:'OFFICIAL UCS BOUT';
+    return `<article class="ucs-fights-main-poster" aria-label="Main event: ${esc(a?.name||'TBA')} versus ${esc(c?.name||'TBA')}">
+      <div class="ucs-fights-main-top"><strong>UCS <small>FIGHT NIGHT</small></strong><span>${esc(b.event_name||'UCS MAIN EVENT')}</span><b>${b.belt?'TITLE FIGHT':'MAIN EVENT'}</b></div>
+      <div class="ucs-fights-main-content">
+        <div class="ucs-fights-main-fighter">${portrait(a)}<strong>${esc(a?.name||'TBA')}</strong><small>${a?esc(record(a)):'FIGHTER TBA'}</small></div>
+        <div class="ucs-fights-main-middle"><span>MAIN EVENT</span><strong>VS</strong><small>${title}</small></div>
+        <div class="ucs-fights-main-fighter">${portrait(c)}<strong>${esc(c?.name||'TBA')}</strong><small>${c?esc(record(c)):'FIGHTER TBA'}</small></div>
+      </div>
+      <div class="ucs-fights-main-bottom"><strong>${esc(date)}</strong><span>SCHEDULED · ${title}</span>${boutLink(b)}</div>
+    </article>`;
+  };
+  const mainPoster=main?card(main):'';
+  const upcoming=scheduled.filter(b=>b.id!==main?.id).map(b=>{
+    const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
+    return `<article class="event-row ucs-scheduled-row"><time>${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</time><strong>${headline(a,c)}</strong><span>${esc(b.event_name||'UCS Fight Night')} · ${esc(b.belt?b.belt+' TITLE FIGHT':'Non-title')} · UPCOMING</span>${boutLink(b)}</article>`;
   }).join('');
-  const events=state.events.map(e=>`<article class="event-row"><time>${esc(fmtDate(e.event_date))}</time><strong>${esc(e.name)}</strong><span>${esc(e.details||e.status)}</span></article>`).join('');
-  $('#fightList').innerHTML=upcoming+events||empty('No fight cards or results have been added yet.');
+  // Existing legacy event records sometimes repeat a scheduled bout. Suppress only
+  // exact matched pairings on the same event date, without deleting admin data.
+  const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const duplicate=e=>scheduled.some(b=>{
+    if(!e.event_date||!b.bout_date||e.event_date!==b.bout_date)return false;
+    const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
+    return a&&c&&(norm(e.name)===norm(a.name+' vs '+c.name)||norm(e.name)===norm(c.name+' vs '+a.name));
+  });
+  const events=state.events.filter(e=>!duplicate(e)).map(e=>`<article class="event-row"><time>${esc(fmtDate(e.event_date))}</time><strong>${esc(e.name)}</strong><span>${esc(e.details||e.status)}</span></article>`).join('');
+  root.innerHTML=mainPoster+upcoming+events||empty('No fight cards or results have been added yet.');
 }
 // Undercard application is handled by a secure Supabase Edge Function; Discord webhook never reaches browser.
 function openUndercardForm(boutId){
