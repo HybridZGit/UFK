@@ -124,82 +124,31 @@ function fighterForm(f){
 }
 
 async function loadPublicData(){
-  if(!db){
-    // The Supabase client is loaded from a CDN. Keep public rankings alive
-    // even if that CDN is blocked, using the public REST API and anon key.
-    const base=window.UFK_SUPABASE_URL,key=window.UFK_SUPABASE_ANON_KEY;
-    if(base&&key&&typeof fetch==='function'){
-      const headers={apikey:key,Authorization:'Bearer '+key};
-      const read=async(table,params='select=*')=>{
-        const response=await fetch(base+'/rest/v1/'+table+'?'+params,{headers});
-        if(!response.ok)throw Error('UCS '+table+' HTTP '+response.status);
-        return response.json();
-      };
-      const data=await Promise.allSettled([
-        read('fighters','select=*&active=eq.true&order=score.desc'),
-        read('champions'),
-        read('events','select=*&order=event_date.asc'),
-        read('scheduled_bouts','select=*&status=eq.scheduled&order=bout_date.asc'),
-        read('league_settings')
-      ]);
-      const set=(idx,field)=>{if(data[idx].status==='fulfilled'&&Array.isArray(data[idx].value))state[field]=data[idx].value;};
-      set(0,'fighters');set(1,'champions');set(2,'events');set(3,'scheduledBouts');
-      if(data[4].status==='fulfilled')state.settings=Object.fromEntries(data[4].value.map(x=>[x.key,x.value]));
-      data.filter(x=>x.status==='rejected').forEach(x=>console.error('UCS public REST:',x.reason));
-    }
-    renderAll();
-    return;
-  }
-  // Fighters load separately and render immediately, never waiting for optional data.
-  try{
-    const fighterRequest=db.from('fighters').select('*').eq('active',true).order('score',{ascending:false});
-    const fighterResponse=await Promise.race([
-      fighterRequest,
-      new Promise((_,reject)=>setTimeout(()=>reject(new Error('Fighter request timed out')),9000))
-    ]);
-    if(fighterResponse.error)throw fighterResponse.error;
-    if(!Array.isArray(fighterResponse.data))throw Error('Invalid fighter response');
-    state.fighters=fighterResponse.data;
-    console.info('UCS fighters loaded:',state.fighters.length);
-    try{renderRanks($('#fighterSearch')?.value||'')}catch(error){console.error('Rankings rendering failed:',error)}
-    try{renderHome()}catch(error){console.error('Home rendering failed:',error)}
-    try{renderEvents()}catch(error){console.error('Fight rendering failed:',error)}
-  }catch(error){
-    console.error('UCS fighter fetch failed:',error);
-    const target=$('#rankRows');
-    if(target)target.innerHTML='<tr><td colspan="9">Could not load fighters. Please reload this page.</td></tr>';
-    toast('Fighter connection failed. Trying again...',true);
-    setTimeout(()=>{if(!state.fighters.length)loadPublicData().catch(console.error)},7000);
-  }
-  // Remaining data is optional and independently updated on arrival.
-  const optional=[
-    ['champions',db.from('champions').select('*')],
-    ['results',db.from('results').select('*').order('event_date',{ascending:false}).limit(100)],
-    ['events',db.from('events').select('*').order('event_date',{ascending:true})],
-    ['contracts',db.from('contract_activity').select('*').order('created_at',{ascending:false}).limit(20)],
-    ['bets',db.from('betting_markets').select('*').eq('is_open',true).order('created_at',{ascending:false})],
-    ['settings',db.from('league_settings').select('*')],
-    ['scheduledBouts',db.from('scheduled_bouts').select('*').eq('status','scheduled').order('bout_date',{ascending:true,nullsFirst:false})],
-    ['fighterEarnings',db.from('fighter_earnings').select('fighter_id,amount')],
-    ['news',db.from('ucs_news').select('*').order('published_at',{ascending:false})],
-    ['photos',db.from('ucs_photos').select('*').order('created_at',{ascending:false}).limit(120)],
-    ['formerChampionships',db.from('ucs_former_championships').select('fighter_id,division')]
-  ];
-  await Promise.allSettled(optional.map(async([name,request])=>{
-    try{
-      const response=await Promise.race([
-        request,
-        new Promise((_,reject)=>setTimeout(()=>reject(new Error(name+' timed out')),9000))
-      ]);
-      if(response.error)throw response.error;
-      const rows=response.data||[];
-      if(name==='settings')state.settings=Object.fromEntries(rows.map(x=>[x.key,x.value]));
-      else if(name==='fighterEarnings')state.fighterEarnings=new Map(rows.map(x=>[x.fighter_id,Number(x.amount)]));
-      else state[name]=rows;
-      // Independent updates cannot block the main ranking page.
-      try{renderAll()}catch(err){console.error('UCS rendering '+name+':',err)}
-    }catch(error){console.error('UCS optional data '+name+':',error)}
-  }));
+  if(!db){ renderAll(); return; }
+  const queries = await Promise.all([
+    db.from('fighters').select('*').eq('active',true).order('score',{ascending:false}),
+    db.from('champions').select('*'),
+    db.from('results').select('*').order('event_date',{ascending:false}).limit(100),
+    db.from('events').select('*').order('event_date',{ascending:true}),
+    db.from('contract_activity').select('*').order('created_at',{ascending:false}).limit(20),
+    db.from('betting_markets').select('*').eq('is_open',true).order('created_at',{ascending:false}),
+    db.from('league_settings').select('*'),
+    db.from('scheduled_bouts').select('*').eq('status','scheduled').order('bout_date',{ascending:true,nullsFirst:false}),
+    db.from('fighter_earnings').select('fighter_id,amount'),
+    db.from('ucs_news').select('*').order('published_at',{ascending:false}),
+    db.from('ucs_photos').select('*').order('created_at',{ascending:false}).limit(120),
+    db.from('ucs_former_championships').select('fighter_id,division')
+  ]);
+  const firstError = queries.find(x=>x.error)?.error;
+  if(firstError) toast(`Supabase: ${firstError.message}`,true);
+  [state.fighters,state.champions,state.results,state.events,state.contracts,state.bets]=queries.slice(0,6).map(x=>x.data||[]);
+  state.settings=Object.fromEntries((queries[6].data||[]).map(x=>[x.key,x.value]));
+  state.scheduledBouts=queries[7].data||[];
+  state.fighterEarnings=new Map((queries[8].data||[]).map(row=>[row.fighter_id,Number(row.amount)]));
+  state.news=queries[9].data||[];
+  state.photos=queries[10].data||[];
+  state.formerChampionships=queries[11].data||[];
+  renderAll();
 }
 
 // UCS Photography: public read-only gallery; approved users can upload.
@@ -402,125 +351,7 @@ $('#ucsTottStage')?.addEventListener('click',event=>{
   if(btn?.dataset.tottFighter)openFighterProfile(btn.dataset.tottFighter);
 });
 
-function renderAll(){
-  // Keep the core league visible even if an optional widget fails.
-  const tasks=[
-    ['home',renderHome],
-    ['rankings',()=>renderRanks($('#fighterSearch')?.value||'')],
-    ['fights',renderEvents],
-    ['betting',renderBets],
-    ['fighter selects',populateFighterSelects],
-    ['fighter editor',populateFighterDetailsEditor],
-    ['scheduled bouts',populateScheduledBoutSelect],
-    ['admin rows',renderAdminRows],
-    ['account',updateAccountUI],
-    ['events',renderUcsEventCards],
-    ['event admin',populateUcsEventAdmin],
-    ['tale of the tape',renderTaleOfTheTape],
-    ['earnings',ucsRenderEarnings],
-    ['news tags',renderNewsTagOptions],
-    ['news',renderNews],
-    ['photography',renderPhotoGallery],
-    ['top earners',renderTopEarners]
-  ];
-  tasks.forEach(([name,fn])=>{
-    try{fn()}catch(error){console.error('UCS '+name+' renderer failed:',error);}
-  });
-}
-
-// Official UCS Events: event-level posters and schedules, controlled by admins.
-function ucsEventImage(url){
-  return url&&safeHttps(url)?'<img src="'+esc(url)+'" alt="Official UCS event poster" loading="lazy">':'<div class="ucs-event-poster-empty"><strong>UCS</strong><span>OFFICIAL FIGHT NIGHT</span></div>';
-}
-function renderUcsEventCards(){
-  const root=$('#ucsEventsGrid');if(!root)return;
-  const events=[...state.events].sort((a,b)=>String(a.event_date||'').localeCompare(String(b.event_date||'')));
-  root.innerHTML=events.length?events.map(event=>{
-    const cardBouts=state.scheduledBouts.filter(b=>b.event_id===event.id||(!b.event_id&&b.bout_date===event.event_date&&b.event_name?.trim().toLowerCase()===event.name?.trim().toLowerCase()));
-    const featured=state.settings.featured_main_event||{};
-    const main=cardBouts.find(b=>!b.is_co_main&&((b.fighter_a_id===featured.champion_id&&b.fighter_b_id===featured.challenger_id)||(b.fighter_b_id===featured.champion_id&&b.fighter_a_id===featured.challenger_id)))||cardBouts.find(b=>!b.is_co_main&&b.belt)||cardBouts.find(b=>!b.is_co_main);
-    const co=cardBouts.find(b=>b.is_co_main);
-    const ordered=[...(main?[main]:[]),...(co&&co.id!==main?.id?[co]:[]),...cardBouts.filter(b=>b.id!==main?.id&&b.id!==co?.id)];
-    const lines=ordered.map(b=>{
-      const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
-      return '<div class="ucs-event-fight"><span>'+esc(b.id===main?.id?'MAIN EVENT':b.id===co?.id?'CO-MAIN EVENT':'UNDERCARD')+'</span><strong>'+esc(a?.name||'TBA')+' <em>VS</em> '+esc(c?.name||'TBA')+'</strong><small>'+esc(b.belt||'UCS FIGHT')+'</small></div>';
-    }).join('');
-    return '<article class="ucs-event-card"><div class="ucs-event-card-poster">'+ucsEventImage(event.poster_url)+'</div><div class="ucs-event-card-content"><div class="ucs-event-card-kicker">'+esc(event.status||'upcoming')+' · '+esc(fmtDate(event.event_date))+'</div><h2>'+esc(event.name)+'</h2>'+(event.details?'<p>'+esc(event.details)+'</p>':'')+'<div class="ucs-event-fights">'+(lines||'<p class="ucs-event-no-bouts">Fight card to be announced.</p>')+'</div><button type="button" class="btn ghost ucs-event-fights-button" data-jump="fights">VIEW ALL FIGHTS →</button></div></article>';
-  }).join(''):empty('No official UCS events have been published yet.');
-}
-function populateUcsEventAdmin(){
-  const select=$('#ucsEventEditorSelect');if(!select)return;
-  const previous=select.value;
-  select.innerHTML='<option value="">+ CREATE NEW EVENT</option>'+state.events.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+' · '+esc(fmtDate(e.event_date))+'</option>').join('');
-  if(state.events.some(e=>e.id===previous))select.value=previous;
-  if(select.value)fillUcsEventEditor();
-  $$('.ucs-event-bout-select').forEach(drop=>{
-    const current=drop.value;
-    drop.innerHTML='<option value="">No event linked</option>'+state.events.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+' · '+esc(fmtDate(e.event_date))+'</option>').join('');
-    if(state.events.some(e=>e.id===current))drop.value=current;
-  });
-}
-function fillUcsEventEditor(){
-  const form=$('#ucsEventEditorForm');if(!form)return;
-  const event=state.events.find(x=>x.id===form.elements.id.value);
-  form.elements.name.value=event?.name||'';
-  form.elements.event_date.value=event?.event_date||'';
-  form.elements.details.value=event?.details||'';
-  form.elements.status.value=event?.status||'upcoming';
-  form.elements.poster_url.value=event?.poster_url||'';
-  if(form.elements.poster_file)form.elements.poster_file.value='';
-  updateUcsEventPosterPreview();
-}
-function updateUcsEventPosterPreview(file){
-  const preview=$('#ucsEventAdminPoster');if(!preview)return;
-  if(window._ucsEventPreviewUrl)URL.revokeObjectURL(window._ucsEventPreviewUrl);
-  window._ucsEventPreviewUrl=file?URL.createObjectURL(file):null;
-  const current=state.events.find(x=>x.id===$('#ucsEventEditorSelect')?.value);
-  const url=window._ucsEventPreviewUrl||(safeHttps(current?.poster_url)?current.poster_url:null);
-  preview.innerHTML=url?'<img src="'+esc(url)+'" alt="Selected event poster preview"><small>EVENT POSTER PREVIEW</small>':'<small>No poster uploaded yet. Upload one to display it in Events.</small>';
-}
-$('#ucsEventEditorSelect')?.addEventListener('change',fillUcsEventEditor);
-$('#ucsEventNewButton')?.addEventListener('click',()=>{
-  const form=$('#ucsEventEditorForm');if(!form)return;
-  form.reset();form.elements.id.value='';fillUcsEventEditor();form.elements.name.focus();
-});
-$('#ucsEventEditorForm')?.elements?.poster_file?.addEventListener('change',e=>updateUcsEventPosterPreview(e.target.files?.[0]));
-$('#ucsEventEditorForm')?.addEventListener('submit',async e=>{
-  e.preventDefault();if(!db||!state.isAdmin)return toast('UCS admin required.',true);
-  const form=e.currentTarget,values=new FormData(form),id=String(values.get('id')||'');
-  const upload=values.get('poster_file');
-  let posterUrl=String(values.get('poster_url')||'').trim();
-  if(posterUrl&&!safeHttps(posterUrl))return toast('Event poster URL must be HTTPS.',true);
-  const button=form.querySelector('[type="submit"]');button.disabled=true;
-  try{
-    if(upload instanceof File&&upload.size){
-      const types={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'},ext=types[upload.type];
-      if(!ext||upload.size>5*1024*1024)throw Error('Event poster must be PNG, JPG or WebP under 5 MB.');
-      const path='event-posters/'+(id||'new')+'/'+crypto.randomUUID()+'.'+ext;
-      const {error}=await db.storage.from('fighter-avatars').upload(path,upload,{contentType:upload.type,upsert:false});
-      if(error)throw error;
-      posterUrl=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
-    }
-    const payload={name:String(values.get('name')||'').trim(),event_date:values.get('event_date'),details:String(values.get('details')||'').trim()||null,status:values.get('status')||'upcoming',poster_url:posterUrl||null};
-    if(!payload.name||!payload.event_date)throw Error('Event name and date are required.');
-    const query=id?db.from('events').update(payload).eq('id',id):db.from('events').insert(payload).select('id').single();
-    const {data,error}=await query;
-    if(error)throw error;
-    await loadPublicData();
-    $('#ucsEventEditorSelect').value=id||data?.id||'';
-    fillUcsEventEditor();
-    toast(id?'UCS event updated.':'UCS event created!');
-  }catch(error){toast(error.message||'Could not save UCS event.',true);}finally{button.disabled=false;}
-});
-$$('.ucs-event-bout-select').forEach(drop=>drop.addEventListener('change',()=>{
-  const event=state.events.find(x=>x.id===drop.value);if(!event)return;
-  const form=drop.closest('form');
-  if(form?.elements.event_name)form.elements.event_name.value=event.name;
-  if(form?.elements.bout_date)form.elements.bout_date.value=event.event_date||'';
-}));
-$('#ucsEventsGrid')?.addEventListener('click',e=>{
-  const button=e.target.closest('[data-jump="fights"]');if(button){showPage('fights');history.replaceState(null,'','#fights');}
-});
+function renderAll(){ renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -1255,7 +1086,6 @@ function fillScheduledBoutEditor(){
   const b=state.scheduledBouts.find(x=>x.id===$('#scheduledBoutSelect').value);
   for(const field of ['event_name','bout_date','belt','poster_url','contribution_url'])form.elements[field].value=b?.[field]||'';
   form.elements.is_co_main.value=b?.is_co_main?'true':'false';
-  if(form.elements.event_id)form.elements.event_id.value=b?.event_id||'';
   if(form.elements.poster_file)form.elements.poster_file.value='';
   updateBoutPosterPreview();
 }
@@ -1604,7 +1434,7 @@ $('#scheduleBoutForm')?.addEventListener('submit',async e=>{
   if(a===b)return toast('Select two different fighters.',true);
   const url=(d.get('contribution_url')||'').trim();
   if(url&&!safeHttps(url))return toast('Use a valid HTTPS contribution link.',true);
-  const payload={fighter_a_id:a,fighter_b_id:b,event_id:d.get('event_id')||null,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,contribution_url:url||null,is_co_main:d.get('is_co_main')==='true'};
+  const payload={fighter_a_id:a,fighter_b_id:b,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,contribution_url:url||null,is_co_main:d.get('is_co_main')==='true'};
   const {error}=await db.from('scheduled_bouts').insert(payload);
   if(error)return toast(error.message,true);
   e.currentTarget.reset();await loadPublicData();toast('Bout scheduled. Fight records unchanged.');
@@ -1629,7 +1459,7 @@ $('#editScheduledBoutForm')?.addEventListener('submit',async e=>{
       if(uploadError)throw uploadError;
       posterUrl=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
     }
-    const payload={event_id:d.get('event_id')||null,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,poster_url:posterUrl||null,contribution_url:contribution||null,is_co_main:d.get('is_co_main')==='true',updated_at:new Date().toISOString()};
+    const payload={event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,poster_url:posterUrl||null,contribution_url:contribution||null,is_co_main:d.get('is_co_main')==='true',updated_at:new Date().toISOString()};
     const {error}=await db.from('scheduled_bouts').update(payload).eq('id',boutId);
     if(error)throw error;
     await loadPublicData();updateBoutPosterPreview();toast('Scheduled bout updated. Poster banner refreshed.');
@@ -1674,19 +1504,4 @@ if(db){
     if(document.visibilityState==='visible')refreshMatchupsFromDb();
   });
 }
-(async function init(){
-  // Public fighter/ranking/event data must never wait on login/session initialization.
-  try{ucsMountHomeTwitch();}catch(error){console.error('UCS stream setup:',error);}
-  try{renderAll();}catch(error){console.error('UCS first render:',error);}
-  try{updateAdminUI();}catch(error){console.error('UCS admin status:',error);}
-  const publicData=loadPublicData().catch(error=>{
-    console.error('UCS public data:',error);
-    toast('Fighter data could not load. Please try refreshing.',true);
-  });
-  const session=refreshSession().catch(error=>console.error('UCS account session:',error));
-  await publicData;
-  if(location.hash.startsWith('#fighter/')){
-    showPage('rankings');openFighterProfile(decodeURIComponent(location.hash.slice(9)));
-  }else if(location.hash&&$(location.hash))showPage(location.hash.slice(1));
-  await session;
-})();
+(async function init(){ucsMountHomeTwitch();renderAll();updateAdminUI();await refreshSession();await loadPublicData();if(location.hash.startsWith('#fighter/')){showPage('rankings');openFighterProfile(decodeURIComponent(location.hash.slice(9)));}else if(location.hash&&$(location.hash))showPage(location.hash.slice(1));})();
