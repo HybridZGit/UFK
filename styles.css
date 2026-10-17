@@ -1016,3 +1016,6 @@ a{accent-color:#d5ad48}
 .ucs-sponsor-brands small{font:600 9px/1.5 Inter,sans-serif;letter-spacing:3px}
 .ucs-sponsor-divider{height:40px;border-left:2px solid #aaa}
 @media(max-width:650px){.ucs-sponsor-art{min-height:180px;padding:18px;gap:16px}.ucs-sponsor-kit{min-height:120px;flex-basis:26%;font-size:8px}.ucs-sponsor-tt{font-size:42px;letter-spacing:-5px}.ucs-sponsor-message{font-size:clamp(24px,7vw,45px);max-width:70%}.ucs-sponsor-brands{font-size:14px;gap:9px;bottom:9px}.ucs-sponsor-brands span:first-child{font-size:18px}.ucs-sponsor-brands small{font-size:6px}.ucs-sponsor-divider{height:25px}}
+
+/* Exact sponsor artwork: preserve original composition and aspect ratio */
+.ucs-sponsor-original{display:block;width:100%;height:auto;object-fit:contain;border-radius:5px}
