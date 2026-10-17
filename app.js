@@ -125,7 +125,7 @@ function fighterForm(f){
 
 async function loadPublicData(){
   if(!db){ renderAll(); return; }
-  const queries = await Promise.all([
+  const queries = await Promise.allSettled([
     db.from('fighters').select('*').eq('active',true).order('score',{ascending:false}),
     db.from('champions').select('*'),
     db.from('results').select('*').order('event_date',{ascending:false}).limit(100),
@@ -139,15 +139,16 @@ async function loadPublicData(){
     db.from('ucs_photos').select('*').order('created_at',{ascending:false}).limit(120),
     db.from('ucs_former_championships').select('fighter_id,division')
   ]);
-  const firstError = queries.find(x=>x.error)?.error;
+  const results=queries.map(x=>x.status==='fulfilled'?x.value:{data:null,error:x.reason});
+  const firstError = results.find(x=>x.error)?.error;
   if(firstError) toast(`Supabase: ${firstError.message}`,true);
-  [state.fighters,state.champions,state.results,state.events,state.contracts,state.bets]=queries.slice(0,6).map(x=>x.data||[]);
-  state.settings=Object.fromEntries((queries[6].data||[]).map(x=>[x.key,x.value]));
-  state.scheduledBouts=queries[7].data||[];
-  state.fighterEarnings=new Map((queries[8].data||[]).map(row=>[row.fighter_id,Number(row.amount)]));
-  state.news=queries[9].data||[];
-  state.photos=queries[10].data||[];
-  state.formerChampionships=queries[11].data||[];
+  [state.fighters,state.champions,state.results,state.events,state.contracts,state.bets]=results.slice(0,6).map(x=>x.data||[]);
+  state.settings=Object.fromEntries((results[6].data||[]).map(x=>[x.key,x.value]));
+  state.scheduledBouts=results[7].data||[];
+  state.fighterEarnings=new Map((results[8].data||[]).map(row=>[row.fighter_id,Number(row.amount)]));
+  state.news=results[9].data||[];
+  state.photos=results[10].data||[];
+  state.formerChampionships=results[11].data||[];
   renderAll();
 }
 
