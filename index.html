@@ -25,6 +25,7 @@
       <a href="#rankings" data-page="rankings">Rankings</a>
       <a href="#betting" data-page="betting">Betting</a>
       <a href="#fights" data-page="fights">Fights</a>
+      <a href="#news" data-page="news">News</a>
       <a href="#account" data-page="account">Fighter Account</a>
       <a href="#admin" data-page="admin">Admin</a>
     </nav>
@@ -151,6 +152,12 @@
       <div class="fight-list" id="fightList"></div>
     </section>
 
+    <section class="page shell section-space ucs-news-page" id="news">
+      <div class="ucs-news-heading"><span class="section-kicker">FROM THE UCS NEWSROOM</span><h1>LATEST <em>NEWS</em></h1><p>Fight announcements, title news and league updates.</p></div>
+      <div id="ucsNewsGrid" class="ucs-news-grid"><div class="data-empty">No UCS stories published yet.</div></div>
+      <article id="ucsNewsReader" class="ucs-news-reader hidden" aria-live="polite"></article>
+    </section>
+
     <section class="page shell section-space" id="account">
       <div class="section-kicker">UCS FIGHTER PORTAL</div>
       <div class="section-title-row"><h2>FIGHTER ACCOUNT</h2><span id="fighterAccountStatus">Create an account or sign in</span></div>
@@ -236,6 +243,7 @@
         <div class="ucs-admin-tabs" role="tablist" aria-label="Admin tools">
           <button type="button" class="ucs-admin-tab active" id="adminOperationsTab" role="tab" aria-controls="adminOperationsPanel" aria-selected="true">LEAGUE OPERATIONS</button>
           <button type="button" class="ucs-admin-tab" id="adminEarningsTab" role="tab" aria-controls="adminEarningsPanel" aria-selected="false">FIGHTER EARNINGS</button>
+          <button type="button" class="ucs-admin-tab" id="adminNewsTab" role="tab" aria-controls="adminNewsPanel" aria-selected="false">NEWS EDITOR</button>
         </div>
         <div id="adminOperationsPanel" role="tabpanel" aria-labelledby="adminOperationsTab">
         <div class="admin-toolbar">
@@ -355,6 +363,24 @@
         </section>
         </div>
 
+        <section id="adminNewsPanel" role="tabpanel" aria-labelledby="adminNewsTab" class="hidden" aria-hidden="true">
+          <div class="ucs-earnings-header"><div class="section-kicker">UCS NEWSROOM</div><h2>PUBLISH NEWS</h2><p>Upload an image, write a headline and article, then publish it to the public News page.</p></div>
+          <div class="ucs-news-admin-grid">
+            <form class="admin-card" id="ucsNewsForm">
+              <h3 id="ucsNewsEditorHeading">New article</h3>
+              <input type="hidden" name="article_id" value="">
+              <label>Headline<input name="headline" maxlength="160" minlength="5" required placeholder="BIG UCS TITLE FIGHT ANNOUNCED"></label>
+              <label>Short introduction<textarea name="summary" rows="3" maxlength="350" placeholder="A short teaser shown on the article card"></textarea></label>
+              <label>Full article<textarea name="body" rows="9" required maxlength="15000" placeholder="Write the full news story here..."></textarea></label>
+              <label>Cover image<input type="file" name="news_image" accept="image/jpeg,image/png,image/webp"></label>
+              <label>Or image URL<input type="url" name="image_url" placeholder="https://..."></label>
+              <label class="ucs-news-check"><input type="checkbox" name="is_published" checked> Publish article publicly</label>
+              <div class="button-row"><button class="btn primary" type="submit" id="ucsNewsSave">PUBLISH ARTICLE</button><button type="button" id="ucsNewsReset" class="btn ghost">CLEAR</button></div>
+            </form>
+            <div class="admin-card"><h3>Manage articles</h3><div id="ucsAdminNewsList" class="ucs-admin-news-list">No articles yet.</div></div>
+          </div>
+        </section>
+
         <section id="adminEarningsPanel" role="tabpanel" aria-labelledby="adminEarningsTab" class="hidden" aria-hidden="true">
           <div class="ucs-earnings-header"><div class="section-kicker">LEAGUE FINANCES</div><h2>FIGHTER EARNINGS</h2><p>Set each fighter's recorded earnings. These figures are separate from UCS Credits and do not transfer or pay money.</p></div>
           <div class="ucs-earnings-layout">
@@ -374,6 +400,25 @@
       </div>
     </section>
   </main>
+
+  <div class="ucs-undercard-modal hidden" id="ucsUndercardModal" aria-hidden="true">
+    <div class="ucs-undercard-backdrop" data-close-undercard></div>
+    <div class="ucs-undercard-dialog" role="dialog" aria-modal="true" aria-labelledby="ucsUndercardTitle">
+      <button type="button" class="profile-close" data-close-undercard aria-label="Close undercard application">×</button>
+      <div class="section-kicker">RAFA VS BBK · 21 OCTOBER 2026</div>
+      <h2 id="ucsUndercardTitle">APPLY FOR THE UNDERCARD</h2>
+      <p>Fill out this form to let the UCS organizers know you want a place on the fight card. Application does not guarantee a bout.</p>
+      <form id="ucsUndercardForm">
+        <input type="hidden" name="bout_id" id="ucsUndercardBoutId">
+        <label>Discord name<input type="text" name="discord_name" maxlength="60" minlength="2" required placeholder="Your Discord username"></label>
+        <label>Do you wish to take part in the undercard?<select name="wants_to_participate" required><option value="">Select an answer</option><option value="true">Yes</option><option value="false">No</option></select></label>
+        <label>Are you free at 8 PM Eastern, 21 October?<select name="available_at_8pm_eastern" required><option value="">Select an answer</option><option value="true">Yes</option><option value="false">No</option></select></label>
+        <div class="hidden" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+        <button type="submit" class="btn primary" id="ucsUndercardSubmit">SEND APPLICATION</button>
+        <p id="ucsUndercardFeedback" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
 
   <div class="fighter-modal" id="fighterModal" aria-hidden="true">
     <div class="fighter-modal-backdrop" data-close-profile></div>
