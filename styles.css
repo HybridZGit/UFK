@@ -130,3 +130,9 @@
 .ucs-earnings-table .rank-table{min-width:440px}
 .ucs-earnings-value{font-variant-numeric:tabular-nums;font-weight:800;color:#efc65b}
 @media(max-width:900px){.ucs-earnings-layout{grid-template-columns:minmax(0,1fr)}}
+
+/* Earnings stat in the public fighter profile */
+.profile-stat-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+.profile-stat-grid .profile-earnings-number{color:#efc65b;font-size:clamp(15px,2.5vw,22px);overflow-wrap:anywhere}
+@media(max-width:800px){.profile-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.profile-stat-grid>div:nth-child(3n){border-right:0}}
+@media(max-width:420px){.profile-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-stat-grid>div:nth-child(3n){border-right:1px solid #30333e}.profile-stat-grid>div:nth-child(2n){border-right:0}}
