@@ -268,6 +268,11 @@ function openFighterProfile(id){
   $('#profileName').textContent=f.name;
   $('#profilePlatform').textContent=`UCS ${f.platform||'WORLD'}`;
   $('#profileRegion').textContent=f.region||'Region not set';
+  const banner=$('#profileBanner'),bannerImage=$('#profileBannerImage');
+  const showBanner=Boolean(f.banner_url&&safeHttps(f.banner_url));
+  banner?.classList.toggle('hidden',!showBanner);
+  if(bannerImage){if(showBanner)bannerImage.src=f.banner_url;else bannerImage.removeAttribute('src');}
+
   const badge=$('#profileUnderdog'),server=$('#profileServerIcon');
   badge?.classList.toggle('hidden',!f.is_underdog);
   if(server){
@@ -709,6 +714,45 @@ async function adminInsert(table,payload,msg){if(!state.isAdmin)return toast('Ad
 async function adminUpdate(table,payload,match,msg){if(!state.isAdmin)return toast('Admin permission required.',true);let q=db.from(table).update(payload);Object.entries(match).forEach(([k,v])=>q=q.eq(k,v));const {error}=await q;if(error)return toast(error.message,true);toast(msg);await loadPublicData();}
 
 $('#fighterCreateForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);await adminInsert('fighters',{name:d.get('name').trim(),wins:+d.get('wins'),losses:+d.get('losses'),draws:+d.get('draws'),region:d.get('region').trim()||null,platform:d.get('platform')},'Fighter added.');if(state.isAdmin)e.target.reset();});
+
+$('#adminFighterBannerFile')?.addEventListener('change',e=>{
+  const preview=$('#adminFighterBannerPreview'),file=e.target.files?.[0];
+  if(!preview)return;
+  if(window._ucsBannerPreviewUrl)URL.revokeObjectURL(window._ucsBannerPreviewUrl);
+  window._ucsBannerPreviewUrl=file?URL.createObjectURL(file):null;
+  preview.innerHTML=file?`<img src="${window._ucsBannerPreviewUrl}" alt="Fighter banner preview"><span>${esc(file.name)}</span>`:'';
+});
+$('#adminFighterBannerForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!db||!state.user||!state.isAdmin)return toast('UCS admin permission required.',true);
+  const form=e.currentTarget,data=new FormData(form);
+  const fighter=fighterById(data.get('fighter_id'));
+  const file=$('#adminFighterBannerFile')?.files?.[0];
+  const submit=$('#adminFighterBannerSubmit');
+  if(!fighter)return toast('Choose a fighter.',true);
+  if(!file)return toast('Select a banner image.',true);
+  const extensions={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'};
+  const extension=extensions[file.type];
+  if(!extension||file.size===0||file.size>5*1024*1024)return toast('Upload a JPG, PNG or WebP banner up to 5 MB.',true);
+  submit.disabled=true;
+  submit.textContent='UPLOADING...';
+  try{
+    const path=`admin/${fighter.id}/banners/${crypto.randomUUID()}.${extension}`;
+    const {error:uploadError}=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type,upsert:false,cacheControl:'3600'});
+    if(uploadError)throw uploadError;
+    const {data:publicData}=db.storage.from('fighter-avatars').getPublicUrl(path);
+    const {error:saveError}=await db.from('fighters').update({banner_url:publicData.publicUrl,updated_at:new Date().toISOString()}).eq('id',fighter.id);
+    if(saveError)throw saveError;
+    form.reset();
+    $('#adminFighterBannerPreview').innerHTML='';
+    if(window._ucsBannerPreviewUrl)URL.revokeObjectURL(window._ucsBannerPreviewUrl);
+    window._ucsBannerPreviewUrl=null;
+    await loadPublicData();
+    toast(`${fighter.name} banner updated!`);
+  }catch(error){toast(error.message||'Could not upload fighter banner.',true);}
+  finally{submit.disabled=false;submit.textContent='UPLOAD FIGHTER BANNER';}
+});
+
 $('#adminFighterAvatarFile')?.addEventListener('change',e=>{
   const target=$('#adminFighterAvatarPreview'),file=e.target.files?.[0];
   if(!target)return;
