@@ -502,6 +502,13 @@
               <input type="hidden" name="event_id">
               <label>Event title<input name="name" required maxlength="120" placeholder="UCS #002"></label>
               <label>Event date<input name="event_date" type="date" required></label>
+              <div class="ucs-event-tags">
+                <strong>TAG FIGHTERS IN THIS EVENT</strong>
+                <p>Search the UCS roster and select fighters. They will also be tagged in the automatic News announcement.</p>
+                <input id="ucsEventFighterSearch" type="search" placeholder="@ Search fighters..." autocomplete="off">
+                <div id="ucsEventFighterSuggestions" class="ucs-event-tag-suggestions" role="listbox"></div>
+                <div id="ucsEventSelectedFighters" class="ucs-event-tag-selected"></div>
+              </div>
               <label>Main event / details<textarea name="details" rows="3" placeholder="Main event and fight card details"></textarea></label>
               <label>Status<select name="status"><option value="upcoming">Upcoming</option><option value="live">Live</option><option value="completed">Completed</option></select></label>
               <label>Upload event poster (JPG, PNG, WebP; max 5 MB)<input type="file" name="poster" accept="image/jpeg,image/png,image/webp"></label>
