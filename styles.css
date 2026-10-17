@@ -719,3 +719,55 @@ a{accent-color:#d5ad48}
 .ucs-news-selected-fighter button:hover{background:#8c4337}
 .ucs-news-tag-actions{margin-top:12px}
 @media(max-width:540px){.ucs-mention-popup{min-width:0}.ucs-mention-body-popup{left:0;right:0}.ucs-mention-option{padding:10px 8px}}
+
+
+/* UCS Watch Live arena — championship night livestream and countdown */
+.ucs-watch-page{max-width:1460px;margin-inline:auto}
+.ucs-watch-heading{display:flex;justify-content:space-between;align-items:end;gap:18px;margin-bottom:27px}
+.ucs-watch-heading h1{font:900 clamp(44px,7vw,85px)/.94 'Barlow Condensed',Impact,sans-serif;letter-spacing:.016em;margin:6px 0 14px;color:#faf4e7}
+.ucs-watch-heading h1 em,.ucs-watch-countdown-wrap h2 em{font-style:normal;color:#e4bb59}
+.ucs-watch-heading p{font-size:14px;line-height:1.6;color:#b9bfc9;margin:0}
+.ucs-stream-channel{flex:0 0 auto;display:flex;align-items:center;gap:9px;color:#f2d68e;font-size:11px;letter-spacing:.08em;font-weight:850;border:1px solid #5b482e;border-radius:99px;padding:10px 15px;background:#191816}
+.ucs-watch-countdown-wrap{position:relative;overflow:hidden;isolation:isolate;padding:clamp(19px,3vw,42px);border:1px solid #9e7a39;border-radius:16px;background:radial-gradient(circle at 50% 8%,rgba(204,157,62,.25),transparent 53%),linear-gradient(125deg,#251f17,#0c0e13 52%,#251f17);box-shadow:0 16px 55px #0009}
+.ucs-watch-countdown-wrap:before{content:"UCS";position:absolute;inset:0;display:grid;place-items:center;z-index:-1;color:#d6a94a0a;font:900 clamp(130px,33vw,480px)/1 'Barlow Condensed',Impact,sans-serif;transform:rotate(-8deg);pointer-events:none}
+.ucs-watch-event-overline{display:flex;align-items:center;justify-content:space-between;gap:16px;color:#ebc979;font-weight:850;font-size:11px;letter-spacing:.11em}
+.ucs-watch-countdown-wrap h2{text-align:center;font:900 clamp(30px,5vw,65px)/1 'Barlow Condensed',Impact,sans-serif;margin:28px 0 8px}
+.ucs-watch-countdown-sub{text-align:center;color:#c7c3bb;font-size:13px;margin:0 0 25px}
+.ucs-watch-countdown{display:flex;justify-content:center;align-items:start;gap:clamp(4px,1.4vw,22px);margin:0 auto}
+.ucs-count-unit{display:flex;flex-direction:column;gap:8px;text-align:center;min-width:0;width:clamp(64px,14vw,150px);padding:clamp(10px,2vw,24px) 8px;background:linear-gradient(155deg,#272219,#121418);border:1px solid #877043;border-radius:10px;box-shadow:inset 0 1px #eed68a16}
+.ucs-count-unit strong{font:900 clamp(32px,7vw,86px)/1 'Barlow Condensed',Impact,sans-serif;color:#f9d780;letter-spacing:.02em;font-variant-numeric:tabular-nums;text-shadow:0 0 29px #d9a6443b}
+.ucs-count-unit span{color:#cfc0a2;font-size:clamp(9px,1vw,12px);font-weight:850;letter-spacing:.11em}
+.ucs-count-divider{font:900 clamp(24px,6vw,70px)/1 'Barlow Condensed',Impact,sans-serif;color:#d6af50;padding-top:clamp(11px,2vw,25px);animation:ucs-count-blink 1s ease-in-out infinite}
+@keyframes ucs-count-blink{50%{opacity:.25}}
+.ucs-count-status{text-align:center;color:#ead092;font-size:12px;letter-spacing:.16em;font-weight:850;margin:21px 0 0}
+.ucs-watch-stream-label{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:34px 0 14px}
+.ucs-watch-stream-label>div{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.ucs-watch-stream-label strong{font:900 21px 'Barlow Condensed',Impact,sans-serif;color:#f6f0e5}
+.ucs-watch-stream-label>div>span:last-child{font-size:12px;color:#adb5c1}
+.ucs-watch-stream-pulse{width:9px;height:9px;border-radius:50%;background:#dfb961;box-shadow:0 0 0 5px #dfb96125;animation:ucs-stream-pulse 2.2s ease-in-out infinite}
+@keyframes ucs-stream-pulse{50%{box-shadow:0 0 0 9px #dfb96100}}
+.ucs-watch-stream-label>a{color:#f4cc75;border:1px solid #71603e;background:#262016;text-decoration:none;padding:10px 13px;border-radius:7px;font-size:12px;font-weight:800;white-space:nowrap}
+.ucs-watch-stream-label>a:hover{background:#3b3021}
+.ucs-twitch-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,350px);gap:12px;align-items:stretch}
+.ucs-twitch-player,.ucs-twitch-chat-wrap{min-width:0;overflow:hidden;border:1px solid #4e4333;border-radius:12px;background:#101116}
+.ucs-twitch-player{aspect-ratio:16/9;min-height:345px}
+.ucs-twitch-player iframe,.ucs-twitch-chat iframe{display:block;width:100%;height:100%;border:0}
+.ucs-twitch-placeholder{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:13px;background:radial-gradient(circle,#342819,#090b0f 65%);text-align:center}
+.ucs-twitch-placeholder>span{font-size:50px;color:#e8bd64}
+.ucs-twitch-placeholder strong{font:900 30px 'Barlow Condensed',Impact,sans-serif}
+.ucs-twitch-placeholder p{color:#a7adb8;font-size:12px}
+.ucs-twitch-chat-wrap{display:flex;flex-direction:column}
+.ucs-twitch-chat-title{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:12px 15px;border-bottom:1px solid #4e4333;font-size:12px;font-weight:900;letter-spacing:.07em}
+.ucs-twitch-chat-title span{font-size:10px;color:#e8be73}
+.ucs-twitch-chat{flex:1;min-height:280px}
+.ucs-twitch-chat p{color:#9fa5b0;text-align:center;font-size:12px;padding:35px 15px}
+.ucs-watch-disclaimer{font-size:12px;color:#a7aeb8;margin:15px 0}
+.ucs-home-countdown-strip{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-block:22px;padding:15px 22px;border:1px solid #685333;border-radius:11px;background:linear-gradient(100deg,#272017,#101217 62%,#272017)}
+.ucs-home-countdown-strip>div:first-child{display:flex;flex-direction:column;gap:5px}
+.ucs-home-countdown-label{color:#e5c176;letter-spacing:.08em;font-size:10px;font-weight:850}
+.ucs-home-countdown-strip>div:first-child strong{font:900 22px 'Barlow Condensed',Impact,sans-serif}
+.ucs-home-countdown-numbers{font:900 clamp(22px,3.2vw,37px)/1 'Barlow Condensed',Impact,sans-serif;color:#f6d58b;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.ucs-home-countdown-link{color:#ffdf94;font-size:11px;font-weight:900;text-decoration:none;border:1px solid #97773b;padding:10px 13px;border-radius:6px;background:#393022}
+@media(max-width:1050px){.ucs-twitch-layout{grid-template-columns:minmax(0,1fr)}.ucs-twitch-player{min-height:0}.ucs-twitch-chat-wrap{min-height:380px}.ucs-twitch-chat{min-height:330px}}
+@media(max-width:630px){.ucs-watch-heading{flex-direction:column;align-items:start}.ucs-watch-event-overline{flex-wrap:wrap;font-size:9px}.ucs-watch-countdown-wrap h2{margin-top:21px}.ucs-count-unit{width:21%;border-radius:7px;padding:11px 3px;gap:6px}.ucs-count-divider{padding-top:9px}.ucs-watch-stream-label{align-items:start;flex-direction:column}.ucs-watch-countdown-sub{font-size:11px;line-height:1.6}.ucs-home-countdown-strip{padding:14px}}
+@media(prefers-reduced-motion:reduce){.ucs-count-divider,.ucs-watch-stream-pulse{animation:none}}
