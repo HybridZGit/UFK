@@ -278,6 +278,16 @@
             <button class="btn primary" type="submit">UPDATE RECORD</button>
           </form>
 
+          <form class="admin-card" id="fighterDetailsForm">
+            <h3>Fighter profile details</h3>
+            <p>Manage the fighter's public bio, server badge and underdog status. This does not change records or odds.</p>
+            <label>Fighter<select name="fighter_id" id="fighterDetailsSelect" class="fighter-select" required></select></label>
+            <label>Fighter biography<textarea name="fighter_bio" rows="4" maxlength="700" placeholder="What makes this fighter stand out?"></textarea></label>
+            <label>Server icon URL (HTTPS)<input name="server_icon_url" type="url" placeholder="https://.../server-icon.png"></label>
+            <label>Matchup status<select name="is_underdog"><option value="false">Regular contender</option><option value="true">Underdog</option></select></label>
+            <button class="btn primary" type="submit">SAVE FIGHTER PROFILE</button>
+          </form>
+
           <form class="admin-card" id="simDivisionForm">
             <h3>UCS SIM World division</h3>
             <p>Add or remove fighters from SIM World rankings without changing their records or platforms.</p>
@@ -429,7 +439,7 @@
       <div class="profile-sponsor"><span>RANKINGS PRESENTED BY</span><img src="assets/ufk-fight-kit.png" alt="UFK Fight Kit"></div>
       <header class="profile-hero">
         <div class="profile-avatar" id="profileAvatar"><span>UCS</span></div>
-        <div class="profile-identity"><div class="profile-overline" id="profilePlatform">UCS WORLD</div><h2 id="profileName">FIGHTER</h2><p id="profileRegion">—</p></div>
+        <div class="profile-identity"><div class="profile-overline" id="profilePlatform">UCS WORLD</div><div class="ucs-fighter-name-row"><h2 id="profileName">FIGHTER</h2><span id="profileServerIcon" class="ucs-fighter-server-icon hidden"></span></div><p id="profileRegion">—</p><span id="profileUnderdog" class="ucs-underdog-badge hidden">★ UNDERDOG</span></div>
         <div class="profile-rank-actions">
           <div class="profile-rank-badge"><small>WORLD RANK</small><strong id="profileRank">#—</strong></div>
           <button class="btn contract-challenge-btn hidden" id="profileContractBtn" type="button">SEND CONTRACT</button>
@@ -451,8 +461,21 @@
         <div><strong id="profileTitles">0</strong><span>TITLES</span></div>
         <div><strong id="profileFights">0</strong><span>CAREER FIGHTS</span></div>
         <div><strong id="profileEarnings" class="profile-earnings-number">0.00</strong><span>EARNINGS</span></div>
+        <div><strong id="profileKoRatio">—</strong><span>KO RATE</span></div>
       </div>
       <div class="profile-rating-bars" id="profileRatingBars"></div>
+      <section class="ucs-fighter-analysis">
+        <div class="ucs-fighter-analysis-heading"><h3>FIGHTER BREAKDOWN</h3><span>UCS SCOUTING REPORT</span></div>
+        <p id="profileBio" class="ucs-fighter-bio">No fighter biography available yet.</p>
+        <div class="ucs-fighter-insights">
+          <div><small>KNOCKOUTS</small><strong id="profileKOs">—</strong></div>
+          <div><small>KO RATE</small><strong id="profileKOInsight">—</strong></div>
+          <div><small>NEXT FIGHT</small><strong id="profileNextFight">Not booked</strong></div>
+          <div><small>SCOUTING LABEL</small><strong id="profileScoutLabel">Contender</strong></div>
+        </div>
+        <p class="ucs-fighter-analysis-note">KO percentage uses official UCS recorded results only; incomplete results may not reflect the full career record.</p>
+      </section>
+
       <section class="profile-history"><div class="profile-section-title"><span>UPCOMING FIGHTS</span><small>Scheduled only — not results</small></div><div id="profileUpcomingFights"></div></section>
       <section class="profile-history"><div class="profile-section-title"><span>RECENT FIGHTS</span><small>Official UCS results</small></div><div id="profileFightHistory"></div></section>
     </article>
