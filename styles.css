@@ -633,3 +633,8 @@ a{accent-color:#d5ad48}
 #fights .ucs-match-co-main .ucs-match-versus{color:#e8d8ab}
 #fights .ucs-match-co-main .ucs-match-avatar{border-color:#bec3d0}
 #fights .ucs-match-co-main .ucs-match-bottom{border-top-color:#565c65}
+
+/* Keep the International division visible directly below World in the rankings tabs. */
+#rankingTabs{display:flex;flex-wrap:wrap;gap:9px}
+#rankingTabs button[data-div="UCS International"]{border-color:#a5894d;color:#ead5a0}
+#rankingTabs button[data-div="UCS International"].active{background:linear-gradient(100deg,#55411e,#252019);color:#ffe5a5;border-color:#e3bb60}
