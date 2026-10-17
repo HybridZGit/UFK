@@ -156,3 +156,43 @@
 @keyframes ucsChampionShine{0%,68%,100%{transform:translateX(-130%)}85%{transform:translateX(130%)}}
 @media(max-width:600px){#fighterModal .ucs-champion-spotlight{margin:0 12px 14px;padding:14px;gap:10px}#fighterModal .ucs-champion-seal{display:none}}
 @media(prefers-reduced-motion:reduce){#fighterModal .ucs-champion-spotlight::after{animation:none}}
+
+
+/* UCS News editorial landing page */
+.ucs-news-page{padding-top:42px;padding-bottom:80px}
+.ucs-news-heading{text-align:left;margin-bottom:26px}.ucs-news-heading h1{font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(46px,8vw,86px);font-weight:900;line-height:.95;margin:8px 0 12px}.ucs-news-heading h1 em{font-style:normal;color:#ff1748}.ucs-news-heading p{color:#afb4c2}
+.ucs-news-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}
+.ucs-news-card{padding:0;border:1px solid #343541;background:#16161c;border-radius:16px;overflow:hidden;color:#f8f8fa;text-align:left;cursor:pointer;transition:transform .22s,border-color .22s;display:flex;flex-direction:column;font-family:inherit}
+.ucs-news-card:first-child{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(270px,.7fr);min-height:370px}
+.ucs-news-card:hover{transform:translateY(-5px);border-color:#ff1748}
+.ucs-news-image{display:block;min-height:220px;position:relative;background:radial-gradient(circle at 60% 45%,#572032,#101116 70%);overflow:hidden}
+.ucs-news-card:first-child .ucs-news-image{min-height:370px}
+.ucs-news-image img{width:100%;height:100%;position:absolute;inset:0;object-fit:cover;transition:transform .3s}.ucs-news-card:hover .ucs-news-image img{transform:scale(1.05)}
+.ucs-news-placeholder{position:absolute;inset:0;display:grid;place-items:center;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:900;font-size:clamp(35px,6vw,72px);color:#ffffff22}
+.ucs-news-card-copy{padding:24px;display:flex;flex:1;flex-direction:column;gap:12px}
+.ucs-news-card-copy small{color:#eec35b;font-size:11px;letter-spacing:.13em;font-weight:800}
+.ucs-news-card-copy strong{font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(25px,3.5vw,38px);line-height:1.05;font-weight:900;text-transform:uppercase}
+.ucs-news-card-copy>span{font-size:13px;color:#b8bdc9;line-height:1.6}.ucs-news-card-copy b{color:#ff1748;letter-spacing:.07em;font-size:12px;margin-top:auto}
+.ucs-news-reader{max-width:930px;margin:0 auto;padding:16px 0 50px}.ucs-news-reader>small{display:block;color:#eac45f;font-weight:800;letter-spacing:.12em;margin:18px 0}
+.ucs-news-reader h2{font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(35px,7vw,75px);line-height:1.01;text-transform:uppercase;margin:8px 0 26px}
+.ucs-news-feature-image{width:100%;max-height:520px;object-fit:cover;border-radius:12px;margin-bottom:30px}.ucs-news-summary{color:#e0e1e7;font-size:20px;font-weight:700;line-height:1.6}.ucs-news-body{white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px;line-height:1.85;color:#c0c5d0}
+.ucs-news-admin-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}.ucs-news-admin-grid .admin-card{min-width:0}.ucs-news-check{display:flex!important;flex-direction:row!important;gap:10px;align-items:center}.ucs-news-check input{width:auto!important}
+.ucs-admin-news-list{display:flex;flex-direction:column;gap:11px}.ucs-news-admin-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px;border:1px solid #363945;border-radius:9px}.ucs-news-admin-item strong{display:block;font-size:13px}.ucs-news-admin-item small{display:block;color:#8f96a6;margin-top:5px}.ucs-news-admin-item>div:last-child{display:flex;gap:6px}
+/* Poster hover invite and modal */
+.ucs-poster-shell{position:relative;width:min(100%,960px);margin:auto;border-radius:12px;overflow:hidden}
+.ucs-poster-shell .ucs-bout-poster{width:100%;display:block}
+.ucs-poster-hover{position:absolute;inset:0;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.78);opacity:0;transition:opacity .25s;pointer-events:none}
+.ucs-poster-shell:hover .ucs-poster-hover,.ucs-poster-shell:focus-within .ucs-poster-hover{opacity:1;pointer-events:auto}
+.ucs-poster-hover span{color:#edc75b;font-size:12px;letter-spacing:.13em;font-weight:900}.ucs-poster-hover h3{font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(26px,5vw,54px);line-height:1.06;margin:4px auto 12px;max-width:620px;text-align:center}
+.ucs-poster-hover .btn{width:min(280px,90%);justify-content:center}
+.ucs-undercard-modal{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:15px}
+.ucs-undercard-modal.hidden{display:none!important}.ucs-undercard-backdrop{position:absolute;inset:0;background:#000c;backdrop-filter:blur(7px)}
+.ucs-undercard-dialog{position:relative;background:linear-gradient(145deg,#1e161c,#101117);border:1px solid #a82c47;border-top:3px solid #ff1748;border-radius:15px;box-shadow:0 35px 90px #000a;width:min(550px,96vw);max-height:90vh;overflow-y:auto;padding:30px}
+.ucs-undercard-dialog h2{font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(28px,5vw,44px);margin:8px 0}.ucs-undercard-dialog>p{color:#adb2c0;line-height:1.6;font-size:13px}
+#ucsUndercardForm{display:flex;flex-direction:column;gap:18px;margin-top:20px}
+#ucsUndercardForm label{display:flex;flex-direction:column;gap:8px;font-size:12px;color:#afb5c5;font-weight:700}
+#ucsUndercardForm input,#ucsUndercardForm select{min-height:46px;border:1px solid #3d4050;border-radius:7px;background:#101017;color:#fff;padding:12px;font:inherit}
+#ucsUndercardFeedback{color:#eec35b;font-size:13px;min-height:18px}
+@media(hover:none){.ucs-poster-hover{position:relative;opacity:1;pointer-events:auto;background:#1a151b;padding:18px}.ucs-poster-hover h3{font-size:25px}.ucs-poster-shell{overflow:visible}}
+@media(max-width:760px){.ucs-news-card:first-child{grid-template-columns:1fr}.ucs-news-card:first-child .ucs-news-image{min-height:240px}.ucs-news-admin-grid{grid-template-columns:1fr}.ucs-undercard-dialog{padding:22px}}
+@media(prefers-reduced-motion:reduce){.ucs-news-card,.ucs-news-image img,.ucs-poster-hover{transition:none}}
