@@ -351,7 +351,101 @@ $('#ucsTottStage')?.addEventListener('click',event=>{
   if(btn?.dataset.tottFighter)openFighterProfile(btn.dataset.tottFighter);
 });
 
-function renderAll(){ renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+function renderAll(){ renderUcsEventCards(); populateUcsEventAdmin(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+
+// Official UCS Events: event-level posters and schedules, controlled by admins.
+function ucsEventImage(url){
+  return url&&safeHttps(url)?'<img src="'+esc(url)+'" alt="Official UCS event poster" loading="lazy">':'<div class="ucs-event-poster-empty"><strong>UCS</strong><span>OFFICIAL FIGHT NIGHT</span></div>';
+}
+function renderUcsEventCards(){
+  const root=$('#ucsEventsGrid');if(!root)return;
+  const events=[...state.events].sort((a,b)=>String(a.event_date||'').localeCompare(String(b.event_date||'')));
+  root.innerHTML=events.length?events.map(event=>{
+    const cardBouts=state.scheduledBouts.filter(b=>b.event_id===event.id||(!b.event_id&&b.bout_date===event.event_date&&b.event_name?.trim().toLowerCase()===event.name?.trim().toLowerCase()));
+    const featured=state.settings.featured_main_event||{};
+    const main=cardBouts.find(b=>!b.is_co_main&&((b.fighter_a_id===featured.champion_id&&b.fighter_b_id===featured.challenger_id)||(b.fighter_b_id===featured.champion_id&&b.fighter_a_id===featured.challenger_id)))||cardBouts.find(b=>!b.is_co_main&&b.belt)||cardBouts.find(b=>!b.is_co_main);
+    const co=cardBouts.find(b=>b.is_co_main);
+    const ordered=[...(main?[main]:[]),...(co&&co.id!==main?.id?[co]:[]),...cardBouts.filter(b=>b.id!==main?.id&&b.id!==co?.id)];
+    const lines=ordered.map(b=>{
+      const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
+      return '<div class="ucs-event-fight"><span>'+esc(b.id===main?.id?'MAIN EVENT':b.id===co?.id?'CO-MAIN EVENT':'UNDERCARD')+'</span><strong>'+esc(a?.name||'TBA')+' <em>VS</em> '+esc(c?.name||'TBA')+'</strong><small>'+esc(b.belt||'UCS FIGHT')+'</small></div>';
+    }).join('');
+    return '<article class="ucs-event-card"><div class="ucs-event-card-poster">'+ucsEventImage(event.poster_url)+'</div><div class="ucs-event-card-content"><div class="ucs-event-card-kicker">'+esc(event.status||'upcoming')+' · '+esc(fmtDate(event.event_date))+'</div><h2>'+esc(event.name)+'</h2>'+(event.details?'<p>'+esc(event.details)+'</p>':'')+'<div class="ucs-event-fights">'+(lines||'<p class="ucs-event-no-bouts">Fight card to be announced.</p>')+'</div><button type="button" class="btn ghost ucs-event-fights-button" data-jump="fights">VIEW ALL FIGHTS →</button></div></article>';
+  }).join(''):empty('No official UCS events have been published yet.');
+}
+function populateUcsEventAdmin(){
+  const select=$('#ucsEventEditorSelect');if(!select)return;
+  const previous=select.value;
+  select.innerHTML='<option value="">+ CREATE NEW EVENT</option>'+state.events.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+' · '+esc(fmtDate(e.event_date))+'</option>').join('');
+  if(state.events.some(e=>e.id===previous))select.value=previous;
+  if(select.value)fillUcsEventEditor();
+  $('.ucs-event-bout-select').forEach(drop=>{
+    const current=drop.value;
+    drop.innerHTML='<option value="">No event linked</option>'+state.events.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+' · '+esc(fmtDate(e.event_date))+'</option>').join('');
+    if(state.events.some(e=>e.id===current))drop.value=current;
+  });
+}
+function fillUcsEventEditor(){
+  const form=$('#ucsEventEditorForm');if(!form)return;
+  const event=state.events.find(x=>x.id===form.elements.id.value);
+  form.elements.name.value=event?.name||'';
+  form.elements.event_date.value=event?.event_date||'';
+  form.elements.details.value=event?.details||'';
+  form.elements.status.value=event?.status||'upcoming';
+  form.elements.poster_url.value=event?.poster_url||'';
+  if(form.elements.poster_file)form.elements.poster_file.value='';
+  updateUcsEventPosterPreview();
+}
+function updateUcsEventPosterPreview(file){
+  const preview=$('#ucsEventAdminPoster');if(!preview)return;
+  if(window._ucsEventPreviewUrl)URL.revokeObjectURL(window._ucsEventPreviewUrl);
+  window._ucsEventPreviewUrl=file?URL.createObjectURL(file):null;
+  const current=state.events.find(x=>x.id===$('#ucsEventEditorSelect')?.value);
+  const url=window._ucsEventPreviewUrl||(safeHttps(current?.poster_url)?current.poster_url:null);
+  preview.innerHTML=url?'<img src="'+esc(url)+'" alt="Selected event poster preview"><small>EVENT POSTER PREVIEW</small>':'<small>No poster uploaded yet. Upload one to display it in Events.</small>';
+}
+$('#ucsEventEditorSelect')?.addEventListener('change',fillUcsEventEditor);
+$('#ucsEventNewButton')?.addEventListener('click',()=>{
+  const form=$('#ucsEventEditorForm');if(!form)return;
+  form.reset();form.elements.id.value='';fillUcsEventEditor();form.elements.name.focus();
+});
+$('#ucsEventEditorForm')?.elements?.poster_file?.addEventListener('change',e=>updateUcsEventPosterPreview(e.target.files?.[0]));
+$('#ucsEventEditorForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db||!state.isAdmin)return toast('UCS admin required.',true);
+  const form=e.currentTarget,values=new FormData(form),id=String(values.get('id')||'');
+  const upload=values.get('poster_file');
+  let posterUrl=String(values.get('poster_url')||'').trim();
+  if(posterUrl&&!safeHttps(posterUrl))return toast('Event poster URL must be HTTPS.',true);
+  const button=form.querySelector('[type="submit"]');button.disabled=true;
+  try{
+    if(upload instanceof File&&upload.size){
+      const types={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'},ext=types[upload.type];
+      if(!ext||upload.size>5*1024*1024)throw Error('Event poster must be PNG, JPG or WebP under 5 MB.');
+      const path='event-posters/'+(id||'new')+'/'+crypto.randomUUID()+'.'+ext;
+      const {error}=await db.storage.from('fighter-avatars').upload(path,upload,{contentType:upload.type,upsert:false});
+      if(error)throw error;
+      posterUrl=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
+    }
+    const payload={name:String(values.get('name')||'').trim(),event_date:values.get('event_date'),details:String(values.get('details')||'').trim()||null,status:values.get('status')||'upcoming',poster_url:posterUrl||null};
+    if(!payload.name||!payload.event_date)throw Error('Event name and date are required.');
+    const query=id?db.from('events').update(payload).eq('id',id):db.from('events').insert(payload).select('id').single();
+    const {data,error}=await query;
+    if(error)throw error;
+    await loadPublicData();
+    $('#ucsEventEditorSelect').value=id||data?.id||'';
+    fillUcsEventEditor();
+    toast(id?'UCS event updated.':'UCS event created!');
+  }catch(error){toast(error.message||'Could not save UCS event.',true);}finally{button.disabled=false;}
+});
+$('.ucs-event-bout-select').forEach(drop=>drop.addEventListener('change',()=>{
+  const event=state.events.find(x=>x.id===drop.value);if(!event)return;
+  const form=drop.closest('form');
+  if(form?.elements.event_name)form.elements.event_name.value=event.name;
+  if(form?.elements.bout_date)form.elements.bout_date.value=event.event_date||'';
+}));
+$('#ucsEventsGrid')?.addEventListener('click',e=>{
+  const button=e.target.closest('[data-jump="fights"]');if(button){showPage('fights');history.replaceState(null,'','#fights');}
+});
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -1086,6 +1180,7 @@ function fillScheduledBoutEditor(){
   const b=state.scheduledBouts.find(x=>x.id===$('#scheduledBoutSelect').value);
   for(const field of ['event_name','bout_date','belt','poster_url','contribution_url'])form.elements[field].value=b?.[field]||'';
   form.elements.is_co_main.value=b?.is_co_main?'true':'false';
+  if(form.elements.event_id)form.elements.event_id.value=b?.event_id||'';
   if(form.elements.poster_file)form.elements.poster_file.value='';
   updateBoutPosterPreview();
 }
@@ -1434,7 +1529,7 @@ $('#scheduleBoutForm')?.addEventListener('submit',async e=>{
   if(a===b)return toast('Select two different fighters.',true);
   const url=(d.get('contribution_url')||'').trim();
   if(url&&!safeHttps(url))return toast('Use a valid HTTPS contribution link.',true);
-  const payload={fighter_a_id:a,fighter_b_id:b,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,contribution_url:url||null,is_co_main:d.get('is_co_main')==='true'};
+  const payload={fighter_a_id:a,fighter_b_id:b,event_id:d.get('event_id')||null,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,contribution_url:url||null,is_co_main:d.get('is_co_main')==='true'};
   const {error}=await db.from('scheduled_bouts').insert(payload);
   if(error)return toast(error.message,true);
   e.currentTarget.reset();await loadPublicData();toast('Bout scheduled. Fight records unchanged.');
@@ -1459,7 +1554,7 @@ $('#editScheduledBoutForm')?.addEventListener('submit',async e=>{
       if(uploadError)throw uploadError;
       posterUrl=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
     }
-    const payload={event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,poster_url:posterUrl||null,contribution_url:contribution||null,is_co_main:d.get('is_co_main')==='true',updated_at:new Date().toISOString()};
+    const payload={event_id:d.get('event_id')||null,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,poster_url:posterUrl||null,contribution_url:contribution||null,is_co_main:d.get('is_co_main')==='true',updated_at:new Date().toISOString()};
     const {error}=await db.from('scheduled_bouts').update(payload).eq('id',boutId);
     if(error)throw error;
     await loadPublicData();updateBoutPosterPreview();toast('Scheduled bout updated. Poster banner refreshed.');
