@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=ucs-tott-undercard-20261017e" />
+  <link rel="stylesheet" href="styles.css?v=ucs-events-20261017f" />
 </head>
 <body>
 
@@ -24,6 +24,7 @@
       <a href="#rankings" data-page="rankings">Rankings</a>
       <a href="#betting" data-page="betting">Betting</a>
       <a href="#fights" data-page="fights">Fights</a>
+      <a href="#events" data-page="events">Events</a>
       <a href="#watch" data-page="watch">WATCH LIVE</a>
       <a href="#news" data-page="news">News</a>
       <a href="#photography" data-page="photography">Photography</a>
@@ -254,6 +255,11 @@
       <p class="ucs-watch-disclaimer">Twitch playback and chat depend on Twitch availability and browser privacy settings. If an embed is blocked, use the Twitch link above.</p>
     </section>
 
+    <section class="page shell section-space ucs-events-page" id="events">
+      <div class="ucs-events-heading"><span class="section-kicker">OFFICIAL UCS EVENT SCHEDULE</span><h1>UCS <em>EVENTS</em></h1><p>Every championship night, fight card and official poster. Updated automatically when UCS admins publish an event.</p></div>
+      <div id="ucsEventsGrid" class="ucs-events-grid" aria-live="polite"><div class="data-empty">Events will appear here.</div></div>
+    </section>
+
     <section class="page shell section-space" id="fights">
       <div class="section-kicker">UCS EVENTS</div><div class="section-title-row"><h2>FIGHT CARDS & RESULTS</h2><span>Official UCS schedule</span></div>
       <div class="fight-list" id="fightList"></div>
@@ -463,10 +469,27 @@
             <button class="btn primary" type="submit">PUBLISH RESULT</button>
           </form>
 
+          <section class="ucs-events-admin admin-card" aria-label="UCS event editor">
+            <h3>MANAGE UCS EVENTS</h3><p>Create UCS #002 and future events, upload an official event poster, or update UCS #001. Events appear in the public Events tab automatically.</p>
+            <form id="ucsEventEditorForm">
+              <label>Update existing event or create new<select name="id" id="ucsEventEditorSelect"><option value="">+ CREATE NEW EVENT</option></select></label>
+              <label>Event name<input name="name" required placeholder="UCS #002"></label>
+              <label>Event date<input name="event_date" type="date" required></label>
+              <label>Event details<textarea name="details" rows="3" placeholder="Championship fights, location, time, event notes"></textarea></label>
+              <label>Status<select name="status"><option value="upcoming">UPCOMING</option><option value="completed">COMPLETED</option><option value="cancelled">CANCELLED</option></select></label>
+              <label>Official event poster (PNG, JPG, WebP · max 5 MB)<input name="poster_file" type="file" accept="image/png,image/jpeg,image/webp"></label>
+              <label>Or poster image URL<input name="poster_url" type="url" placeholder="https://..."></label>
+              <div class="ucs-event-admin-poster" id="ucsEventAdminPoster"></div>
+              <button class="btn primary" type="submit">SAVE UCS EVENT</button>
+              <button class="btn ghost" type="button" id="ucsEventNewButton">+ NEW EVENT</button>
+            </form>
+          </section>
+
           <form class="admin-card" id="scheduleBoutForm">
             <h3>Schedule a bout</h3><p>Book an upcoming fight without changing either fighter's record. Optionally select a championship belt.</p>
             <label>Fighter A<select name="fighter_a_id" class="fighter-select" required></select></label>
             <label>Fighter B<select name="fighter_b_id" class="fighter-select" required></select></label>
+            <label>UCS event<select name="event_id" class="ucs-event-bout-select"><option value="">No event linked</option></select></label>
             <label>Event name<input name="event_name" placeholder="UCS Fight Night" value="UCS Fight Night" required></label>
             <label>Fight date (optional)<input name="bout_date" type="date"></label>
             <label>Championship belt<select name="belt"><option value="">Non-title fight / TBA</option><option>UCS World</option><option>UCS International</option><option>UCS SIM World</option><option>UCS PS5</option><option>UCS PC</option><option>UCS XBOX</option></select></label>
@@ -478,6 +501,7 @@
           <form class="admin-card" id="editScheduledBoutForm">
             <h3>Update scheduled bout</h3><p>Set or change its belt, date, event name, poster URL, or contribution link.</p>
             <label>Upcoming fight<select id="scheduledBoutSelect" name="bout_id" required></select></label>
+            <label>UCS event<select name="event_id" class="ucs-event-bout-select"><option value="">No event linked</option></select></label>
             <label>Event name<input name="event_name" required></label>
             <label>Fight date (optional)<input name="bout_date" type="date"></label>
             <label>Belt<select name="belt"><option value="">Non-title fight / TBA</option><option>UCS World</option><option>UCS International</option><option>UCS SIM World</option><option>UCS PS5</option><option>UCS PC</option><option>UCS XBOX</option></select></label>
@@ -699,6 +723,6 @@
   <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=ucs-tott-undercard-20261017e"></script>
+  <script src="app.js?v=ucs-events-20261017f"></script>
 </body>
 </html>
