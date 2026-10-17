@@ -457,10 +457,14 @@
               <label>Short introduction<textarea name="summary" rows="3" maxlength="350" placeholder="A short teaser shown on the article card"></textarea></label>
               <label>Full article<textarea name="body" rows="9" required maxlength="15000" placeholder="Write the full news story here..."></textarea></label>
               <fieldset class="ucs-news-tag-fieldset">
-                <legend>Tag fighters in this article</legend>
-                <p>Select everyone mentioned in your post. Their names will link directly to their UCS fighter profiles.</p>
+                <legend>@ Tag fighters</legend>
+                <p>Type @ followed by a fighter's name and choose them from the suggestions, just like Discord. You can also type @ inside the article.</p>
+                <div class="ucs-news-mention-wrap">
+                  <input id="ucsNewsMentionInput" type="text" autocomplete="off" spellcheck="false" placeholder="@ Search UCS fighters..." aria-label="Search fighters to tag" aria-autocomplete="list" aria-controls="ucsNewsMentionResults" aria-expanded="false">
+                  <div id="ucsNewsMentionResults" class="ucs-mention-popup hidden" role="listbox" aria-label="Matching UCS fighters"></div>
+                </div>
+                <div id="ucsNewsFighterTags" class="ucs-news-selected-tags" aria-live="polite"></div>
                 <div class="ucs-news-tag-actions"><button class="mini-action" type="button" id="ucsNewsClearTags">CLEAR TAGS</button><span id="ucsNewsTagCount">0 fighters tagged</span></div>
-                <div id="ucsNewsFighterTags" class="ucs-news-fighter-tags" role="group" aria-label="Fighters tagged in news article">Loading fighters…</div>
               </fieldset>
               <label>Cover image<input type="file" name="news_image" accept="image/jpeg,image/png,image/webp"></label>
               <label>Or image URL<input type="url" name="image_url" placeholder="https://..."></label>
