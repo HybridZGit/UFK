@@ -638,3 +638,28 @@ a{accent-color:#d5ad48}
 #rankingTabs{display:flex;flex-wrap:wrap;gap:9px}
 #rankingTabs button[data-div="UCS International"]{border-color:#a5894d;color:#ead5a0}
 #rankingTabs button[data-div="UCS International"].active{background:linear-gradient(100deg,#55411e,#252019);color:#ffe5a5;border-color:#e3bb60}
+
+
+/* UCS News: admin-selected fighter tags and linked article appearances. */
+.ucs-news-tag-fieldset{min-width:0;max-width:100%;border:1px solid #625134;border-radius:10px;margin:12px 0;padding:16px}
+.ucs-news-tag-fieldset legend{font:900 19px 'Barlow Condensed',Impact,sans-serif;color:#f6d58b;padding:0 8px}
+.ucs-news-tag-fieldset>p{font-size:12px;color:#b7bdc8;line-height:1.5;margin:0 0 12px}
+.ucs-news-tag-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.ucs-news-tag-actions>span{font-size:12px;color:#e1c58a;font-weight:750}
+.ucs-news-fighter-tags{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,175px),1fr));gap:7px;max-height:245px;overflow-y:auto;overscroll-behavior:contain;padding:3px}
+.ucs-news-tag-option{display:flex!important;flex-direction:row!important;align-items:center;gap:10px;margin:0!important;padding:10px!important;border:1px solid #383c42;background:#16191e;border-radius:7px;cursor:pointer;font-weight:800;font-size:13px}
+.ucs-news-tag-option:has(input:checked){border-color:#dbb75c;background:#342c1d;color:#ffdf9c}
+.ucs-news-tag-option input{appearance:auto!important;width:17px!important;height:17px!important;min-width:17px!important;min-height:17px!important;flex:0 0 17px;margin:0!important;accent-color:#ddb45a}
+.ucs-news-tag-option span{display:flex;flex-direction:column;gap:2px;overflow-wrap:anywhere}
+.ucs-news-tag-option small{font-size:10px;color:#b9bcbf}
+.ucs-news-listed-fighters{margin-top:26px;padding:19px 20px;border:1px solid #6d5937;border-radius:12px;background:linear-gradient(110deg,#282216,#16181b 60%)}
+.ucs-news-listed-fighters h3{font:900 24px/1.1 'Barlow Condensed',Impact,sans-serif;color:#f3d085;letter-spacing:.07em;margin:0 0 15px}
+.ucs-news-listed-grid{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap}
+.ucs-news-fighter-link{display:flex;align-items:center;gap:11px;min-width:190px;max-width:100%;flex:1 1 190px;padding:10px 12px;border-radius:8px;border:1px solid #60503a;background:#111317;text-decoration:none!important;transition:background .16s,border-color .16s}
+.ucs-news-fighter-link:hover,.ucs-news-fighter-link:focus-visible{background:#32291a;border-color:#e2b95a}
+.ucs-news-tag-avatar{display:block;flex:0 0 42px;width:42px;height:42px;max-width:42px;max-height:42px;object-fit:cover;border:1px solid #af8b42;border-radius:50%;overflow:hidden}
+.ucs-news-fighter-link .avatar-fallback{display:grid;place-items:center;font:900 20px 'Barlow Condensed',Impact,sans-serif;background:#2c281d;color:#ffe5a2}
+.ucs-news-fighter-link>span{display:flex;flex-direction:column;min-width:0;gap:4px}
+.ucs-news-fighter-link strong{font-size:13px;color:#f7f3e9;overflow-wrap:anywhere}
+.ucs-news-fighter-link small{font-size:10px;color:#e2c17b;letter-spacing:.04em}
+@media(max-width:620px){.ucs-news-tag-fieldset{padding:11px}.ucs-news-listed-fighters{padding:14px}.ucs-news-fighter-link{min-width:0;flex-basis:100%}}
