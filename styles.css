@@ -441,3 +441,52 @@ body{background:#090a0d;color:#faf8f1}
 a{accent-color:#d5ad48}
 ::selection{background:#9c7a30;color:#fff}
 @media(max-width:700px){.topbar nav a.active{background:#44371d}.ucs-watch-button{font-size:11px}}
+
+
+/* Dedicated editorial fighter About page */
+.ucs-fighter-page{max-width:1150px;margin:0 auto;padding-top:36px;padding-bottom:80px}
+.ucs-fighter-back{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 18px;color:#dbbd75;font-size:12px;font-weight:850;letter-spacing:.1em}
+.ucs-fighter-page .fighter-profile-panel{position:relative;width:100%;max-height:none;overflow:visible;margin:0 auto;border-radius:16px}
+.ucs-fighter-page .fighter-profile-panel::before{border-radius:inherit;pointer-events:none}
+.ucs-fighter-name-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ucs-fighter-server-icon{display:inline-flex;align-items:center;justify-content:center;width:35px;height:35px;overflow:hidden;border-radius:9px;border:1px solid #c5a453;background:#20212a}
+.ucs-fighter-server-icon.hidden{display:none!important}
+.ucs-fighter-server-icon img{width:100%;height:100%;object-fit:cover}
+.ucs-underdog-badge{display:inline-flex;align-items:center;gap:5px;margin-top:11px;padding:6px 12px;border:1px solid #a58046;background:#302514;color:#ffe09b;font-size:12px;font-weight:900;letter-spacing:.09em;border-radius:99px}
+.ucs-underdog-badge.hidden{display:none!important}
+.ucs-fighter-page .profile-stat-grid{grid-template-columns:repeat(7,minmax(0,1fr))}
+.ucs-fighter-analysis{padding:26px 25px;border-bottom:1px solid #3d3a32}
+.ucs-fighter-analysis-heading{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:12px}
+.ucs-fighter-analysis-heading h3{font-family:'Barlow Condensed',Impact,sans-serif;font-size:28px;font-weight:900;margin:0}
+.ucs-fighter-analysis-heading span{font-size:10px;color:#c5ad6e;font-weight:800;letter-spacing:.12em}
+.ucs-fighter-bio{font-size:15px;color:#d8d7d2;line-height:1.7;margin:10px 0 22px;white-space:pre-wrap;overflow-wrap:anywhere}
+.ucs-fighter-insights{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.ucs-fighter-insights>div{display:flex;flex-direction:column;gap:7px;border:1px solid #51452e;background:#201e1a;border-radius:10px;padding:16px;min-width:0}
+.ucs-fighter-insights small{font-size:11px;font-weight:800;letter-spacing:.075em;color:#c9b57e}
+.ucs-fighter-insights strong{font-size:19px;color:#fff1c6;overflow-wrap:anywhere}
+.ucs-fighter-analysis-note{font-size:12px;color:#aeb3bd;margin:16px 0 0}
+@media(max-width:950px){.ucs-fighter-page .profile-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.ucs-fighter-insights{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:630px){.ucs-fighter-page .profile-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ucs-fighter-page{padding-top:18px}.ucs-fighter-analysis{padding:18px 16px}.ucs-fighter-analysis-heading{align-items:start;flex-direction:column;gap:3px}.ucs-fighter-insights{gap:8px}.ucs-fighter-insights>div{padding:12px}.ucs-fighter-insights strong{font-size:16px}.ucs-fighter-back>span{display:none}}
+/* Professional UCS media gallery */
+.ucs-photo-heading h1{font:900 clamp(44px,7vw,75px)/1 'Barlow Condensed',Impact,sans-serif;margin:8px 0 12px;letter-spacing:.015em}
+.ucs-photo-heading h1 em{color:#e5bf61;font-style:normal}
+.ucs-photo-heading p{color:#c4c7d0;font-size:15px}
+.ucs-photo-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:17px;margin:26px 0 38px}
+.ucs-photo-card{margin:0;overflow:hidden;background:#191a1d;border:1px solid #51452f;border-radius:12px}
+.ucs-photo-card img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.ucs-photo-card figcaption{padding:14px 16px;display:flex;flex-direction:column;gap:5px}
+.ucs-photo-card figcaption strong{color:#ffdd90;font-size:14px}
+.ucs-photo-card figcaption span{color:#c8cbd3;font-size:13px;line-height:1.5}
+.ucs-photo-gallery>.data-empty{grid-column:1/-1}
+.ucs-photo-creator-area{max-width:750px;margin:30px auto 0}
+.ucs-photo-creator-area .admin-card{padding:26px}
+.ucs-photo-creator-area h3{font:900 29px 'Barlow Condensed',Impact,sans-serif}
+.ucs-photo-creator-area form{display:flex;flex-direction:column;gap:13px}
+.ucs-photo-creator-area label{font-size:13px;font-weight:750}
+.ucs-photo-creator-area input{display:block;width:100%;padding:12px;background:#111419;color:#f3f3f3;border:1px solid #605239;border-radius:8px;margin-top:6px;font-size:14px}
+.ucs-photo-creator-area .btn{align-self:start;margin-top:10px}
+.ucs-photo-creator-area p{font-size:13px;color:#b6bdca}
+.ucs-photo-tools-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.ucs-photo-tools-head span{font-weight:800;color:#edd18b;font-size:12px}
+.ucs-photo-my-row{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #454033;padding:12px 0;gap:12px;font-size:13px}
+@media(max-width:550px){.ucs-photo-creator-area .admin-card{padding:18px}}
