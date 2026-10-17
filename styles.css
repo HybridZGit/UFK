@@ -919,3 +919,37 @@ a{accent-color:#d5ad48}
 .ucs-tott-tabs [data-tott-bout]{border-radius:8px;background:#13171c;border-color:#716044;color:#d8cbb5;font-size:11px;max-width:100%;overflow-wrap:anywhere}
 .ucs-tott-tabs [data-tott-bout].active{background:linear-gradient(110deg,#4a371b,#28221b);border-color:#e3b75e;color:#ffe0a1;box-shadow:0 0 18px #d4a24730}
 @media(max-width:640px){.ucs-tott-tabs [data-tott-bout]{flex:1 1 46%;min-width:0;padding:11px 8px}}
+
+
+/* UCS Events: official event cards and event-level posters */
+.ucs-events-page{padding-bottom:60px}
+.ucs-events-heading{margin-bottom:28px}
+.ucs-events-heading h1{font:900 clamp(48px,7vw,85px)/.95 'Barlow Condensed',Impact,sans-serif;color:#f6f1e6;letter-spacing:.01em;margin:10px 0}
+.ucs-events-heading h1 em{font-style:normal;color:#e5bf72}
+.ucs-events-heading p{color:#b7b9c0;font-size:14px;line-height:1.6}
+.ucs-events-grid{display:grid;gap:25px}
+.ucs-event-card{display:grid;grid-template-columns:minmax(205px,340px) minmax(0,1fr);overflow:hidden;background:linear-gradient(130deg,#191916,#111319);border:1px solid #8a7040;border-radius:12px;box-shadow:0 15px 40px #0006}
+.ucs-event-card-poster{background:#1f1a12;min-height:300px;overflow:hidden;display:flex;align-items:stretch}
+.ucs-event-card-poster>img{width:100%;height:100%;max-height:570px;display:block;object-fit:cover;object-position:center}
+.ucs-event-poster-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:320px;gap:10px;text-align:center;background:radial-gradient(circle,#6c512855,transparent 60%),#171615}
+.ucs-event-poster-empty strong{color:#f0c672;font:900 95px/.9 'Barlow Condensed',Impact,sans-serif}
+.ucs-event-poster-empty span{color:#d8b879;letter-spacing:.17em;font-size:11px;font-weight:850}
+.ucs-event-card-content{padding:clamp(20px,3.4vw,42px);min-width:0}
+.ucs-event-card-kicker{color:#ecc879;font-size:11px;text-transform:uppercase;letter-spacing:.15em;font-weight:900}
+.ucs-event-card h2{color:#fff1d2;font:900 clamp(37px,5vw,65px)/1 'Barlow Condensed',Impact,sans-serif;margin:10px 0 14px;overflow-wrap:anywhere}
+.ucs-event-card-content>p{font-size:13px;color:#c4c1b8;line-height:1.7}
+.ucs-event-fights{margin:20px 0;display:flex;flex-direction:column;gap:8px}
+.ucs-event-fight{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;background:#1e2023;border:1px solid #4e4739;border-radius:7px}
+.ucs-event-fight span{color:#e8c77a;font-size:9px;letter-spacing:.09em;font-weight:900;min-width:88px}
+.ucs-event-fight strong{flex:1;color:#f4f1ea;font:800 18px 'Barlow Condensed',Impact,sans-serif}
+.ucs-event-fight strong em{font-style:normal;color:#e1b964}
+.ucs-event-fight small{font-size:10px;color:#bcb6a8;text-align:right}
+.ucs-event-no-bouts{color:#c4c0b5;font-size:13px}
+.ucs-event-fights-button{font-size:11px}
+.ucs-events-admin{border-color:#9b7f4c}
+.ucs-events-admin h3{color:#f1d291}
+.ucs-events-admin form{display:grid;gap:12px}
+.ucs-event-admin-poster{min-height:30px}
+.ucs-event-admin-poster img{max-width:100%;max-height:260px;display:block;object-fit:contain;border:1px solid #806642;border-radius:8px}
+.ucs-event-admin-poster small{display:block;margin-top:9px;color:#baa977}
+@media(max-width:800px){.ucs-event-card{grid-template-columns:1fr}.ucs-event-card-poster{max-height:430px;min-height:230px}.ucs-event-card-poster img{object-fit:contain}.ucs-event-fight{flex-wrap:wrap}.ucs-event-fight small{width:100%;text-align:left}}
