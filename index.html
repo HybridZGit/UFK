@@ -388,6 +388,7 @@
             <label>Event name<input name="event_name" placeholder="UCS Fight Night" value="UCS Fight Night" required></label>
             <label>Fight date (optional)<input name="bout_date" type="date"></label>
             <label>Championship belt<select name="belt"><option value="">Non-title fight / TBA</option><option>UCS World</option><option>UCS SIM World</option><option>UCS PS5</option><option>UCS PC</option><option>UCS XBOX</option></select></label>
+            <label>Fight card placement<select name="is_co_main"><option value="false">Regular bout</option><option value="true">★ CO-MAIN EVENT</option></select></label>
             <label>Contribute link (optional)<input name="contribution_url" type="url" placeholder="https://matcherino.com/..."></label>
             <button class="btn primary" type="submit">SCHEDULE BOUT</button>
           </form>
@@ -400,6 +401,7 @@
             <label>Belt<select name="belt"><option value="">Non-title fight / TBA</option><option>UCS World</option><option>UCS SIM World</option><option>UCS PS5</option><option>UCS PC</option><option>UCS XBOX</option></select></label>
             <label>Poster image (optional)<input name="poster_file" type="file" accept="image/png,image/jpeg,image/webp"></label>
             <label>Or poster image URL<input name="poster_url" type="url" placeholder="https://..."></label>
+            <label>Fight card placement<select name="is_co_main"><option value="false">Regular bout</option><option value="true">★ CO-MAIN EVENT</option></select></label>
             <label>Contribute link (optional)<input name="contribution_url" type="url"></label>
             <div class="button-row"><button class="btn primary" type="submit">SAVE BOUT</button><button class="btn danger-btn" type="button" id="cancelScheduledBout">CANCEL BOUT</button></div>
           </form>
