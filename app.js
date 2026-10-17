@@ -80,30 +80,16 @@ function marqueePlatformCompatible(a,b){
   return !aPlatforms.length||!bPlatforms.length||aPlatforms.some(p=>bPlatforms.includes(p));
 }
 function marqueeCandidates(){
-  const undefeated=state.fighters.filter(f=>f.active!==false&&Number(f.losses||0)===0);
-  const booked=new Set(state.scheduledBouts.map(b=>[b.fighter_a_id,b.fighter_b_id].sort().join(':')));
-  const pairs=[];
-  for(let i=0;i<undefeated.length;i++)for(let j=i+1;j<undefeated.length;j++){
-    const a=undefeated[i],b=undefeated[j];
-    if(booked.has([a.id,b.id].sort().join(':')))continue;
-    const samePlatform=marqueePlatformCompatible(a,b);
-    if(!samePlatform)continue;
-    const totalWins=Number(a.wins||0)+Number(b.wins||0);
-    const points=(Number(a.score||0)+Number(b.score||0));
-    const bothHaveWins=Number(a.wins||0)>0&&Number(b.wins||0)>0;
-    const ratingGap=Math.abs(Number(a.score||0)-Number(b.score||0));
-    const winGap=Math.abs(Number(a.wins||0)-Number(b.wins||0));
-    // Proven undefeated fighters rise above 0-0 prospects, close records and rankings break ties.
-    const value=(bothHaveWins?10000:0)+totalWins*400+points*12-ratingGap*3-winGap*35;
-    pairs.push({a,b,value,totalWins,bothHaveWins,key:[a.id,b.id].sort().join(':')});
-  }
-  pairs.sort((x,y)=>y.value-x.value||x.key.localeCompare(y.key));
-  // Avoid showing the same fighter repeatedly in the carousel.
-  const used=new Set(),selected=[];
-  for(const pair of pairs){
-    if(used.has(pair.a.id)||used.has(pair.b.id))continue;
-    selected.push(pair);used.add(pair.a.id);used.add(pair.b.id);
-    if(selected.length===5)break;
+  // Mirror the UCS World leaderboard: rank 1 vs rank 2, 3 vs 4, etc.
+  // Losses and draws are allowed; official score decides ranking order.
+  const ranked=[...state.fighters].filter(f=>f.active!==false)
+    .sort((a,b)=>Number(b.score||0)-Number(a.score||0)
+      ||Number(b.wins||0)-Number(a.wins||0)
+      ||String(a.name||'').localeCompare(String(b.name||'')));
+  const selected=[];
+  for(let i=0;i+1<ranked.length&&selected.length<5;i+=2){
+    const a=ranked[i],b=ranked[i+1];
+    selected.push({a,b,rankA:i+1,rankB:i+2,key:[a.id,b.id].join(':')});
   }
   return selected;
 }
@@ -115,13 +101,13 @@ function renderMarquee(){
   if(signature!==marqueeSignature){marqueeIndex=0;marqueeSignature=signature;}
   marqueeMatchups=next;
   if(!next.length){
-    stage.innerHTML=empty('No eligible undefeated pairings yet. New options will appear as records are updated.');
+    stage.innerHTML=empty('Two ranked fighters are needed to show a marquee matchup.');
     dots.innerHTML='';
     $('#ucsMarqueePrev').disabled=true;$('#ucsMarqueeNext').disabled=true;
     return;
   }
   marqueeIndex=(marqueeIndex+next.length)%next.length;
-  const pair=next[marqueeIndex],label=pair.bothHaveWins?'UNDEFEATED CONTENDERS':'UNDEFEATED PROSPECTS';
+  const pair=next[marqueeIndex],label=`WORLD RANK #${pair.rankA} VS #${pair.rankB}`;
   const side=(f,sideName)=>`<div class="ucs-marquee-fighter">
     <div class="ucs-marquee-avatar">${avatarHtml(f,'ucs-marquee-profile-pic')}</div>
     <span class="ucs-marquee-corner">${sideName}</span>
@@ -133,7 +119,7 @@ function renderMarquee(){
   stage.innerHTML=`<div class="ucs-marquee-slide" key="${esc(pair.key)}">
     <div class="ucs-marquee-tag"><span class="ucs-marquee-pulse"></span> ${label} · MATCHUP PICK ${marqueeIndex+1}/${next.length}</div>
     <div class="ucs-marquee-versus">${side(pair.a,'RED CORNER')}<div class="ucs-marquee-middle"><small>UCS</small><strong>VS</strong><span>AI-STYLE MATCHUP PICK</span></div>${side(pair.b,'BLUE CORNER')}</div>
-    <div class="ucs-marquee-bottom">Picked from fighter records and ratings · Not an official booked fight</div>
+    <div class="ucs-marquee-bottom">Paired by live UCS World rankings · Losses allowed · Not an official booked fight</div>
   </div>`;
   dots.innerHTML=next.map((p,i)=>`<button type="button" class="${i===marqueeIndex?'active':''}" data-marquee-index="${i}" aria-label="Show matchup ${i+1}" aria-pressed="${i===marqueeIndex}"></button>`).join('');
   $('#ucsMarqueePrev').disabled=next.length<2;$('#ucsMarqueeNext').disabled=next.length<2;
@@ -179,41 +165,8 @@ function renderHome(){
   }).join(''):empty('No contract activity.');
 
   renderRankingChampion();
-  renderMarqueeMatchups();
   renderUpcomingSpotlight();
   renderMarquee();
-}
-
-// Local, explainable record-based matchmaking: no external AI key, no fabricated bouts.
-function renderMarqueeMatchups(){
-  const root=$('#ucsMarqueeMatchups');if(!root)return;
-  const eligible=state.fighters.filter(f=>f.active!==false && Number(f.losses||0)===0 && Number(f.draws||0)===0);
-  const platformTokens=f=>String(f.platform||'').toUpperCase().split(/[\\/, +]+/).filter(Boolean);
-  const compatible=(a,b)=>{
-    const aa=platformTokens(a),bb=platformTokens(b);
-    return aa.some(p=>bb.includes(p));
-  };
-  const rankingScore=f=>Number(f.score)||0;
-  const wins=f=>Number(f.wins)||0;
-  const candidates=[];
-  for(let i=0;i<eligible.length;i++)for(let j=i+1;j<eligible.length;j++){
-    const a=eligible[i],b=eligible[j];
-    if(!compatible(a,b))continue;
-    // Avoid suggesting a matchup already on the upcoming fight card.
-    if(state.scheduledBouts.some(x=>(x.fighter_a_id===a.id&&x.fighter_b_id===b.id)||(x.fighter_a_id===b.id&&x.fighter_b_id===a.id)))continue;
-    const combinedWins=wins(a)+wins(b);
-    const score=combinedWins*100+Math.min(wins(a),wins(b))*40+(rankingScore(a)+rankingScore(b))*0.4-Math.abs(wins(a)-wins(b))*12-Math.abs(rankingScore(a)-rankingScore(b))*0.12;
-    candidates.push({a,b,score,combinedWins});
-  }
-  candidates.sort((x,y)=>y.score-x.score||y.combinedWins-x.combinedWins||String(x.a.name).localeCompare(String(y.a.name))||String(x.b.name).localeCompare(String(y.b.name)));
-  const picked=[],used=new Set();
-  for(const match of candidates){if(used.has(match.a.id)||used.has(match.b.id))continue;picked.push(match);used.add(match.a.id);used.add(match.b.id);if(picked.length===3)break;}
-  if(!picked.length){root.innerHTML=empty('No eligible undefeated cross-platform-compatible matchups yet. New records will refresh this list.');return;}
-  root.innerHTML=picked.map((m,i)=>{
-    const fighter=f=>`<div class="ucs-marquee-fighter">${avatarHtml(f,'ucs-marquee-avatar')}<strong>${esc(f.name)}</strong><span>${esc(String(f.wins||0)+'-'+String(f.losses||0)+'-'+String(f.draws||0))} · ${esc(f.platform||'')}</span></div>`;
-    const label=m.combinedWins===0?'UNDEFEATED PROSPECTS':m.combinedWins>=4?'UNDEFEATED SHOWDOWN':'RISING UNDEFEATED';
-    return `<article class="ucs-marquee-card" style="--marquee-index:${i}" aria-label="${esc(m.a.name)} versus ${esc(m.b.name)} suggested matchup"><div class="ucs-marquee-top"><span>★ ${label}</span><small>AI-STYLE RECORD ANALYSIS</small></div><div class="ucs-marquee-versus">${fighter(m.a)}<div class="ucs-marquee-vs">VS</div>${fighter(m.b)}</div><div class="ucs-marquee-footer"><span>${m.combinedWins} combined win${m.combinedWins===1?'':'s'} · Both undefeated</span><small>FANTASY MATCHUP · NOT SCHEDULED</small></div></article>`;
-  }).join('');
 }
 
 function renderRanks(filter=''){
