@@ -55,3 +55,40 @@
 #profileUpcomingFights a.ucs-inline-contribute{font-weight:700;color:#efc65b;text-decoration:none}
 #profileUpcomingFights a.ucs-inline-contribute:hover{text-decoration:underline}
 #profileUpcomingFights .ucs-inline-status{font-size:.72rem;letter-spacing:.07em}
+
+
+/* Live record-driven homepage marquee: preserve UCS black/red/gold visual language. */
+.ucs-marquee-section{padding-top:40px;padding-bottom:28px}
+.ucs-marquee-header{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:18px}
+.ucs-marquee-header h2{font-family:'Barlow Condensed',sans-serif;font-size:clamp(29px,4.4vw,48px);line-height:1;margin:7px 0 0;letter-spacing:.03em;font-weight:900}
+.ucs-marquee-subtitle{font-size:.8rem;color:#a5aabb;text-align:right}
+.ucs-marquee-stage{background:radial-gradient(ellipse at center,rgba(176,24,54,.14),transparent 65%),linear-gradient(130deg,#18131b,#090b11 55%,#171016);border:1px solid rgba(250,75,99,.32);box-shadow:0 26px 70px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.08);border-radius:20px;min-height:322px;overflow:hidden;position:relative}
+.ucs-marquee-stage:before{content:'';position:absolute;left:5%;right:5%;top:0;height:2px;background:linear-gradient(90deg,transparent,#ff1748 45%,#f0be4a 55%,transparent)}
+.ucs-marquee-slide{padding:24px 30px 22px;animation:ucsMarqueeSlideIn .55s cubic-bezier(.2,.8,.2,1) both}
+@keyframes ucsMarqueeSlideIn{from{opacity:.3;transform:translateY(10px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.ucs-marquee-tag{text-align:center;color:#f5c657;font-size:.72rem;font-weight:800;letter-spacing:.16em}
+.ucs-marquee-pulse{display:inline-block;vertical-align:middle;background:#ff1748;width:8px;height:8px;border-radius:50%;box-shadow:0 0 12px #ff1748;animation:ucsMarqueePulse 2s ease-in-out infinite}
+@keyframes ucsMarqueePulse{50%{opacity:.4;box-shadow:0 0 3px #ff1748}}
+.ucs-marquee-versus{display:grid;grid-template-columns:minmax(0,1fr) 130px minmax(0,1fr);align-items:center;gap:12px;max-width:950px;margin:20px auto}
+.ucs-marquee-fighter{text-align:center;min-width:0;display:flex;align-items:center;flex-direction:column}
+.ucs-marquee-avatar{height:104px;width:104px;border-radius:50%;border:3px solid rgba(233,186,65,.75);background:#20212a;overflow:hidden;box-shadow:0 0 0 5px rgba(233,186,65,.08),0 12px 28px rgba(0,0,0,.45)}
+.ucs-marquee-profile-pic{width:100%;height:100%;object-fit:cover;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:900}
+.ucs-marquee-corner{color:#bcb0b2;font-size:.63rem;letter-spacing:.12em;font-weight:800;margin:13px 0 4px}
+.ucs-marquee-fighter h3{font-family:'Barlow Condensed',sans-serif;font-size:clamp(25px,4vw,42px);font-weight:900;line-height:1;margin:0 0 5px;overflow-wrap:anywhere}
+.ucs-marquee-record{font-size:1.25rem;color:#f4d183;letter-spacing:.02em}
+.ucs-marquee-meta{color:#acb0be;font-size:.76rem;margin-top:6px}
+.ucs-marquee-score{font-size:.7rem;letter-spacing:.08em;color:#919aaa;margin-top:5px}
+.ucs-marquee-middle{text-align:center;display:flex;flex-direction:column;align-items:center;gap:0}
+.ucs-marquee-middle small{font-weight:900;font-size:.76rem;color:#ddd}
+.ucs-marquee-middle strong{font-family:'Barlow Condensed',sans-serif;font-size:clamp(52px,8vw,92px);line-height:.9;color:#ff1748;text-shadow:0 0 40px rgba(255,23,72,.32)}
+.ucs-marquee-middle span{font-size:.61rem;font-weight:800;letter-spacing:.06em;color:#c9a354;white-space:nowrap;margin-top:8px}
+.ucs-marquee-bottom{text-align:center;color:#7d8494;font-size:.72rem}
+.ucs-marquee-controls{display:flex;align-items:center;justify-content:center;gap:17px;margin-top:14px}
+.ucs-marquee-controls>button{background:#191b25;border:1px solid #383743;border-radius:9px;color:#fff;min-height:35px;min-width:40px;cursor:pointer;font-size:1.25rem}
+.ucs-marquee-controls>button:disabled{opacity:.35;cursor:default}
+.ucs-marquee-dots{display:flex;gap:8px}
+.ucs-marquee-dots button{width:9px;height:9px;padding:0;border:0;border-radius:20px;background:#525461;cursor:pointer}
+.ucs-marquee-dots button.active{background:#ff1748;width:27px}
+.ucs-marquee-disclaimer{text-align:center;color:#777e8d;font-size:.72rem;margin:9px 0 0}
+@media(max-width:650px){.ucs-marquee-header{align-items:start;flex-direction:column;gap:7px}.ucs-marquee-subtitle{text-align:left}.ucs-marquee-slide{padding:20px 12px}.ucs-marquee-versus{grid-template-columns:minmax(0,1fr) 68px minmax(0,1fr);gap:4px}.ucs-marquee-avatar{width:74px;height:74px}.ucs-marquee-middle span{font-size:.48rem;white-space:normal}.ucs-marquee-fighter h3{font-size:clamp(20px,5.5vw,32px)}.ucs-marquee-record{font-size:1rem}.ucs-marquee-tag{font-size:.61rem}.ucs-marquee-stage{min-height:285px}}
+@media(prefers-reduced-motion:reduce){.ucs-marquee-slide,.ucs-marquee-pulse{animation:none}}
