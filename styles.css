@@ -679,3 +679,16 @@ a{accent-color:#d5ad48}
 .ucs-bout-poster-preview span{color:#e4c278;font-size:11px;font-weight:900;letter-spacing:.08em}
 .ucs-bout-poster-preview small{color:#aab1bf}
 @media(max-width:550px){#fights .ucs-match-poster-banner{height:142px}#fights .ucs-match-poster-caption{bottom:10px;left:12px;right:12px;align-items:start;flex-direction:column;gap:5px}#fights .ucs-match-poster-caption small{font-size:9px}}
+
+
+/* News editor fight poster banner and article hero */
+.ucs-news-banner-hint{font-size:12px;line-height:1.5;color:#c2b8a5}
+.ucs-news-banner-preview{margin:8px 0 16px;display:flex;flex-direction:column;gap:8px}
+.ucs-news-banner-preview img{display:block;width:100%;max-width:510px;height:165px;object-fit:cover;object-position:center 30%;border:1px solid #997c43;border-radius:9px}
+.ucs-news-banner-preview small{color:#e9cd85;font-size:11px;font-weight:900;letter-spacing:.075em}
+.ucs-news-reader .ucs-news-poster-banner{position:relative;display:block;overflow:hidden;height:clamp(195px,35vw,410px);width:100%;border:1px solid #826b40;border-radius:12px;margin:24px 0;background:#131418;text-decoration:none}
+.ucs-news-reader .ucs-news-poster-banner>img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;object-fit:cover!important;object-position:center 32%}
+.ucs-news-reader .ucs-news-poster-banner::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,#050508aa,transparent 45%)}
+.ucs-news-reader .ucs-news-poster-banner>span{position:absolute;z-index:1;bottom:16px;right:19px;padding:8px 11px;border:1px solid #c7a355;background:#14110bc4;color:#ffe1a2;border-radius:5px;font-size:11px;letter-spacing:.07em;font-weight:900}
+.ucs-news-reader .ucs-news-poster-banner:hover img{filter:brightness(1.07)}
+@media(max-width:650px){.ucs-news-reader .ucs-news-poster-banner{height:190px}.ucs-news-reader .ucs-news-poster-banner>span{bottom:9px;right:9px;font-size:9px}}
