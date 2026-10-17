@@ -115,3 +115,18 @@
 @media(max-width:650px){
   #home > .ucs-marquee-section.shell{padding-left:16px;padding-right:16px}
 }
+
+
+/* Admin earnings workspace */
+.ucs-admin-tabs{display:flex;gap:10px;margin:20px 0 24px;flex-wrap:wrap;border-bottom:1px solid #32343c;padding-bottom:14px}
+.ucs-admin-tab{border:1px solid #363b49;border-radius:9px;background:#171922;color:#b8bdcc;font-family:inherit;letter-spacing:.06em;font-size:12px;font-weight:800;padding:12px 18px;cursor:pointer;transition:.2s ease}
+.ucs-admin-tab:hover{border-color:#ba455b;color:#fff}
+.ucs-admin-tab.active{background:linear-gradient(110deg,#b30931,#ff1748);border-color:#ff1748;color:#fff;box-shadow:0 7px 20px #ff174826}
+.ucs-earnings-header{margin-bottom:22px}.ucs-earnings-header h2{font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(30px,4vw,42px);margin:3px 0 7px}
+.ucs-earnings-header p,.ucs-earnings-hint{color:#a3a8b9;font-size:13px;line-height:1.6}
+.ucs-earnings-layout{display:grid;grid-template-columns:minmax(260px,350px) minmax(0,1fr);gap:18px;align-items:start}
+.ucs-earnings-layout>.admin-card{min-width:0}
+.ucs-earnings-table .rank-table-wrap{overflow:auto}
+.ucs-earnings-table .rank-table{min-width:440px}
+.ucs-earnings-value{font-variant-numeric:tabular-nums;font-weight:800;color:#efc65b}
+@media(max-width:900px){.ucs-earnings-layout{grid-template-columns:minmax(0,1fr)}}
