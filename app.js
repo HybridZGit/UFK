@@ -830,4 +830,9 @@ if(db){
     if(document.visibilityState==='visible')refreshMatchupsFromDb();
   });
 }
+setInterval(async()=>{
+  if(!db||document.visibilityState!=='visible'||!$('#home')?.classList.contains('active'))return;
+  const {data,error}=await db.from('ucs_community_predictions').select('id,display_name,avatar_url,message,posted_at').order('posted_at',{ascending:false}).limit(25);
+  if(!error){state.communityPredictions=data||[];renderCommunityPredictions();}
+},45000);
 (async function init(){renderAll();updateAdminUI();await refreshSession();await loadPublicData();if(location.hash&&$(location.hash))showPage(location.hash.slice(1));})();
