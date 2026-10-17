@@ -391,3 +391,53 @@ p{line-height:1.7}
  .ucs-news-card-copy>span{font-size:14px}
 }
 @media(prefers-reduced-motion:reduce){.btn,.mini-action,.tabs button,.ucs-admin-tab,.topbar nav a{transition:none}}
+
+
+/* UCS championship gold identity — brand refresh */
+:root{--bg:#090a0d;--panel:#14161b;--panel2:#1b1d22;--line:#49412e;--muted:#c5c1b7;--text:#faf8f1;--red:#bb3545;--gold:#d8ae45;--gold-2:#f6dc8a;--gold-dark:#8e6c24;--accent:#d8ae45}
+body{background:#090a0d;color:#faf8f1}
+.noise{opacity:.16}
+.topbar{background:rgba(10,11,13,.97);border-bottom:1px solid #62502c;box-shadow:0 8px 25px #0005}
+.topbar nav a{color:#ded8c8}
+.topbar nav a.active,.topbar nav a:hover{background:#322a1b;color:#f7d986}
+.brand strong{color:#f6e1a4}
+.brand span{color:#d0c3a1}
+.eyebrow,.section-kicker,.ucs-marquee-tag,.profile-overline{color:#e3bc5a!important}
+.hero h1 em,.ucs-news-heading h1 em,.ucs-community-head h2 em{color:#e2b953}
+.hero-actions .btn.primary,.btn.primary{background:linear-gradient(180deg,#f6db87,#c69a35);border:1px solid #f7dd91;color:#13110d;box-shadow:0 4px 15px #0005}
+.btn.primary:hover,.hero-actions .btn.primary:hover{background:linear-gradient(180deg,#ffe7a2,#dab14e);color:#0d0d0e}
+.btn.ghost,.btn.outline{background:#1b1b1c;border:1px solid #8b7647;color:#f0d795}
+.btn.ghost:hover,.btn.outline:hover{background:#332a19;border-color:#ebc66a;color:#ffe9a9}
+.btn:focus-visible,.tabs button:focus-visible{outline-color:#eac66b}
+.ucs-watch-button{background:linear-gradient(180deg,#f8e5a5,#d4ae50);border:1px solid #f3d88d;color:#15130d!important}
+.ucs-watch-button:hover{background:#fff0bb;color:#111!important;box-shadow:0 4px 18px #d4ad4055}
+.ucs-watch-live-dot{background:#956d1b;box-shadow:0 0 8px #e3ba5a}
+.panel,.admin-card,.account-card,.bet-slip,.wallet-vault,.ucs-news-card,.ucs-marquee-stage,.ucs-bout-spotlight{background:linear-gradient(150deg,#191a1e,#101216);border-color:#55482e;box-shadow:0 10px 30px #0005}
+.panel header,.mini-row{border-color:#423b2e}
+.rank-table-wrap,.rank-table{border-color:#5c4b2b}
+.rank-table th{background:#211e19;color:#f0dcae}
+.rank-table td{border-color:#413c32}
+.rank-table tbody tr:hover{background:#2c271e}
+.rank-name strong,.profile-identity h2{color:#fffaf0}
+.score-chip,.profile-rank-badge,.champion-banner{border-color:#aa873c}
+.tabs button,.ucs-admin-tab{background:#1b1d21;border-color:#625337;color:#e5d9bf}
+.tabs button.active,.ucs-admin-tab.active{background:#57401c;border-color:#d9b65d;color:#ffebb0;box-shadow:none}
+.admin-card input,.admin-card select,.admin-card textarea,.admin-login input,.search{border-color:#65583c;background:#101216;color:#f8f5ee}
+.admin-card input:focus,.admin-card select:focus,.admin-card textarea:focus{border-color:#edc96e;outline-color:#eac76a44}
+.ucs-news-card:hover{border-color:#d7b35c}
+.ucs-news-card-copy small,.ucs-news-card-copy b{color:#e7c066}
+.ucs-news-card-copy strong{color:#fff8e7}
+.ucs-news-reader>small{color:#e7c066}
+.ucs-marquee-stage{border-color:#806433}
+.ucs-marquee-versus,.ucs-marquee-versus strong{color:#edc45e}
+.ucs-bout-spotlight{border-color:#6d5630}
+.ucs-matcherino-total{border-color:#b3924e;background:#211b12}
+.ucs-matcherino-total strong{color:#ffe194}
+.ucs-undercard-dialog{border-color:#8e723e;border-top-color:#e6c06b;background:linear-gradient(145deg,#211d16,#111216)}
+.ucs-news-card,.panel,.admin-card{border-radius:12px}
+.ucs-news-card:hover{transform:translateY(-2px)}
+.profile-stat-grid strong,.profile-rank-badge strong{color:#f3d37b}
+.profile-fight-row a,.ucs-inline-title{color:#e6bd59}
+a{accent-color:#d5ad48}
+::selection{background:#9c7a30;color:#fff}
+@media(max-width:700px){.topbar nav a.active{background:#44371d}.ucs-watch-button{font-size:11px}}
