@@ -464,6 +464,10 @@
               </fieldset>
               <label>Cover image<input type="file" name="news_image" accept="image/jpeg,image/png,image/webp"></label>
               <label>Or image URL<input type="url" name="image_url" placeholder="https://..."></label>
+              <label>Fight poster banner (optional)<input id="ucsNewsBannerFile" type="file" name="banner_file" accept="image/png,image/jpeg,image/webp"></label>
+              <label>Or banner URL<input name="banner_url" type="url" placeholder="https://..."></label>
+              <p class="ucs-news-banner-hint">Add a wide fight poster above the full article. This is separate from the news card's cover image. Upload a JPG, PNG or WebP (up to 5 MB).</p>
+              <div id="ucsNewsBannerPreview" class="ucs-news-banner-preview"></div>
               <label class="ucs-news-check"><input type="checkbox" name="is_published" checked> Publish article publicly</label>
               <div class="button-row"><button class="btn primary" type="submit" id="ucsNewsSave">PUBLISH ARTICLE</button><button type="button" id="ucsNewsReset" class="btn ghost">CLEAR</button></div>
             </form>
