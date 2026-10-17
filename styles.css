@@ -391,3 +391,23 @@ p{line-height:1.7}
  .ucs-news-card-copy>span{font-size:14px}
 }
 @media(prefers-reduced-motion:reduce){.btn,.mini-action,.tabs button,.ucs-admin-tab,.topbar nav a{transition:none}}
+
+
+/* Discord community predictions — homepage editorial feed */
+.ucs-community-section{padding-top:34px;padding-bottom:36px}
+.ucs-community-head{display:flex;justify-content:space-between;align-items:end;gap:18px;margin-bottom:18px}
+.ucs-community-head h2{font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(32px,4.4vw,52px);line-height:1.05;font-weight:900;letter-spacing:.01em;margin:5px 0}
+.ucs-community-head p{font-size:15px;color:#c4cad6;margin:4px 0 0}
+.ucs-community-source{font-size:11px;color:#e9c66f;border:1px solid #615133;background:#2a2318;border-radius:7px;padding:9px 12px;font-weight:800;letter-spacing:.08em;white-space:nowrap}
+.ucs-community-feed{max-height:370px;overflow-y:auto;scrollbar-width:thin;display:grid;gap:0;border:1px solid #3a414f;border-radius:13px;background:linear-gradient(145deg,#171b25,#12151c);box-shadow:0 10px 30px #0003}
+.ucs-community-message{display:flex;align-items:start;gap:14px;padding:17px 19px;border-bottom:1px solid #323946}
+.ucs-community-message:last-child{border-bottom:0}
+.ucs-community-avatar{width:42px;height:42px;flex:0 0 42px;overflow:hidden;border-radius:50%;background:#343d50;display:grid;place-items:center;color:#fff;font-weight:800}
+.ucs-community-avatar img{width:100%;height:100%;object-fit:cover}
+.ucs-community-message-body{min-width:0;flex:1}
+.ucs-community-message-meta{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.ucs-community-message-meta strong{color:#f1f2f7;font-size:14px}
+.ucs-community-message-meta time{color:#aab5c8;font-size:12px}
+.ucs-community-message-body p{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0 0;color:#d3dae7;font-size:14px;line-height:1.6}
+.ucs-community-empty{color:#bcc5d4;font-size:14px;padding:28px;margin:0;text-align:center}
+@media(max-width:700px){.ucs-community-head{align-items:start;flex-direction:column}.ucs-community-message{padding:14px;gap:10px}.ucs-community-avatar{width:36px;height:36px;flex-basis:36px}}
