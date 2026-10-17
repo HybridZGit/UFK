@@ -722,7 +722,7 @@ function ucsRenderEventCards(){
     const date=event.event_date?new Date(event.event_date+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short'}).toUpperCase():'DATE TBA';
     return '<article class="ucs-event-card"><div class="ucs-event-poster">'+poster+'<span class="ucs-event-overlay-date">'+esc(date)+'</span><div class="ucs-event-overlay-title">'+title+'</div><span class="ucs-event-overlay-detail">'+esc(event.details||'UCS OFFICIAL FIGHT NIGHT')+'</span></div><div class="ucs-event-content"><span class="ucs-event-status">'+esc(event.status||'upcoming')+'</span><h3>'+esc(event.name)+'</h3>'+(bouts.length?'<p>'+bouts.map(b=>{const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);return esc((a?.name||'TBA')+' vs '+(c?.name||'TBA'));}).join(' · ')+'</p>':'')+(safeHttps(event.poster_url)?'<a class="ucs-event-view" href="'+esc(event.poster_url)+'" target="_blank" rel="noopener noreferrer">VIEW FULL POSTER ↗</a>':'')+'</div></article>';
   }).join(''):'<div class="data-empty">No events announced yet.</div>';
-  if(list)list.innerHTML=events.map(event=>'<div class="ucs-admin-event-row"><strong>'+esc(event.name)+'</strong><span>'+esc(fmtDate(event.event_date))+'</span><button type="button" class="mini-action" data-ucs-edit-event="'+esc(event.id)+'">EDIT / REPLACE POSTER</button></div>').join('');
+  if(list)list.innerHTML=events.map(event=>'<div class="ucs-admin-event-row"><strong>'+esc(event.name)+'</strong><span>'+esc(fmtDate(event.event_date))+'</span><button type="button" class="mini-action" data-ucs-edit-event="'+esc(event.id)+'">EDIT / REPLACE POSTER</button><button type="button" class="mini-action ucs-delete-event" data-ucs-delete-event="'+esc(event.id)+'">DELETE EVENT</button></div>').join('');
 }
 const ucsEventTags=new Set();
 function ucsRenderEventTags(){
@@ -733,6 +733,21 @@ function ucsRenderEventTags(){
   suggestions.innerHTML=roster.map(f=>'<button type="button" class="ucs-event-tag-option" data-ucs-event-add="'+esc(f.id)+'">'+avatarHtml(f,'ucs-mention-avatar')+'<span>'+esc(f.name)+'</span></button>').join('')||'<p class="ucs-mention-empty">No matching fighters</p>';
   selected.innerHTML=[...ucsEventTags].map(id=>fighterById(id)).filter(Boolean).map(f=>'<span class="ucs-event-tag-chip">'+avatarHtml(f,'ucs-mention-avatar')+' @'+esc(f.name)+' <button type="button" data-ucs-event-remove="'+esc(f.id)+'" aria-label="Remove '+esc(f.name)+'">×</button></span>').join('');
 }
+$('#ucsAdminEventsList')?.addEventListener('click',async e=>{
+  const button=e.target.closest('[data-ucs-delete-event]');if(!button)return;
+  if(!db||!state.isAdmin)return toast('Admin permission required.',true);
+  const event=state.events.find(x=>x.id===button.dataset.ucsDeleteEvent);if(!event)return;
+  const linked=(state.scheduledBouts||[]).filter(b=>b.event_id===event.id);
+  if(linked.length)return toast('This event has '+linked.length+' scheduled fights. Move or unlink them in the fight manager before deleting the event.',true);
+  if(!confirm('Permanently delete '+event.name+' from UCS Events? This cannot be undone.'))return;
+  button.disabled=true;
+  try{
+    const {error}=await db.from('events').delete().eq('id',event.id);
+    if(error)throw error;
+    if($('#ucsEventEditor')?.elements.event_id.value===event.id){$('#ucsEventEditor').reset();$('#ucsEventEditor').elements.event_id.value='';ucsEventTags.clear();}
+    await loadPublicData();toast(event.name+' deleted.');
+  }catch(error){toast('Could not delete event: '+(error.message||error),true);button.disabled=false;}
+});
 $('#ucsEventFighterSearch')?.addEventListener('input',ucsRenderEventTags);
 $('#ucsEventFighterSuggestions')?.addEventListener('click',e=>{const btn=e.target.closest('[data-ucs-event-add]');if(!btn)return;ucsEventTags.add(btn.dataset.ucsEventAdd);$('#ucsEventFighterSearch').value='';ucsRenderEventTags();});
 $('#ucsEventSelectedFighters')?.addEventListener('click',e=>{const btn=e.target.closest('[data-ucs-event-remove]');if(!btn)return;ucsEventTags.delete(btn.dataset.ucsEventRemove);ucsRenderEventTags();});
