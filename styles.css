@@ -970,3 +970,16 @@ a{accent-color:#d5ad48}
 .ucs-event-tag-chip{display:inline-flex;align-items:center;gap:6px;background:#242638;color:#fff;padding:6px 9px;border-radius:6px}
 .ucs-event-tag-chip .ucs-mention-avatar{width:22px;height:22px;border-radius:50%;object-fit:cover}
 .ucs-event-tag-chip button{border:0;background:none;color:#f2d391;cursor:pointer;font-size:19px}
+
+
+/* Poster is the event card, not a separate caption card */
+.ucs-event-card{position:relative;background:#080808;overflow:hidden}
+.ucs-event-poster{aspect-ratio:1.52;min-height:310px}
+.ucs-event-poster>.ucs-event-bg{z-index:-2}
+.ucs-event-content{position:absolute;bottom:0;left:0;right:0;padding:48px 18px 14px;background:linear-gradient(transparent,#000b);pointer-events:none}
+.ucs-event-content h3,.ucs-event-content p{display:none}
+.ucs-event-content .ucs-event-status{font-size:11px;color:#fff}
+.ucs-event-content .ucs-event-view{pointer-events:auto;font-size:11px;display:inline-block;margin-top:5px;color:#f9d284}
+.ucs-event-overlay-title{font-size:clamp(29px,3.2vw,48px)}
+.ucs-event-overlay-detail{font-size:clamp(12px,1.1vw,16px)}
+@media(max-width:720px){.ucs-event-poster{min-height:260px}}
