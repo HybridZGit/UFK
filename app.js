@@ -5,7 +5,7 @@ const esc = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;'
 const state = {
   fighters: [], champions: [], results: [], events: [], contracts: [], bets: [], scheduledBouts: [], news: [], photos: [], canPhotograph: false, settings: {},
   user: null, isAdmin: false, profile: null, myFighter: null, wallet: null, userBets: [],
-  fighterEarnings: new Map(), fighterContracts: [], contractTab: 'incoming', contractTarget: null,
+  fighterEarnings: new Map(), formerChampionships: [], fighterContracts: [], contractTab: 'incoming', contractTarget: null,
   rankingDivision: 'UCS World', betSelection: null
 };
 
@@ -59,7 +59,8 @@ async function loadPublicData(){
     db.from('scheduled_bouts').select('*').eq('status','scheduled').order('bout_date',{ascending:true,nullsFirst:false}),
     db.from('fighter_earnings').select('fighter_id,amount'),
     db.from('ucs_news').select('*').order('published_at',{ascending:false}),
-    db.from('ucs_photos').select('*').order('created_at',{ascending:false}).limit(120)
+    db.from('ucs_photos').select('*').order('created_at',{ascending:false}).limit(120),
+    db.from('ucs_former_championships').select('fighter_id,division')
   ]);
   const firstError = queries.find(x=>x.error)?.error;
   if(firstError) toast(`Supabase: ${firstError.message}`,true);
@@ -69,6 +70,7 @@ async function loadPublicData(){
   state.fighterEarnings=new Map((queries[8].data||[]).map(row=>[row.fighter_id,Number(row.amount)]));
   state.news=queries[9].data||[];
   state.photos=queries[10].data||[];
+  state.formerChampionships=queries[11].data||[];
   renderAll();
 }
 
@@ -297,13 +299,19 @@ function openFighterProfile(id){
 
   const badge=$('#profileUnderdog'),server=$('#profileServerIcon');
   badge?.classList.toggle('hidden',!f.is_underdog);
+  const former=state.formerChampionships.filter(t=>t.fighter_id===f.id&&!titles.some(c=>c.division===t.division));
+  const legacy=$('#profileFormerTitles');
+  if(legacy){
+    legacy.classList.toggle('hidden',!former.length);
+    legacy.innerHTML=former.map(t=>`<span class="ucs-former-champion-badge" title="Previously held ${esc(t.division)}">🏅 FORMER ${esc(t.division.toUpperCase())} CHAMPION</span>`).join('');
+  }
   if(server){
     const url=f.server_icon_url;
     server.classList.toggle('hidden',!safeHttps(url));
     server.innerHTML=safeHttps(url)?`<img src="${esc(url)}" alt="Server icon" loading="lazy">`:'';
   }
   $('#profileBio').textContent=f.fighter_bio?.trim()||'This fighter has not added a biography yet.';
-  $('#profileScoutLabel').textContent=f.is_underdog?'UNDERDOG':'CONTENDER';
+  $('#profileScoutLabel').textContent=f.is_underdog?'UNDERDOG':(former.length?'FORMER CHAMPION':titles.length?'CHAMPION':'CONTENDER');
   const winsRecorded=history.filter(x=>x.winner_id===f.id);
   const kos=winsRecorded.filter(x=>/\b(KO|TKO|KNOCKOUT)\b/i.test(String(x.method||''))).length;
   const recordWins=Number(f.wins||0);
@@ -1046,6 +1054,8 @@ if(db){
     .on('postgres_changes',{event:'*',schema:'public',table:'ucs_news'},refreshMatchupsFromDb)
     .on('postgres_changes',{event:'*',schema:'public',table:'scheduled_bouts'},refreshMatchupsFromDb)
     .on('postgres_changes',{event:'*',schema:'public',table:'league_settings'},refreshMatchupsFromDb)
+    .on('postgres_changes',{event:'*',schema:'public',table:'champions'},refreshMatchupsFromDb)
+    .on('postgres_changes',{event:'*',schema:'public',table:'ucs_former_championships'},refreshMatchupsFromDb)
     .subscribe();
   document.addEventListener('visibilitychange',()=>{
     if(document.visibilityState==='visible')refreshMatchupsFromDb();
