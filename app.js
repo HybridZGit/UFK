@@ -351,7 +351,7 @@ $('#ucsTottStage')?.addEventListener('click',event=>{
   if(btn?.dataset.tottFighter)openFighterProfile(btn.dataset.tottFighter);
 });
 
-function renderAll(){ renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+function renderAll(){ ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -709,6 +709,52 @@ function renderUpcomingSpotlight(){
   root.querySelectorAll('[data-open-fights]').forEach(btn=>btn.addEventListener('click',()=>showPage('fights')));
   root.querySelectorAll('[data-open-undercard]').forEach(btn=>btn.addEventListener('click',()=>openUndercardForm(b.id)));
 }
+
+function ucsRenderEventCards(){
+  const grid=$('#ucsEventsGrid'),list=$('#ucsAdminEventsList');
+  const events=[...state.events].sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),undefined,{numeric:true}));
+  if(grid)grid.innerHTML=events.length?events.map(event=>{
+    const bouts=(state.scheduledBouts||[]).filter(b=>b.event_id===event.id);
+    const image=safeHttps(event.poster_url)?'<img loading="lazy" src="'+esc(event.poster_url)+'" alt="'+esc(event.name)+' event poster">':'<div class="ucs-event-placeholder">UCS <span>FIGHT NIGHT</span></div>';
+    return '<article class="ucs-event-card"><div class="ucs-event-poster">'+image+'</div><div class="ucs-event-content"><span class="ucs-event-status">'+esc(event.status||'upcoming')+'</span><h3>'+esc(event.name)+'</h3><p class="ucs-event-date">'+esc(fmtDate(event.event_date))+'</p><p>'+esc(event.details||'Official fight card and poster coming soon.')+'</p>'+(bouts.length?'<p>'+bouts.map(b=>{const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);return esc((a?.name||'TBA')+' vs '+(c?.name||'TBA'));}).join(' · ')+'</p>':'')+(safeHttps(event.poster_url)?'<a class="ucs-event-view" href="'+esc(event.poster_url)+'" target="_blank" rel="noopener noreferrer">VIEW FULL POSTER ↗</a>':'')+'</div></article>';
+  }).join(''):'<div class="data-empty">No events announced yet.</div>';
+  if(list)list.innerHTML=events.map(event=>'<div class="ucs-admin-event-row"><strong>'+esc(event.name)+'</strong><span>'+esc(fmtDate(event.event_date))+'</span><button type="button" class="mini-action" data-ucs-edit-event="'+esc(event.id)+'">EDIT / REPLACE POSTER</button></div>').join('');
+}
+$('#ucsAdminEventsList')?.addEventListener('click',e=>{
+  const button=e.target.closest('[data-ucs-edit-event]');if(!button)return;
+  const event=state.events.find(x=>x.id===button.dataset.ucsEditEvent),form=$('#ucsEventEditor');
+  if(!event||!form)return;
+  for(const key of ['event_id','name','event_date','details','status'])form.elements[key].value=event[key]||'';
+  form.scrollIntoView({behavior:'smooth',block:'center'});
+});
+$('#ucsEventNew')?.addEventListener('click',()=>{$('#ucsEventEditor')?.reset();$('#ucsEventEditor').elements.event_id.value='';});
+$('#ucsEventEditor')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!db||!state.isAdmin)return toast('Admin permission required.',true);
+  const form=e.currentTarget,data=new FormData(form),button=$('#ucsEventSave');
+  const id=String(data.get('event_id')||'').trim();
+  const payload={name:String(data.get('name')||'').trim(),event_date:data.get('event_date'),details:String(data.get('details')||'').trim()||null,status:data.get('status')};
+  const file=form.elements.poster.files?.[0];
+  if(!payload.name||!payload.event_date)return toast('Event name and date are required.',true);
+  if(file&&!['image/jpeg','image/png','image/webp'].includes(file.type))return toast('Use a JPG, PNG or WebP poster.',true);
+  if(file&&(file.size===0||file.size>5*1024*1024))return toast('Poster must be 5 MB or smaller.',true);
+  button.disabled=true;
+  try{
+    if(file){
+      const extension={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
+      const path='event-posters/'+crypto.randomUUID()+'.'+extension;
+      const {error:uploadError}=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type,upsert:false});
+      if(uploadError)throw uploadError;
+      payload.poster_url=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
+    }
+    const query=id?db.from('events').update(payload).eq('id',id):db.from('events').insert(payload);
+    const {error}=await query;if(error)throw error;
+    form.reset();form.elements.event_id.value='';
+    await loadPublicData();toast(id?'Event and poster updated.':'UCS event created.');
+  }catch(error){toast(error.message||'Could not save event.',true);}
+  finally{button.disabled=false;}
+});
+
 function renderEvents(){
   const root=$('#fightList');
   if(!root)return;
