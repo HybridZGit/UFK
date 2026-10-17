@@ -25,6 +25,7 @@
       <a href="#betting" data-page="betting">Betting</a>
       <a href="#fights" data-page="fights">Fights</a>
       <a href="#news" data-page="news">News</a>
+      <a href="#photography" data-page="photography">Photography</a>
       <a href="#account" data-page="account">Fighter Account</a>
       <a href="#admin" data-page="admin">Admin</a>
     </nav>
@@ -160,6 +161,35 @@
       <article id="ucsNewsReader" class="ucs-news-reader hidden" aria-live="polite"></article>
     </section>
 
+    <section class="page shell section-space ucs-photo-page" id="photography">
+      <div class="ucs-photo-heading"><span class="section-kicker">UCS MEDIA</span><h1>UCS <em>PHOTOGRAPHY</em></h1><p>Official ringside moments, fighters and event photography.</p></div>
+      <div id="ucsPhotoGallery" class="ucs-photo-gallery"><p class="data-empty">Photos will appear here after they are published.</p></div>
+      <div class="ucs-photo-creator-area">
+        <div id="ucsPhotographerGuest" class="admin-card ucs-photo-login">
+          <h3>PHOTOGRAPHER LOGIN</h3><p>Sign in with an approved UCS photographer account to unlock photo uploads. Ask a league admin to approve your email first.</p>
+          <form id="ucsPhotographerLoginForm">
+            <label>Email<input type="email" name="email" autocomplete="email" required></label>
+            <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+            <button type="submit" class="btn primary">SIGN IN</button>
+          </form>
+        </div>
+        <div id="ucsPhotographerPending" class="admin-card hidden">
+          <h3>ACCOUNT NOT APPROVED</h3><p>Your login is active, but you don't have photographer access yet. Contact a UCS admin to approve your email.</p>
+        </div>
+        <div id="ucsPhotographerTools" class="admin-card hidden">
+          <div class="ucs-photo-tools-head"><h3>PHOTOGRAPHER STUDIO</h3><span>APPROVED ACCESS</span></div>
+          <form id="ucsPhotographerUploadForm">
+            <label>Upload photos<input type="file" name="images" accept="image/jpeg,image/png,image/webp" multiple required></label>
+            <label>Event or album<input name="event_name" maxlength="100" placeholder="UCS#001"></label>
+            <label>Caption<input name="caption" maxlength="350" placeholder="Photo description"></label>
+            <button class="btn primary" id="ucsPhotoUploadButton" type="submit">UPLOAD PHOTOS</button>
+          </form>
+          <p>Maximum 10 MB per photo · JPG, PNG or WebP. Uploaded pictures are publicly visible.</p>
+          <div id="ucsMyPhotoList"></div>
+        </div>
+      </div>
+    </section>
+
     <section class="page shell section-space" id="account">
       <div class="section-kicker">UCS FIGHTER PORTAL</div>
       <div class="section-title-row"><h2>FIGHTER ACCOUNT</h2><span id="fighterAccountStatus">Create an account or sign in</span></div>
@@ -276,6 +306,13 @@
             <label>Fighter<select name="fighter_id" class="fighter-select" required></select></label>
             <div class="split-3"><label>Wins<input name="wins" type="number" min="0" required></label><label>Losses<input name="losses" type="number" min="0" required></label><label>Draws<input name="draws" type="number" min="0" required></label></div>
             <button class="btn primary" type="submit">UPDATE RECORD</button>
+          </form>
+
+          <form class="admin-card" id="ucsPhotographerApprovalForm">
+            <h3>Photographer permissions</h3><p>Only admins can approve photographers. They must already have a UCS login.</p>
+            <label>Photographer's account email<input name="email" type="email" required placeholder="photographer@example.com"></label>
+            <label>Permission<select name="approved"><option value="true">Approve photographer</option><option value="false">Revoke photographer access</option></select></label>
+            <button type="submit" class="btn primary">UPDATE PERMISSIONS</button>
           </form>
 
           <form class="admin-card" id="fighterDetailsForm">
@@ -411,31 +448,10 @@
         </section>
       </div>
     </section>
-  </main>
-
-  <div class="ucs-undercard-modal hidden" id="ucsUndercardModal" aria-hidden="true">
-    <div class="ucs-undercard-backdrop" data-close-undercard></div>
-    <div class="ucs-undercard-dialog" role="dialog" aria-modal="true" aria-labelledby="ucsUndercardTitle">
-      <button type="button" class="profile-close" data-close-undercard aria-label="Close undercard application">×</button>
-      <div class="section-kicker">RAFA VS BBK · 21 OCTOBER 2026</div>
-      <h2 id="ucsUndercardTitle">APPLY FOR THE UNDERCARD</h2>
-      <p>Fill out this form to let the UCS organizers know you want a place on the fight card. Application does not guarantee a bout.</p>
-      <form id="ucsUndercardForm">
-        <input type="hidden" name="bout_id" id="ucsUndercardBoutId">
-        <label>Discord name<input type="text" name="discord_name" maxlength="60" minlength="2" required placeholder="Your Discord username"></label>
-        <label>Do you wish to take part in the undercard?<select name="wants_to_participate" required><option value="">Select an answer</option><option value="true">Yes</option><option value="false">No</option></select></label>
-        <label>Are you free at 8 PM Eastern, 21 October?<select name="available_at_8pm_eastern" required><option value="">Select an answer</option><option value="true">Yes</option><option value="false">No</option></select></label>
-        <div class="hidden" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-        <button type="submit" class="btn primary" id="ucsUndercardSubmit">SEND APPLICATION</button>
-        <p id="ucsUndercardFeedback" role="status" aria-live="polite"></p>
-      </form>
-    </div>
-  </div>
-
-  <div class="fighter-modal" id="fighterModal" aria-hidden="true">
-    <div class="fighter-modal-backdrop" data-close-profile></div>
+  <section class="page shell section-space ucs-fighter-page" id="fighter">
+    <div class="ucs-fighter-back"><button type="button" class="btn ghost" data-close-profile>← BACK TO RANKINGS</button><span>UCS FIGHTER PROFILE</span></div>
     <article class="fighter-profile-panel" role="dialog" aria-modal="true" aria-labelledby="profileName">
-      <button class="profile-close" type="button" data-close-profile aria-label="Close fighter profile">×</button>
+
       <div class="profile-sponsor"><span>RANKINGS PRESENTED BY</span><img src="assets/ufk-fight-kit.png" alt="UFK Fight Kit"></div>
       <header class="profile-hero">
         <div class="profile-avatar" id="profileAvatar"><span>UCS</span></div>
@@ -479,8 +495,30 @@
       <section class="profile-history"><div class="profile-section-title"><span>UPCOMING FIGHTS</span><small>Scheduled only — not results</small></div><div id="profileUpcomingFights"></div></section>
       <section class="profile-history"><div class="profile-section-title"><span>RECENT FIGHTS</span><small>Official UCS results</small></div><div id="profileFightHistory"></div></section>
     </article>
-  </div>
+  </section>
 
+
+
+  </main>
+
+  <div class="ucs-undercard-modal hidden" id="ucsUndercardModal" aria-hidden="true">
+    <div class="ucs-undercard-backdrop" data-close-undercard></div>
+    <div class="ucs-undercard-dialog" role="dialog" aria-modal="true" aria-labelledby="ucsUndercardTitle">
+      <button type="button" class="profile-close" data-close-undercard aria-label="Close undercard application">×</button>
+      <div class="section-kicker">RAFA VS BBK · 21 OCTOBER 2026</div>
+      <h2 id="ucsUndercardTitle">APPLY FOR THE UNDERCARD</h2>
+      <p>Fill out this form to let the UCS organizers know you want a place on the fight card. Application does not guarantee a bout.</p>
+      <form id="ucsUndercardForm">
+        <input type="hidden" name="bout_id" id="ucsUndercardBoutId">
+        <label>Discord name<input type="text" name="discord_name" maxlength="60" minlength="2" required placeholder="Your Discord username"></label>
+        <label>Do you wish to take part in the undercard?<select name="wants_to_participate" required><option value="">Select an answer</option><option value="true">Yes</option><option value="false">No</option></select></label>
+        <label>Are you free at 8 PM Eastern, 21 October?<select name="available_at_8pm_eastern" required><option value="">Select an answer</option><option value="true">Yes</option><option value="false">No</option></select></label>
+        <div class="hidden" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+        <button type="submit" class="btn primary" id="ucsUndercardSubmit">SEND APPLICATION</button>
+        <p id="ucsUndercardFeedback" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
 
   <div class="contract-modal" id="contractModal" aria-hidden="true">
     <div class="contract-modal-backdrop" data-close-contract></div>
