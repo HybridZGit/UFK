@@ -12,10 +12,34 @@ const state = {
 const configured = Boolean(window.UFK_SUPABASE_URL && window.UFK_SUPABASE_ANON_KEY && window.supabase?.createClient);
 const db = configured ? window.supabase.createClient(window.UFK_SUPABASE_URL, window.UFK_SUPABASE_ANON_KEY) : null;
 
+// Twitch embeds must receive the actual hostname in the parent parameter.
+// Only mount on the Watch tab, and unload when leaving so the audio stops.
+let ucsTwitchMounted=false;
+function ucsMountTwitch(){
+  if(ucsTwitchMounted)return;
+  const player=$('#ucsTwitchPlayer'),chat=$('#ucsTwitchChat');
+  if(!player||!chat)return;
+  const host=window.location.hostname||'ucsleague.vercel.app';
+  const parent=encodeURIComponent(host);
+  const playerUrl='https://player.twitch.tv/?channel=hymass21&parent='+parent+'&muted=false&autoplay=false';
+  const chatUrl='https://www.twitch.tv/embed/hymass21/chat?parent='+parent+'&darkpopout';
+  const frame=(url,title)=>{const el=document.createElement('iframe');el.src=url;el.title=title;el.loading='lazy';el.referrerPolicy='strict-origin-when-cross-origin';el.allow='autoplay; fullscreen; picture-in-picture';el.allowFullscreen=true;el.setAttribute('frameborder','0');return el;};
+  player.replaceChildren(frame(playerUrl,'UCS Twitch live video player'));
+  chat.replaceChildren(frame(chatUrl,'UCS Twitch live chat'));
+  ucsTwitchMounted=true;
+}
+function ucsUnmountTwitch(){
+  if(!ucsTwitchMounted)return;
+  const player=$('#ucsTwitchPlayer'),chat=$('#ucsTwitchChat');
+  player?.replaceChildren();
+  chat?.replaceChildren();
+  ucsTwitchMounted=false;
+}
 function showPage(id){
-  $$('.page').forEach(p=>p.classList.toggle('active',p.id===id));
-  $$('nav a').forEach(a=>a.classList.toggle('active',a.dataset.page===id));
+  $('.page').forEach(p=>p.classList.toggle('active',p.id===id));
+  $('nav a').forEach(a=>a.classList.toggle('active',a.dataset.page===id));
   $('#nav')?.classList.remove('open');
+  if(id==='watch')ucsMountTwitch();else ucsUnmountTwitch();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 $$('[data-page]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();showPage(a.dataset.page);history.replaceState(null,'','#'+a.dataset.page)}));
@@ -26,6 +50,27 @@ function toast(msg,bad=false){
   const t=$('#toast'); t.textContent=msg; t.classList.toggle('error',bad); t.classList.add('show');
   clearTimeout(window._toast); window._toast=setTimeout(()=>t.classList.remove('show'),2800);
 }
+// October 21, 2026 8:00 PM America/New_York (EDT = UTC-4 on this date).
+// Using a fixed UTC instant makes the countdown identical for every viewer.
+const UCS_FIGHT_NIGHT_AT=Date.parse('2026-10-22T00:00:00.000Z');
+function ucsUpdateFightCountdown(){
+  const remaining=Math.max(0,UCS_FIGHT_NIGHT_AT-Date.now());
+  const seconds=Math.floor(remaining/1000);
+  const days=Math.floor(seconds/86400);
+  const hours=Math.floor((seconds%86400)/3600);
+  const minutes=Math.floor((seconds%3600)/60);
+  const secs=seconds%60;
+  const pad=v=>String(v).padStart(2,'0');
+  const values=[['ucsCDays',days],['ucsCHours',hours],['ucsCMinutes',minutes],['ucsCSeconds',secs]];
+  values.forEach(([id,value])=>{const element=$('#'+id);if(element)element.textContent=pad(value);});
+  const home=$('#ucsHomeCountdown');
+  if(home)home.textContent=remaining?days+'d '+pad(hours)+'h '+pad(minutes)+'m '+pad(secs)+'s':'FIGHT NIGHT IS HERE';
+  const status=$('#ucsCountdownStatus');
+  if(status)status.textContent=remaining?'COUNTING DOWN TO THE FIRST BELL':'IT’S FIGHT NIGHT — WATCH UCS LIVE';
+}
+ucsUpdateFightCountdown();
+setInterval(ucsUpdateFightCountdown,1000);
+
 function fmtDate(d){ if(!d) return ''; const x=new Date(`${d}T12:00:00`); return Number.isNaN(x.getTime())?d:x.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
 function record(f){ return `${f?.wins ?? 0}-${f?.losses ?? 0}-${f?.draws ?? 0}${f?.region ? ` · ${f.region}` : ''}`; }
 function fighterById(id){ return state.fighters.find(f=>f.id===id); }
