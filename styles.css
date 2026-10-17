@@ -919,3 +919,24 @@ a{accent-color:#d5ad48}
 .ucs-tott-tabs [data-tott-bout]{border-radius:8px;background:#13171c;border-color:#716044;color:#d8cbb5;font-size:11px;max-width:100%;overflow-wrap:anywhere}
 .ucs-tott-tabs [data-tott-bout].active{background:linear-gradient(110deg,#4a371b,#28221b);border-color:#e3b75e;color:#ffe0a1;box-shadow:0 0 18px #d4a24730}
 @media(max-width:640px){.ucs-tott-tabs [data-tott-bout]{flex:1 1 46%;min-width:0;padding:11px 8px}}
+
+
+/* Dedicated UCS Events page */
+.ucs-events-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:24px;margin-top:28px}
+.ucs-event-card{background:linear-gradient(155deg,#17191f,#090a0d);border:1px solid #65502d;border-radius:18px;overflow:hidden;box-shadow:0 14px 45px #0007}
+.ucs-event-poster{background:#08090d;min-height:260px;display:grid;place-items:center}
+.ucs-event-poster img{display:block;width:100%;max-height:550px;object-fit:contain}
+.ucs-event-placeholder{min-height:260px;display:flex;align-items:center;justify-content:center;flex-direction:column;font:900 clamp(44px,7vw,78px)/1 'Barlow Condensed',Impact,sans-serif;letter-spacing:3px;color:#e6b95d;text-shadow:0 0 28px #d7a74740}
+.ucs-event-placeholder span{font-size:18px;letter-spacing:6px;margin-top:12px}
+.ucs-event-content{padding:24px}
+.ucs-event-content h3{font:900 clamp(28px,4vw,42px)/1.05 'Barlow Condensed',Impact,sans-serif;color:#fff;margin:10px 0}
+.ucs-event-content p{color:#c9c5bd;line-height:1.65;white-space:pre-line}
+.ucs-event-status{text-transform:uppercase;letter-spacing:2px;color:#e7ba67;font-weight:800;font-size:12px}
+.ucs-event-date{font-weight:800;color:#f4db9e!important}
+.ucs-event-view{display:inline-block;margin-top:15px;color:#f3ca7d;font-weight:800}
+.ucs-events-admin form{display:grid;gap:12px;margin-top:16px}
+.ucs-events-admin textarea{min-height:90px;resize:vertical}
+.ucs-event-actions{display:flex;flex-wrap:wrap;gap:10px}
+.ucs-admin-events-list{margin-top:20px;display:grid;gap:10px}
+.ucs-admin-event-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid #51442e;padding:12px 0}
+.ucs-admin-event-row span{color:#c9c5bd;margin-right:auto}
