@@ -663,3 +663,19 @@ a{accent-color:#d5ad48}
 .ucs-news-fighter-link strong{font-size:13px;color:#f7f3e9;overflow-wrap:anywhere}
 .ucs-news-fighter-link small{font-size:10px;color:#e2c17b;letter-spacing:.04em}
 @media(max-width:620px){.ucs-news-tag-fieldset{padding:11px}.ucs-news-listed-fighters{padding:14px}.ucs-news-fighter-link{min-width:0;flex-basis:100%}}
+
+
+/* Fight posters uploaded by admins become contained clickable banners above every bout. */
+#fights .ucs-match-poster-banner{position:relative;display:block;isolation:isolate;width:100%;height:clamp(135px,21vw,210px);overflow:hidden;background:#121215;border-bottom:1px solid #645033;text-decoration:none}
+#fights .ucs-match-poster-banner>img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:cover!important;object-position:center 28%!important}
+#fights .ucs-match-poster-banner::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,rgba(5,6,9,.9),rgba(5,6,9,.12) 62%,rgba(5,6,9,.12))}
+#fights .ucs-match-poster-caption{position:absolute;z-index:2;bottom:13px;left:20px;right:20px;display:flex;align-items:end;justify-content:space-between;gap:10px;pointer-events:none}
+#fights .ucs-match-poster-caption strong{color:#fff7e7;font:900 clamp(22px,3vw,35px)/1.02 'Barlow Condensed',Impact,sans-serif;text-shadow:0 3px 12px #000}
+#fights .ucs-match-poster-caption small{color:#ffde8f;font-weight:900;letter-spacing:.075em;white-space:nowrap;font-size:11px}
+#fights .ucs-match-poster-banner:hover>img{filter:brightness(1.12)}
+.ucs-bout-banner-help{color:#c3bba9;font-size:12px;line-height:1.55}
+.ucs-bout-poster-preview{margin:7px 0 14px;display:flex;flex-direction:column;gap:7px}
+.ucs-bout-poster-preview img{display:block;width:100%;max-width:420px;height:140px;object-fit:cover;object-position:center 28%;border:1px solid #947845;border-radius:9px}
+.ucs-bout-poster-preview span{color:#e4c278;font-size:11px;font-weight:900;letter-spacing:.08em}
+.ucs-bout-poster-preview small{color:#aab1bf}
+@media(max-width:550px){#fights .ucs-match-poster-banner{height:142px}#fights .ucs-match-poster-caption{bottom:10px;left:12px;right:12px;align-items:start;flex-direction:column;gap:5px}#fights .ucs-match-poster-caption small{font-size:9px}}
