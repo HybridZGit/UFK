@@ -202,6 +202,15 @@ function openFighterProfile(id){
   $('#profileScore').textContent=Number(f.score||0).toFixed(1);
   $('#profileStreak').textContent=fighterForm(f);
   $('#profileTitles').textContent=String(titles.length);
+  const championSpotlight=$('#profileChampionSpotlight');
+  championSpotlight?.classList.toggle('hidden',titles.length===0);
+  modal.classList.toggle('ucs-is-champion',titles.length>0);
+  if(titles.length){
+    $('#profileChampionHeading').textContent=titles.length===1?titles[0].division.toUpperCase()+' CHAMPION':'MULTI-DIVISION UCS CHAMPION';
+    $('#profileChampionBelts').innerHTML=titles.map(t=>`<span class="ucs-champion-belt">🏆 ${esc(t.division)} <small>${Number(t.defenses||0)} defenses</small></span>`).join('');
+  }else{
+    $('#profileChampionBelts').textContent='';
+  }
   $('#profileFights').textContent=String((f.wins||0)+(f.losses||0)+(f.draws||0));
   $('#profileEarnings').textContent=Number(state.fighterEarnings.get(f.id)||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   $('#profileAvatar').innerHTML=f.avatar_url?`<img src="${esc(f.avatar_url)}" alt="${esc(f.name)}">`:`<span>${esc(initials(f.name))}</span>`;
