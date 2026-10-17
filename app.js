@@ -1624,4 +1624,19 @@ if(db){
     if(document.visibilityState==='visible')refreshMatchupsFromDb();
   });
 }
-(async function init(){ucsMountHomeTwitch();renderAll();updateAdminUI();await refreshSession();await loadPublicData();if(location.hash.startsWith('#fighter/')){showPage('rankings');openFighterProfile(decodeURIComponent(location.hash.slice(9)));}else if(location.hash&&$(location.hash))showPage(location.hash.slice(1));})();
+(async function init(){
+  // Public fighter/ranking/event data must never wait on login/session initialization.
+  try{ucsMountHomeTwitch();}catch(error){console.error('UCS stream setup:',error);}
+  try{renderAll();}catch(error){console.error('UCS first render:',error);}
+  try{updateAdminUI();}catch(error){console.error('UCS admin status:',error);}
+  const publicData=loadPublicData().catch(error=>{
+    console.error('UCS public data:',error);
+    toast('Fighter data could not load. Please try refreshing.',true);
+  });
+  const session=refreshSession().catch(error=>console.error('UCS account session:',error));
+  await publicData;
+  if(location.hash.startsWith('#fighter/')){
+    showPage('rankings');openFighterProfile(decodeURIComponent(location.hash.slice(9)));
+  }else if(location.hash&&$(location.hash))showPage(location.hash.slice(1));
+  await session;
+})();
