@@ -351,7 +351,31 @@ $('#ucsTottStage')?.addEventListener('click',event=>{
   if(btn?.dataset.tottFighter)openFighterProfile(btn.dataset.tottFighter);
 });
 
-function renderAll(){ renderUcsEventCards(); populateUcsEventAdmin(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+function renderAll(){
+  // Keep the core league visible even if an optional widget fails.
+  const tasks=[
+    ['home',renderHome],
+    ['rankings',()=>renderRanks($('#fighterSearch')?.value||'')],
+    ['fights',renderEvents],
+    ['betting',renderBets],
+    ['fighter selects',populateFighterSelects],
+    ['fighter editor',populateFighterDetailsEditor],
+    ['scheduled bouts',populateScheduledBoutSelect],
+    ['admin rows',renderAdminRows],
+    ['account',updateAccountUI],
+    ['events',renderUcsEventCards],
+    ['event admin',populateUcsEventAdmin],
+    ['tale of the tape',renderTaleOfTheTape],
+    ['earnings',ucsRenderEarnings],
+    ['news tags',renderNewsTagOptions],
+    ['news',renderNews],
+    ['photography',renderPhotoGallery],
+    ['top earners',renderTopEarners]
+  ];
+  tasks.forEach(([name,fn])=>{
+    try{fn()}catch(error){console.error('UCS '+name+' renderer failed:',error);}
+  });
+}
 
 // Official UCS Events: event-level posters and schedules, controlled by admins.
 function ucsEventImage(url){
