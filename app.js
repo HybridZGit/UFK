@@ -217,11 +217,33 @@ if(!reducedMotion)setInterval(()=>{
 
 function renderHome(){
   const featured=state.settings.featured_main_event||{};
-  const left=fighterById(featured.champion_id), right=fighterById(featured.challenger_id);
+  // Prefer an explicitly featured pairing, falling back to the next scheduled bout.
+  const scheduled=state.scheduledBouts||[];
+  const selectedBout=scheduled.find(b=>
+      (b.fighter_a_id===featured.champion_id&&b.fighter_b_id===featured.challenger_id)||
+      (b.fighter_b_id===featured.champion_id&&b.fighter_a_id===featured.challenger_id))||null;
+  const hasFeature=Boolean(fighterById(featured.champion_id)&&fighterById(featured.challenger_id));
+  const bout=selectedBout||(!hasFeature?scheduled[0]||null:null);
+  const left=fighterById(hasFeature?featured.champion_id:bout?.fighter_a_id);
+  const right=fighterById(hasFeature?featured.challenger_id:bout?.fighter_b_id);
+  const imageHtml=f=>f?.avatar_url&&safeHttps(f.avatar_url)
+    ?`<img src="${esc(f.avatar_url)}" alt="" loading="lazy">`
+    :`<span>${esc(initials(f?.name||'UCS'))}</span>`;
+  $('#featuredChampionImage').innerHTML=imageHtml(left);
+  $('#featuredChallengerImage').innerHTML=imageHtml(right);
   $('#featuredChampion').textContent=left?.name||'TBA';
-  $('#featuredChampionMeta').textContent=left?record(left):(featured.event_label||'No featured fight set');
+  $('#featuredChampionMeta').textContent=left?`${record(left)} · ${left.platform||'UCS'}`:'Fighter to be announced';
   $('#featuredChallenger').textContent=right?.name||'TBA';
-  $('#featuredChallengerMeta').textContent=right?record(right):'Waiting for admin update';
+  $('#featuredChallengerMeta').textContent=right?`${record(right)} · ${right.platform||'UCS'}`:'Fighter to be announced';
+  const belt=bout?.belt||null;
+  const champions=state.champions||[];
+  const role=f=>f&&champions.some(c=>c.fighter_id===f.id)?'UCS CHAMPION':'CONTENDER';
+  $('#featuredChampionRole').textContent=role(left);
+  $('#featuredChallengerRole').textContent=role(right);
+  $('#featuredFightTag').textContent=belt?'CHAMPIONSHIP FIGHT':'MAIN EVENT';
+  $('#featuredFightType').textContent=belt?`🏆 ${belt} TITLE`:'OFFICIAL MATCHUP';
+  $('#featuredFightEvent').textContent=bout?.event_name||featured.event_label||'UCS MAIN EVENT';
+  $('#featuredFightDate').textContent=bout?.bout_date?fmtDate(bout.bout_date):'DATE TO BE ANNOUNCED';
 
   $('#recentResults').innerHTML=state.results.length?state.results.slice(0,4).map(r=>{
     const w=fighterById(r.winner_id),l=fighterById(r.loser_id);
