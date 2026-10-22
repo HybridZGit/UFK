@@ -485,6 +485,16 @@
             <button class="btn primary" type="submit">SCHEDULE BOUT</button>
           </form>
 
+          <form class="admin-card" id="concludeScheduledBoutForm">
+            <h3>Conclude scheduled fight</h3>
+            <p>Select a scheduled bout, choose its winner and result method. Confirming updates official records and rankings and removes it from upcoming fights.</p>
+            <label>Scheduled fight<select name="bout_id" id="ucsConcludeBoutSelect" required></select></label>
+            <label>Winner<select name="winner_id" id="ucsConcludeWinnerSelect" required></select></label>
+            <label>Result method<select name="method" required><option value="KO/TKO">KO / TKO</option><option value="Decision">Decision</option><option value="DQ">Disqualification</option></select></label>
+            <label>Fight date<input name="event_date" type="date" required></label>
+            <button class="btn primary" type="submit">CONCLUDE FIGHT &amp; UPDATE RANKINGS</button>
+          </form>
+
           <form class="admin-card" id="editScheduledBoutForm">
             <h3>Update scheduled bout</h3><p>Set or change its belt, date, event name, poster URL, or contribution link.</p>
             <label>Upcoming fight<select id="scheduledBoutSelect" name="bout_id" required></select></label>
