@@ -357,7 +357,7 @@ $('#ucsTottStage')?.addEventListener('click',event=>{
   if(btn?.dataset.tottFighter)openFighterProfile(btn.dataset.tottFighter);
 });
 
-function renderAll(){ ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+function renderAll(){ ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -1187,6 +1187,45 @@ $('#ucsNewsForm')?.addEventListener('submit',async e=>{
   finally{button.disabled=false;}
 });
 
+function populateConcludeScheduledBoutSelect(){
+  const select=$('#ucsConcludeBoutSelect');if(!select)return;
+  const current=select.value;
+  const upcoming=state.scheduledBouts.filter(b=>b.status==='scheduled');
+  select.innerHTML='<option value="">SELECT SCHEDULED FIGHT</option>'+upcoming.map(b=>{
+    const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
+    return '<option value="'+esc(b.id)+'">'+esc(a?.name||'TBA')+' VS '+esc(c?.name||'TBA')+' — '+esc(b.event_name||'UCS')+'</option>';
+  }).join('');
+  if(upcoming.some(b=>b.id===current))select.value=current;
+  updateConcludeScheduledBout();
+}
+function updateConcludeScheduledBout(){
+  const form=$('#concludeScheduledBoutForm');if(!form)return;
+  const b=state.scheduledBouts.find(x=>x.id===form.elements.bout_id.value&&x.status==='scheduled');
+  const winner=form.elements.winner_id,previous=winner.value;
+  winner.innerHTML='<option value="">SELECT WINNER</option>'+(b?[b.fighter_a_id,b.fighter_b_id].map(id=>{
+    const fighter=fighterById(id);return '<option value="'+esc(id)+'">'+esc(fighter?.name||'TBA')+'</option>';
+  }).join(''):'');
+  if(b&&[b.fighter_a_id,b.fighter_b_id].includes(previous))winner.value=previous;
+  form.elements.event_date.value=b?.bout_date||new Date().toISOString().slice(0,10);
+}
+$('#ucsConcludeBoutSelect')?.addEventListener('change',updateConcludeScheduledBout);
+$('#concludeScheduledBoutForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db||!state.isAdmin)return toast('Admin permission required.',true);
+  const form=e.currentTarget,button=form.querySelector('[type="submit"]'),data=new FormData(form);
+  const bout=state.scheduledBouts.find(b=>b.id===data.get('bout_id')&&b.status==='scheduled');
+  if(!bout)return toast('Select an upcoming scheduled fight.',true);
+  const winnerId=data.get('winner_id');
+  if(![bout.fighter_a_id,bout.fighter_b_id].includes(winnerId))return toast('Select one of the two scheduled fighters.',true);
+  const winner=fighterById(winnerId),loser=fighterById(winnerId===bout.fighter_a_id?bout.fighter_b_id:bout.fighter_a_id);
+  if(!confirm('CONCLUDE '+(bout.event_name||'UCS')+'?\\n\\nWINNER: '+(winner?.name||'TBA')+'\\nLOSER: '+(loser?.name||'TBA')+'\\nMETHOD: '+data.get('method')+'\\n\\nThis permanently publishes the result and updates both fighter records and rankings.'))return;
+  button.disabled=true;
+  try{
+    const {error}=await db.rpc('conclude_ucs_scheduled_bout',{p_bout_id:bout.id,p_winner_id:winnerId,p_method:data.get('method'),p_event_date:data.get('event_date')});
+    if(error)throw error;
+    await loadPublicData();toast('Fight concluded. Official result and rankings updated.');
+  }catch(error){toast('Could not conclude fight: '+(error.message||error),true);}
+  finally{button.disabled=false;}
+});
 function populateScheduledBoutSelect(){
   const select=$('#scheduledBoutSelect');if(!select)return;
   const current=select.value;
