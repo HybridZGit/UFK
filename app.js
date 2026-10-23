@@ -1589,6 +1589,7 @@ $('#scheduleBoutForm')?.addEventListener('submit',async e=>{
   e.preventDefault();if(!db||!state.isAdmin)return toast('UCS admin required.',true);
   const d=new FormData(e.currentTarget),a=d.get('fighter_a_id'),b=d.get('fighter_b_id');
   if(a===b)return toast('Select two different fighters.',true);
+  if(d.get('is_title_eliminator')==='true'&&!d.get('belt'))return toast('Choose which championship the eliminator is for.',true);
   const url=(d.get('contribution_url')||'').trim();
   if(url&&!safeHttps(url))return toast('Use a valid HTTPS contribution link.',true);
   const payload={fighter_a_id:a,fighter_b_id:b,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,is_title_eliminator:d.get('is_title_eliminator')==='true',contribution_url:url||null,is_co_main:d.get('is_co_main')==='true'};
@@ -1603,6 +1604,7 @@ $('#editScheduledBoutForm')?.addEventListener('submit',async e=>{
   if(!original)return toast('Select a scheduled bout.',true);
   const posterFile=d.get('poster_file'),contribution=(d.get('contribution_url')||'').trim();
   let posterUrl=(d.get('poster_url')||'').trim();
+  if(d.get('is_title_eliminator')==='true'&&!d.get('belt'))return toast('Choose which championship the eliminator is for.',true);
   if(contribution&&!safeHttps(contribution))return toast('Use a valid HTTPS contribution link.',true);
   if(posterUrl&&!safeHttps(posterUrl))return toast('Use an HTTPS poster image URL.',true);
   const button=form.querySelector('[type="submit"]');button.disabled=true;
