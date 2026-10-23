@@ -480,6 +480,7 @@
             <label>Event name<input name="event_name" placeholder="UCS Fight Night" value="UCS Fight Night" required></label>
             <label>Fight date (optional)<input name="bout_date" type="date"></label>
             <label>Championship belt<select name="belt"><option value="">Non-title fight / TBA</option><option>UCS World</option><option>UCS International</option><option>UCS SIM World</option><option>UCS PS5</option><option>UCS PC</option><option>UCS XBOX</option></select></label>
+            <label>Bout stakes<select name="is_title_eliminator"><option value="false">CHAMPIONSHIP FIGHT / REGULAR BOUT</option><option value="true">INTERNATIONAL TITLE ELIMINATOR — WINNER EARNS A TITLE SHOT</option></select></label>
             <label>Fight card placement<select name="is_co_main"><option value="false">Regular bout</option><option value="true">★ CO-MAIN EVENT</option></select></label>
             <label>Contribute link (optional)<input name="contribution_url" type="url" placeholder="https://matcherino.com/..."></label>
             <button class="btn primary" type="submit">SCHEDULE BOUT</button>
@@ -505,6 +506,7 @@
             <p class="ucs-bout-banner-help">Upload a fight poster to display as a wide banner on this bout's Fights-tab card. JPG, PNG or WebP · maximum 5 MB. Click the banner to view the full poster.</p>
             <div id="ucsBoutPosterPreview" class="ucs-bout-poster-preview" aria-live="polite"></div>
             <label>Or existing poster URL<input name="poster_url" type="url" placeholder="https://..."></label>
+            <label>Bout stakes<select name="is_title_eliminator"><option value="false">CHAMPIONSHIP FIGHT / REGULAR BOUT</option><option value="true">INTERNATIONAL TITLE ELIMINATOR — WINNER EARNS A TITLE SHOT</option></select></label>
             <label>Fight card placement<select name="is_co_main"><option value="false">Regular bout</option><option value="true">★ CO-MAIN EVENT</option></select></label>
             <label>Contribute link (optional)<input name="contribution_url" type="url"></label>
             <div class="button-row"><button class="btn primary" type="submit">SAVE BOUT</button><button class="btn danger-btn" type="button" id="cancelScheduledBout">CANCEL BOUT</button></div>
