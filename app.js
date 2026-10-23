@@ -504,9 +504,9 @@ function renderRankingTitleFights(){
       ${face(f)}<span class="ucs-title-contender-copy"><strong>${name(f)}</strong><small>${f?esc(record(f)):'TO BE ANNOUNCED'}</small></span>
     </button>`;
     return `<article class="ucs-rank-title-match" aria-label="${esc(division)} championship fight">
-      <header class="ucs-rank-title-heading"><span>★ TITLE ON THE LINE</span><strong>${esc(division.toUpperCase())} CHAMPIONSHIP</strong></header>
-      <div class="ucs-rank-title-fighters">${contender(left)}<div class="ucs-rank-title-versus"><span>CHAMPIONSHIP</span><strong>VS</strong><small>${esc(date)}</small></div>${contender(right)}</div>
-      <footer class="ucs-rank-title-footer"><span>${esc(b.event_name||'UCS FIGHT NIGHT')} · SCHEDULED TITLE FIGHT</span></footer>
+      <header class="ucs-rank-title-heading"><span>${b.is_title_eliminator?'★ TITLE ELIMINATOR':'★ TITLE ON THE LINE'}</span><strong>${esc(division.toUpperCase())} ${b.is_title_eliminator?'INTERNATIONAL TITLE ELIMINATOR':esc(division.toUpperCase())+' CHAMPIONSHIP'}</strong></header>
+      <div class="ucs-rank-title-fighters">${contender(left)}<div class="ucs-rank-title-versus"><span>${b.is_title_eliminator?'ELIMINATOR':'CHAMPIONSHIP'}</span><strong>VS</strong><small>${esc(date)}</small></div>${contender(right)}</div>
+      <footer class="ucs-rank-title-footer"><span>${esc(b.event_name||'UCS FIGHT NIGHT')} · ${b.is_title_eliminator?'TITLE ELIMINATOR':'SCHEDULED TITLE FIGHT'}</span></footer>
     </article>`;
   }).join('');
 }
@@ -848,7 +848,7 @@ function renderEvents(){
     const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
     const isMain=b.id===main?.id,isCoMain=b.id===coMain?.id;
     return `<article class="ucs-match-card${isMain?' ucs-match-featured':''}${isCoMain?' ucs-match-co-main':''}">
-      <div class="ucs-match-top"><span>${isMain?'★ MAIN EVENT':isCoMain?'★ CO-MAIN EVENT':'UCS FIGHT NIGHT'}</span><span>${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</span></div>
+      <div class="ucs-match-top"><span>${isMain?'★ MAIN EVENT':isCoMain?'★ CO-MAIN EVENT':b.is_title_eliminator?'★ INTERNATIONAL TITLE ELIMINATOR':'UCS FIGHT NIGHT'}</span><span>${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</span></div>
       ${safeHttps(b.poster_url)?`<a class="ucs-match-poster-banner" href="${esc(b.poster_url)}" target="_blank" rel="noopener noreferrer" aria-label="View full fight poster for ${esc(a?.name||'fighter')} versus ${esc(c?.name||'fighter')}">
         <img src="${esc(b.poster_url)}" alt="${esc(a?.name||'Fighter')} vs ${esc(c?.name||'Fighter')} fight poster" loading="lazy">
         <span class="ucs-match-poster-caption"><strong>${esc(a?.name||'TBA')} VS ${esc(c?.name||'TBA')}</strong><small>VIEW FULL POSTER ↗</small></span>
@@ -1231,7 +1231,7 @@ function populateScheduledBoutSelect(){
   const current=select.value;
   select.innerHTML='<option value="">Select scheduled fight</option>'+state.scheduledBouts.map(b=>{
     const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
-    return `<option value="${esc(b.id)}">${esc(a?.name||'TBA')} vs ${esc(c?.name||'TBA')} (${esc(b.belt||'non-title')})</option>`;
+    return `<option value="${esc(b.id)}">${esc(a?.name||'TBA')} vs ${esc(c?.name||'TBA')} (${esc(b.belt||'non-title')}${b.is_title_eliminator?' — TITLE ELIMINATOR':''})</option>`;
   }).join('');
   if(state.scheduledBouts.some(b=>b.id===current))select.value=current;
   else if(state.scheduledBouts.length)select.value=state.scheduledBouts[0].id;
@@ -1241,6 +1241,7 @@ function fillScheduledBoutEditor(){
   const form=$('#editScheduledBoutForm');if(!form)return;
   const b=state.scheduledBouts.find(x=>x.id===$('#scheduledBoutSelect').value);
   for(const field of ['event_name','bout_date','belt','poster_url','contribution_url'])form.elements[field].value=b?.[field]||'';
+  form.elements.is_title_eliminator.value=b?.is_title_eliminator?'true':'false';
   form.elements.is_co_main.value=b?.is_co_main?'true':'false';
   if(form.elements.poster_file)form.elements.poster_file.value='';
   updateBoutPosterPreview();
@@ -1590,7 +1591,7 @@ $('#scheduleBoutForm')?.addEventListener('submit',async e=>{
   if(a===b)return toast('Select two different fighters.',true);
   const url=(d.get('contribution_url')||'').trim();
   if(url&&!safeHttps(url))return toast('Use a valid HTTPS contribution link.',true);
-  const payload={fighter_a_id:a,fighter_b_id:b,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,contribution_url:url||null,is_co_main:d.get('is_co_main')==='true'};
+  const payload={fighter_a_id:a,fighter_b_id:b,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,is_title_eliminator:d.get('is_title_eliminator')==='true',contribution_url:url||null,is_co_main:d.get('is_co_main')==='true'};
   const {error}=await db.from('scheduled_bouts').insert(payload);
   if(error)return toast(error.message,true);
   e.currentTarget.reset();await loadPublicData();toast('Bout scheduled. Fight records unchanged.');
@@ -1615,7 +1616,7 @@ $('#editScheduledBoutForm')?.addEventListener('submit',async e=>{
       if(uploadError)throw uploadError;
       posterUrl=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
     }
-    const payload={event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,poster_url:posterUrl||null,contribution_url:contribution||null,is_co_main:d.get('is_co_main')==='true',updated_at:new Date().toISOString()};
+    const payload={event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,is_title_eliminator:d.get('is_title_eliminator')==='true',poster_url:posterUrl||null,contribution_url:contribution||null,is_co_main:d.get('is_co_main')==='true',updated_at:new Date().toISOString()};
     const {error}=await db.from('scheduled_bouts').update(payload).eq('id',boutId);
     if(error)throw error;
     await loadPublicData();updateBoutPosterPreview();toast('Scheduled bout updated. Poster banner refreshed.');
