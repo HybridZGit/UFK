@@ -456,6 +456,16 @@
             <button class="btn primary" type="submit">SAVE SIM DIVISION</button>
           </form>
 
+          <div class="admin-card" id="ucsDivisionManager">
+            <h3>MANAGE RANKING DIVISIONS</h3>
+            <p>ADD OR REMOVE DIVISION TABS. EXISTING FIGHTER RECORDS ARE NEVER DELETED.</p>
+            <form id="ucsAddDivisionForm">
+              <label>NEW DIVISION NAME<input name="division_name" maxlength="60" placeholder="UCS HEAVYWEIGHT" required></label>
+              <button class="btn primary" type="submit">ADD DIVISION</button>
+            </form>
+            <div id="ucsDivisionAdminList" aria-live="polite"></div>
+          </div>
+
           <form class="admin-card" id="championForm">
             <h3>Grant championship</h3><p>Assign or replace the champion for a division.</p>
             <label>Division<select name="division"><option>UCS World</option><option>UCS International</option><option>UCS SIM World</option><option>UCS PS5</option><option>UCS PC</option><option>UCS XBOX</option></select></label>
