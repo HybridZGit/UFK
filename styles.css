@@ -1037,3 +1037,10 @@ body, body button, body select, body option, body label, body a, body textarea, 
 .ucs-division-manager-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #ffffff20;flex-wrap:wrap}
 .ucs-division-manager-row strong{font-weight:800;letter-spacing:.04em}
 #ucsDivisionAdminList{margin-top:16px}
+
+/* Division edit actions */
+.ucs-division-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ucs-division-region-editor{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:8px}
+.ucs-division-region-editor.hidden{display:none!important}
+.ucs-division-region-editor select{max-width:220px}
+.ucs-division-region-editor small{flex-basis:100%;opacity:.75}
