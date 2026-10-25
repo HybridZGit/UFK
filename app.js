@@ -357,7 +357,50 @@ $('#ucsTottStage')?.addEventListener('click',event=>{
   if(btn?.dataset.tottFighter)openFighterProfile(btn.dataset.tottFighter);
 });
 
-function renderAll(){ ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+const ucsDefaultDivisions=['UCS World','UCS International','UCS SIM World','UCS PS5','UCS PC','UCS XBOX'];
+function ucsDivisions(){
+  const saved=state.settings.ranking_divisions;
+  return Array.isArray(saved)?saved.filter(x=>typeof x==='string'&&x.trim()).slice(0,40):ucsDefaultDivisions;
+}
+function ucsRenderDivisions(){
+  const divisions=ucsDivisions();
+  if(!divisions.includes(state.rankingDivision))state.rankingDivision=divisions[0]||'';
+  const tabs=$('#rankingTabs');
+  if(tabs)tabs.innerHTML=divisions.map(name=>'<button type="button" data-div="'+esc(name)+'" class="'+(name===state.rankingDivision?'active':'')+'">'+esc(name.toUpperCase())+'</button>').join('');
+  for(const selector of ['#championForm [name="division"]','#scheduleBoutForm [name="belt"]','#editScheduledBoutForm [name="belt"]']){
+    const el=$(selector);if(!el)continue;
+    const current=el.value;
+    el.innerHTML=(selector.includes('belt')?'<option value="">NON-TITLE FIGHT / TBA</option>':'')+divisions.map(name=>'<option value="'+esc(name)+'">'+esc(name.toUpperCase())+'</option>').join('');
+    if(divisions.includes(current)||(!current&&selector.includes('belt')))el.value=current;
+  }
+  const list=$('#ucsDivisionAdminList');
+  if(list)list.innerHTML=divisions.length?divisions.map(name=>'<div class="ucs-division-manager-row"><strong>'+esc(name.toUpperCase())+'</strong><button type="button" class="mini-action danger" data-remove-ucs-division="'+esc(name)+'">REMOVE</button></div>').join(''):'<p>NO DIVISIONS ADDED YET.</p>';
+}
+async function ucsSaveDivisions(divisions){
+  if(!db||!state.isAdmin)return toast('Admin permission required.',true);
+  const {error}=await db.from('league_settings').upsert({key:'ranking_divisions',value:divisions,updated_at:new Date().toISOString()},{onConflict:'key'});
+  if(error)return toast('Could not save divisions: '+error.message,true);
+  await loadPublicData();
+  toast('RANKING DIVISIONS UPDATED.');
+}
+$('#ucsAddDivisionForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!state.isAdmin)return;
+  const form=e.currentTarget,name=String(new FormData(form).get('division_name')||'').trim().replace(/\\s+/g,' ');
+  if(name.length<3||name.length>60)return toast('Division name must be 3–60 characters.',true);
+  const divisions=ucsDivisions();
+  if(divisions.some(d=>d.toLowerCase()===name.toLowerCase()))return toast('Division already exists.',true);
+  if(divisions.length>=40)return toast('Maximum 40 divisions.',true);
+  await ucsSaveDivisions([...divisions,name]);form.reset();
+});
+$('#ucsDivisionAdminList')?.addEventListener('click',async e=>{
+  const btn=e.target.closest('[data-remove-ucs-division]');if(!btn||!state.isAdmin)return;
+  const name=btn.dataset.removeUcsDivision;
+  if(state.champions.some(c=>c.division===name&&c.fighter_id))return toast('Vacate the championship before removing this division.',true);
+  if(state.scheduledBouts.some(b=>b.belt===name))return toast('Move or cancel scheduled title bouts before removing this division.',true);
+  if(!confirm('REMOVE '+name.toUpperCase()+' FROM UCS RANKINGS? Fighter records will remain unchanged.'))return;
+  await ucsSaveDivisions(ucsDivisions().filter(d=>d!==name));
+});
+function renderAll(){ ucsRenderDivisions(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -483,7 +526,7 @@ function renderHome(){
 }
 
 function renderRanks(filter=''){
-  const platform=(state.rankingDivision==='UCS World'||state.rankingDivision==='UCS International'||state.rankingDivision==='UCS SIM World')?null:state.rankingDivision.replace('UCS ','');
+  const platform=['UCS PS5','UCS PC','UCS XBOX'].includes(state.rankingDivision)?state.rankingDivision.replace('UCS ',''):null;
   const rows=state.fighters.filter(f=>f.name.toLowerCase().includes(filter.toLowerCase())&&(state.rankingDivision!=='UCS SIM World'||f.sim_division===true)&&(!platform||(f.platform||'').toUpperCase()===platform));
   $('#rankRows').innerHTML=rows.length?rows.map((f,i)=>`<tr class="fighter-rank-row" data-fighter-profile="${f.id}" tabindex="0"><td><span class="rank-number">${i+1}</span></td><td class="rank-name"><div class="rank-fighter-cell">${avatarHtml(f)}<div><strong>${ucsFighterFlag(f.region)?'<span class="ucs-rank-flag" title="'+esc(f.region)+'">'+ucsFighterFlag(f.region)+'</span> ':''}${esc(f.name)}</strong><span>${esc(record(f))} · ${esc(f.platform||'UNASSIGNED')}</span></div></div></td><td>${chip(f.resume)}</td><td>${chip(f.momentum)}</td><td>${chip(f.finishing)}</td><td>${chip(f.activity)}</td><td>${chip(f.big_fight)}</td><td class="overall">${Number(f.score||0).toFixed(1)}</td></tr>`).join(''):`<tr><td colspan="8">${empty(`No ${state.rankingDivision} fighters in the database yet.`)}</td></tr>`;
   renderRankingChampion();
