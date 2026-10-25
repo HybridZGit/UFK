@@ -362,6 +362,21 @@ function ucsDivisions(){
   const saved=state.settings.ranking_divisions;
   return Array.isArray(saved)?saved.filter(x=>typeof x==='string'&&x.trim()).slice(0,40):ucsDefaultDivisions;
 }
+function ucsDivisionRegion(name){
+  if(name==='UCS World'||name==='UCS International')return 'ALL';
+  const saved=state.settings.division_regions||{};
+  return ['ALL','EU','NA'].includes(saved[name])?saved[name]:'ALL';
+}
+function ucsFighterRegion(f){
+  const value=String(f?.region||'').trim().toUpperCase();
+  if(['EU','UK','GB','ENGLAND','SCOTLAND','WALES','IRELAND','FRANCE','GERMANY','SPAIN','ITALY','NETHERLANDS'].includes(value))return 'EU';
+  if(['NA','USA','US','UNITED STATES','CANADA','CA','MEXICO'].includes(value))return 'NA';
+  return '';
+}
+function ucsEligibleForDivision(f,name){
+  const region=ucsDivisionRegion(name);
+  return region==='ALL'||ucsFighterRegion(f)===region;
+}
 function ucsRenderDivisions(){
   const divisions=ucsDivisions();
   if(!divisions.includes(state.rankingDivision))state.rankingDivision=divisions[0]||'';
@@ -374,7 +389,12 @@ function ucsRenderDivisions(){
     if(divisions.includes(current)||(!current&&selector.includes('belt')))el.value=current;
   }
   const list=$('#ucsDivisionAdminList');
-  if(list)list.innerHTML=divisions.length?divisions.map(name=>'<div class="ucs-division-manager-row"><strong>'+esc(name.toUpperCase())+'</strong><button type="button" class="mini-action danger" data-remove-ucs-division="'+esc(name)+'">REMOVE</button></div>').join(''):'<p>NO DIVISIONS ADDED YET.</p>';
+  if(list)list.innerHTML=divisions.length?divisions.map(name=>{
+    const fixed=name==='UCS World'||name==='UCS International';
+    const region=ucsDivisionRegion(name);
+    const options=['ALL','EU','NA'].map(v=>'<option value="'+v+'" '+(v===region?'selected':'')+'>'+(v==='ALL'?'ALL FIGHTERS':v+' FIGHTERS ONLY')+'</option>').join('');
+    return '<div class="ucs-division-manager-row"><strong>'+esc(name.toUpperCase())+'</strong><label>REGION <select data-ucs-division-region="'+esc(name)+'" '+(fixed?'disabled':'')+'>'+options+'</select></label>'+(fixed?'<small>OPEN TO EVERYONE</small>':'<button type="button" class="mini-action danger" data-remove-ucs-division="'+esc(name)+'">REMOVE</button>')+'</div>';
+  }).join(''):'<p>NO DIVISIONS ADDED YET.</p>';
 }
 async function ucsSaveDivisions(divisions){
   if(!db||!state.isAdmin)return toast('Admin permission required.',true);
@@ -527,7 +547,7 @@ function renderHome(){
 
 function renderRanks(filter=''){
   const platform=['UCS PS5','UCS PC','UCS XBOX'].includes(state.rankingDivision)?state.rankingDivision.replace('UCS ',''):null;
-  const rows=state.fighters.filter(f=>f.name.toLowerCase().includes(filter.toLowerCase())&&(state.rankingDivision!=='UCS SIM World'||f.sim_division===true)&&(!platform||(f.platform||'').toUpperCase()===platform));
+  const rows=state.fighters.filter(f=>f.name.toLowerCase().includes(filter.toLowerCase())&&(state.rankingDivision!=='UCS SIM World'||f.sim_division===true)&&(!platform||(f.platform||'').toUpperCase()===platform)&&ucsEligibleForDivision(f,state.rankingDivision));
   $('#rankRows').innerHTML=rows.length?rows.map((f,i)=>`<tr class="fighter-rank-row" data-fighter-profile="${f.id}" tabindex="0"><td><span class="rank-number">${i+1}</span></td><td class="rank-name"><div class="rank-fighter-cell">${avatarHtml(f)}<div><strong>${ucsFighterFlag(f.region)?'<span class="ucs-rank-flag" title="'+esc(f.region)+'">'+ucsFighterFlag(f.region)+'</span> ':''}${esc(f.name)}</strong><span>${esc(record(f))} · ${esc(f.platform||'UNASSIGNED')}</span></div></div></td><td>${chip(f.resume)}</td><td>${chip(f.momentum)}</td><td>${chip(f.finishing)}</td><td>${chip(f.activity)}</td><td>${chip(f.big_fight)}</td><td class="overall">${Number(f.score||0).toFixed(1)}</td></tr>`).join(''):`<tr><td colspan="8">${empty(`No ${state.rankingDivision} fighters in the database yet.`)}</td></tr>`;
   renderRankingChampion();
 }
