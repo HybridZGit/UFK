@@ -393,7 +393,7 @@ function ucsRenderDivisions(){
     const fixed=name==='UCS World'||name==='UCS International';
     const region=ucsDivisionRegion(name);
     const options=['ALL','EU','NA'].map(v=>'<option value="'+v+'" '+(v===region?'selected':'')+'>'+(v==='ALL'?'ALL FIGHTERS':v+' FIGHTERS ONLY')+'</option>').join('');
-    return '<div class="ucs-division-manager-row"><strong>'+esc(name.toUpperCase())+'</strong><label>REGION <select data-ucs-division-region="'+esc(name)+'" '+(fixed?'disabled':'')+'>'+options+'</select></label>'+(fixed?'<small>OPEN TO EVERYONE</small>':'<button type="button" class="mini-action danger" data-remove-ucs-division="'+esc(name)+'">REMOVE</button>')+'</div>';
+    return '<div class="ucs-division-manager-row"><strong>'+esc(name.toUpperCase())+'</strong><div class="ucs-division-actions">'+(fixed?'<small>OPEN TO EVERYONE</small>':'<button type="button" class="mini-action" data-edit-ucs-division="'+esc(name)+'">EDIT</button><button type="button" class="mini-action danger" data-remove-ucs-division="'+esc(name)+'">REMOVE</button>')+'</div>'+(fixed?'':'<label class="ucs-division-region-editor hidden" data-ucs-region-editor="'+esc(name)+'">REGION <select data-ucs-division-region="'+esc(name)+'">'+options+'</select><small>EU / NA FIGHTERS WILL APPEAR IN THIS DIVISION AUTOMATICALLY.</small></label>')+'</div>';
   }).join(''):'<p>NO DIVISIONS ADDED YET.</p>';
 }
 async function ucsSaveDivisions(divisions){
@@ -426,6 +426,12 @@ $('#ucsDivisionAdminList')?.addEventListener('change',async e=>{
   await loadPublicData();toast(name.toUpperCase()+' ELIGIBILITY: '+region);
 });
 $('#ucsDivisionAdminList')?.addEventListener('click',async e=>{
+  const edit=e.target.closest('[data-edit-ucs-division]');
+  if(edit&&state.isAdmin){
+    const row=edit.closest('.ucs-division-manager-row'),editor=row?.querySelector('[data-ucs-region-editor]');
+    if(editor){editor.classList.toggle('hidden');edit.textContent=editor.classList.contains('hidden')?'EDIT':'CLOSE';}
+    return;
+  }
   const btn=e.target.closest('[data-remove-ucs-division]');if(!btn||!state.isAdmin)return;
   const name=btn.dataset.removeUcsDivision;
   if(state.champions.some(c=>c.division===name&&c.fighter_id))return toast('Vacate the championship before removing this division.',true);
