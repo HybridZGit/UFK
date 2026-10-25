@@ -412,6 +412,19 @@ $('#ucsAddDivisionForm')?.addEventListener('submit',async e=>{
   if(divisions.length>=40)return toast('Maximum 40 divisions.',true);
   await ucsSaveDivisions([...divisions,name]);form.reset();
 });
+$('#ucsDivisionAdminList')?.addEventListener('change',async e=>{
+  const select=e.target.closest('[data-ucs-division-region]');
+  if(!select||!state.isAdmin||!db)return;
+  const name=select.dataset.ucsDivisionRegion,region=select.value;
+  if(['UCS World','UCS International'].includes(name)||!ucsDivisions().includes(name)||!['ALL','EU','NA'].includes(region))return;
+  const champion=state.champions.find(c=>c.division===name&&c.fighter_id);
+  if(champion&&region!=='ALL'&&ucsFighterRegion(fighterById(champion.fighter_id))!==region){toast('Vacate the champion before restricting this division.',true);ucsRenderDivisions();return;}
+  if(state.scheduledBouts.some(b=>b.belt===name&&region!=='ALL'&&![b.fighter_a_id,b.fighter_b_id].every(id=>ucsFighterRegion(fighterById(id))===region))){toast('Update scheduled title fights before restricting this division.',true);ucsRenderDivisions();return;}
+  const next={...(state.settings.division_regions||{}),[name]:region};
+  const {error}=await db.from('league_settings').upsert({key:'division_regions',value:next,updated_at:new Date().toISOString()},{onConflict:'key'});
+  if(error){toast(error.message,true);ucsRenderDivisions();return;}
+  await loadPublicData();toast(name.toUpperCase()+' ELIGIBILITY: '+region);
+});
 $('#ucsDivisionAdminList')?.addEventListener('click',async e=>{
   const btn=e.target.closest('[data-remove-ucs-division]');if(!btn||!state.isAdmin)return;
   const name=btn.dataset.removeUcsDivision;
