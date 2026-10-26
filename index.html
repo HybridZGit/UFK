@@ -424,6 +424,21 @@
             <button class="btn primary" id="adminFighterBannerSubmit" type="submit">UPLOAD FIGHTER BANNER</button>
           </form>
 
+          <form class="admin-card" id="ucsMatcherinoVerificationForm">
+            <h3>MATCHERINO VERIFIED</h3>
+            <p>ADD OR REMOVE THE MATCHERINO VERIFIED TAG FROM A FIGHTER PROFILE.</p>
+            <label>FIGHTER<select name="fighter_id" class="fighter-select" required></select></label>
+            <label>VERIFICATION<select name="matcherino_verified"><option value="true">MATCHERINO VERIFIED</option><option value="false">NOT VERIFIED</option></select></label>
+            <button class="btn primary" type="submit">SAVE VERIFICATION</button>
+          </form>
+          <form class="admin-card" id="ucsGoodWinForm">
+            <h3>GOOD WIN — RANKINGS BOOST</h3>
+            <p>MARK A COMPLETED VICTORY AS A GOOD WIN. THIS BOOSTS THE WINNER'S RESUME AND BIG FIGHT RATING.</p>
+            <label>COMPLETED FIGHT<select name="result_id" id="ucsGoodWinSelect" required></select></label>
+            <label>GOOD WIN STATUS<select name="is_good_win"><option value="true">GOOD WIN — BOOST RANKINGS</option><option value="false">REGULAR WIN — REMOVE BOOST</option></select></label>
+            <button class="btn primary" type="submit">SAVE GOOD WIN</button>
+          </form>
+
           <form class="admin-card" id="recordForm">
             <h3>Update record</h3><p>Set a fighter's official W-L-D record.</p>
             <label>Fighter<select name="fighter_id" class="fighter-select" required></select></label>
