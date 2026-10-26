@@ -655,6 +655,7 @@ function openFighterProfile(id){
   const modal=$('#fighterModal');
   const rank=currentRank(f),titles=state.champions.filter(c=>c.fighter_id===f.id),history=fighterResults(f);
   $('#profileName').textContent=f.name;
+  $('#ucsMatcherinoVerifiedProfile')?.classList.toggle('hidden',!f.matcherino_verified);
   $('#profilePlatform').textContent=`UCS ${f.platform||'WORLD'}`;
   $('#profileRegion').textContent=f.region||'Region not set';
   const banner=$('#profileBanner'),bannerImage=$('#profileBannerImage');
