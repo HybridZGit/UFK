@@ -1048,3 +1048,6 @@ body, body button, body select, body option, body label, body a, body textarea, 
 /* Official fight history detail labels */
 .ucs-result-title{margin-top:7px;color:#e8c66b;font-size:12px;font-weight:900;letter-spacing:.05em}
 .ucs-result-description{margin-top:5px;color:#d3d5dc;font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+
+.ucs-matcherino-tick{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:25px;height:25px;border-radius:50%;background:#1687ee;color:white;font:900 17px/1 system-ui,sans-serif;box-shadow:0 0 0 2px #ffffff24}
+.ucs-matcherino-tick.hidden{display:none!important}
