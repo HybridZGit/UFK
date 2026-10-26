@@ -447,6 +447,7 @@ async function ucsPopulateFightDetails(){
   const {data,error}=await db.from('results').select('*').order('event_date',{ascending:false}).limit(1000);
   if(error){select.innerHTML='<option value="">COULD NOT LOAD FIGHTS</option>';toast('Fight details: '+error.message,true);return;}
   state.fightDetailsResults=data||[];
+  ucsPopulateGoodWins();
   select.innerHTML='<option value="">SELECT COMPLETED FIGHT ('+state.fightDetailsResults.length+')</option>'+state.fightDetailsResults.map(r=>{
     const winner=fighterById(r.winner_id),loser=fighterById(r.loser_id);
     return '<option value="'+esc(r.id)+'">'+esc(winner?.name||'UNKNOWN')+' W vs '+esc(loser?.name||'UNKNOWN')+' · '+esc(fmtDate(r.event_date))+'</option>';
@@ -487,7 +488,34 @@ $('#ucsMatcherinoVerificationForm')?.addEventListener('submit',async e=>{
   if(error)return toast(error.message,true);
   await loadPublicData();toast('MATCHERINO VERIFICATION UPDATED.');
 });
-function renderAll(){ ucsRenderDivisions(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+function ucsPopulateGoodWins(){
+  const el=$('#ucsGoodWinSelect');if(!el)return;
+  const current=el.value;
+  const rows=state.fightDetailsResults||state.results;
+  el.innerHTML='<option value="">SELECT COMPLETED FIGHT ('+rows.length+')</option>'+rows.map(r=>{
+    const winner=fighterById(r.winner_id),loser=fighterById(r.loser_id);
+    return '<option value="'+esc(r.id)+'">'+esc(winner?.name||'UNKNOWN')+' BEAT '+esc(loser?.name||'UNKNOWN')+' · '+esc(fmtDate(r.event_date))+(r.is_good_win?' ★ GOOD WIN':'')+'</option>';
+  }).join('');
+  if(rows.some(r=>r.id===current))el.value=current;
+  ucsFillGoodWin();
+}
+function ucsFillGoodWin(){
+  const form=$('#ucsGoodWinForm');if(!form)return;
+  const r=(state.fightDetailsResults||state.results).find(x=>x.id===form.elements.result_id.value);
+  form.elements.is_good_win.value=r?.is_good_win?'true':'false';
+}
+$('#ucsGoodWinSelect')?.addEventListener('change',ucsFillGoodWin);
+$('#ucsGoodWinForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db||!state.isAdmin)return toast('Admin permission required.',true);
+  const d=new FormData(e.currentTarget),id=d.get('result_id');
+  if(!(state.fightDetailsResults||state.results).some(r=>r.id===id))return toast('Select a completed fight.',true);
+  const {error}=await db.from('results').update({is_good_win:d.get('is_good_win')==='true'}).eq('id',id);
+  if(error)return toast(error.message,true);
+  const rank=await db.rpc('recalculate_ucs_rankings');
+  if(rank.error)return toast('Win saved but ranking update failed: '+rank.error.message,true);
+  await loadPublicData();toast('GOOD WIN AND RANKINGS UPDATED.');
+});
+function renderAll(){ ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
