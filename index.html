@@ -474,6 +474,15 @@
             <div class="button-row"><button class="btn primary" type="submit">GRANT TITLE</button><button class="btn danger-btn" id="vacateTitleBtn" type="button">VACATE</button></div>
           </form>
 
+          <form class="admin-card" id="ucsFightDetailsForm">
+            <h3>FIGHT DETAILS ADMIN</h3>
+            <p>ADD A CHAMPIONSHIP LABEL AND DESCRIPTION TO ANY COMPLETED FIGHT. THE DETAILS APPEAR ON BOTH FIGHTERS' PROFILES.</p>
+            <label>COMPLETED FIGHT<select name="result_id" id="ucsFightDetailsSelect" required></select></label>
+            <label>CHAMPIONSHIP / FIGHT TITLE<select name="fight_title" id="ucsFightDetailsTitle"><option value="">REGULAR FIGHT — NO TITLE</option></select></label>
+            <label>FIGHT DESCRIPTION<textarea name="fight_description" maxlength="1000" rows="3" placeholder="BBK LOST BY DQ"></textarea></label>
+            <button class="btn primary" type="submit">SAVE FIGHT DETAILS</button>
+          </form>
+
           <form class="admin-card" id="resultForm">
             <h3>Add fight result</h3><p>Publish a completed result.</p>
             <label>Winner<select name="winner_id" class="fighter-select" required></select></label>
