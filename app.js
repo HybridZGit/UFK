@@ -439,7 +439,43 @@ $('#ucsDivisionAdminList')?.addEventListener('click',async e=>{
   if(!confirm('REMOVE '+name.toUpperCase()+' FROM UCS RANKINGS? Fighter records will remain unchanged.'))return;
   await ucsSaveDivisions(ucsDivisions().filter(d=>d!==name));
 });
-function renderAll(){ ucsRenderDivisions(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+function ucsPopulateFightDetails(){
+  const select=$('#ucsFightDetailsSelect'),form=$('#ucsFightDetailsForm');
+  if(!select||!form)return;
+  const current=select.value;
+  select.innerHTML='<option value="">SELECT COMPLETED FIGHT</option>'+state.results.map(r=>{
+    const winner=fighterById(r.winner_id),loser=fighterById(r.loser_id);
+    return '<option value="'+esc(r.id)+'">'+esc(winner?.name||'UNKNOWN')+' W vs '+esc(loser?.name||'UNKNOWN')+' · '+esc(fmtDate(r.event_date))+'</option>';
+  }).join('');
+  if(state.results.some(r=>r.id===current))select.value=current;
+  const titles=ucsDivisions();
+  const chosen=form.elements.fight_title.value;
+  form.elements.fight_title.innerHTML='<option value="">REGULAR FIGHT — NO TITLE</option>'+titles.map(n=>'<option value="'+esc(n)+'">'+esc(n.toUpperCase())+' CHAMPIONSHIP</option>').join('');
+  if(titles.includes(chosen))form.elements.fight_title.value=chosen;
+  ucsFillFightDetails();
+}
+function ucsFillFightDetails(){
+  const form=$('#ucsFightDetailsForm');if(!form)return;
+  const r=state.results.find(x=>x.id===form.elements.result_id.value);
+  if(!r){form.elements.fight_description.value='';form.elements.fight_title.value='';return;}
+  const title=r.fight_title||r.belt||'';
+  if(title&&![...form.elements.fight_title.options].some(o=>o.value===title)){
+    const option=document.createElement('option');option.value=title;option.textContent=title.toUpperCase()+' CHAMPIONSHIP';form.elements.fight_title.append(option);
+  }
+  form.elements.fight_title.value=title;
+  form.elements.fight_description.value=r.fight_description||'';
+}
+$('#ucsFightDetailsSelect')?.addEventListener('change',ucsFillFightDetails);
+$('#ucsFightDetailsForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db||!state.isAdmin)return toast('UCS admin required.',true);
+  const form=e.currentTarget,d=new FormData(form),id=d.get('result_id');
+  if(!state.results.some(r=>r.id===id))return toast('Select a completed fight.',true);
+  const payload={fight_title:d.get('fight_title')||null,fight_description:String(d.get('fight_description')||'').trim()||null};
+  const {error}=await db.from('results').update(payload).eq('id',id);
+  if(error)return toast(error.message,true);
+  await loadPublicData();toast('FIGHT DETAILS SAVED TO BOTH FIGHTER PROFILES.');
+});
+function renderAll(){ ucsRenderDivisions(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -669,7 +705,7 @@ function openFighterProfile(id){
   $('#profileRatingBars').innerHTML=metrics.map(([label,val])=>`<div class="profile-meter"><div><span>${label}</span><b>${Number(val||0).toFixed(1)}</b></div><i><em style="width:${Math.max(0,Math.min(100,Number(val||0)*10))}%"></em></i></div>`).join('');
   $('#profileFightHistory').innerHTML=history.length?history.slice(0,10).map(r=>{
     const won=r.winner_id===f.id,opp=fighterById(won?r.loser_id:r.winner_id);
-    return `<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small>${esc(r.method)} · ${esc(fmtDate(r.event_date))}</small></div></div>`;
+    return `<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small>${esc(r.method)} · ${esc(fmtDate(r.event_date))}</small>${r.fight_title?`<div class="ucs-result-title">🏆 ${esc(r.fight_title.toUpperCase())} CHAMPIONSHIP</div>`:''}${r.fight_description?`<div class="ucs-result-description">${esc(r.fight_description)}</div>`:''}</div></div>`;
   }).join(''):empty('No official fight history yet.');
   const upcoming=state.scheduledBouts.filter(b=>b.fighter_a_id===f.id||b.fighter_b_id===f.id);
   $('#profileUpcomingFights').innerHTML=upcoming.length?upcoming.map(b=>{
