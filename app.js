@@ -439,15 +439,19 @@ $('#ucsDivisionAdminList')?.addEventListener('click',async e=>{
   if(!confirm('REMOVE '+name.toUpperCase()+' FROM UCS RANKINGS? Fighter records will remain unchanged.'))return;
   await ucsSaveDivisions(ucsDivisions().filter(d=>d!==name));
 });
-function ucsPopulateFightDetails(){
+async function ucsPopulateFightDetails(){
   const select=$('#ucsFightDetailsSelect'),form=$('#ucsFightDetailsForm');
-  if(!select||!form)return;
+  if(!select||!form||!db)return;
   const current=select.value;
-  select.innerHTML='<option value="">SELECT COMPLETED FIGHT</option>'+state.results.map(r=>{
+  select.innerHTML='<option value="">LOADING COMPLETED FIGHTS...</option>';
+  const {data,error}=await db.from('results').select('*').order('event_date',{ascending:false}).limit(1000);
+  if(error){select.innerHTML='<option value="">COULD NOT LOAD FIGHTS</option>';toast('Fight details: '+error.message,true);return;}
+  state.fightDetailsResults=data||[];
+  select.innerHTML='<option value="">SELECT COMPLETED FIGHT ('+state.fightDetailsResults.length+')</option>'+state.fightDetailsResults.map(r=>{
     const winner=fighterById(r.winner_id),loser=fighterById(r.loser_id);
     return '<option value="'+esc(r.id)+'">'+esc(winner?.name||'UNKNOWN')+' W vs '+esc(loser?.name||'UNKNOWN')+' · '+esc(fmtDate(r.event_date))+'</option>';
   }).join('');
-  if(state.results.some(r=>r.id===current))select.value=current;
+  if(state.fightDetailsResults.some(r=>r.id===current))select.value=current;
   const titles=ucsDivisions();
   const chosen=form.elements.fight_title.value;
   form.elements.fight_title.innerHTML='<option value="">REGULAR FIGHT — NO TITLE</option>'+titles.map(n=>'<option value="'+esc(n)+'">'+esc(n.toUpperCase())+' CHAMPIONSHIP</option>').join('');
@@ -456,7 +460,7 @@ function ucsPopulateFightDetails(){
 }
 function ucsFillFightDetails(){
   const form=$('#ucsFightDetailsForm');if(!form)return;
-  const r=state.results.find(x=>x.id===form.elements.result_id.value);
+  const r=(state.fightDetailsResults||state.results).find(x=>x.id===form.elements.result_id.value);
   if(!r){form.elements.fight_description.value='';form.elements.fight_title.value='';return;}
   const title=r.fight_title||r.belt||'';
   if(title&&![...form.elements.fight_title.options].some(o=>o.value===title)){
@@ -469,7 +473,7 @@ $('#ucsFightDetailsSelect')?.addEventListener('change',ucsFillFightDetails);
 $('#ucsFightDetailsForm')?.addEventListener('submit',async e=>{
   e.preventDefault();if(!db||!state.isAdmin)return toast('UCS admin required.',true);
   const form=e.currentTarget,d=new FormData(form),id=d.get('result_id');
-  if(!state.results.some(r=>r.id===id))return toast('Select a completed fight.',true);
+  if(!(state.fightDetailsResults||state.results).some(r=>r.id===id))return toast('Select a completed fight.',true);
   const payload={fight_title:d.get('fight_title')||null,fight_description:String(d.get('fight_description')||'').trim()||null};
   const {error}=await db.from('results').update(payload).eq('id',id);
   if(error)return toast(error.message,true);
