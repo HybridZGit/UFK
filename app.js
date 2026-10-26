@@ -479,6 +479,14 @@ $('#ucsFightDetailsForm')?.addEventListener('submit',async e=>{
   if(error)return toast(error.message,true);
   await loadPublicData();toast('FIGHT DETAILS SAVED TO BOTH FIGHTER PROFILES.');
 });
+$('#ucsMatcherinoVerificationForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db||!state.isAdmin)return toast('Admin permission required.',true);
+  const d=new FormData(e.currentTarget),id=d.get('fighter_id');
+  if(!fighterById(id))return toast('Select a fighter.',true);
+  const {error}=await db.from('fighters').update({matcherino_verified:d.get('matcherino_verified')==='true'}).eq('id',id);
+  if(error)return toast(error.message,true);
+  await loadPublicData();toast('MATCHERINO VERIFICATION UPDATED.');
+});
 function renderAll(){ ucsRenderDivisions(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
