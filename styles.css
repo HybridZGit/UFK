@@ -1044,3 +1044,7 @@ body, body button, body select, body option, body label, body a, body textarea, 
 .ucs-division-region-editor.hidden{display:none!important}
 .ucs-division-region-editor select{max-width:220px}
 .ucs-division-region-editor small{flex-basis:100%;opacity:.75}
+
+/* Official fight history detail labels */
+.ucs-result-title{margin-top:7px;color:#e8c66b;font-size:12px;font-weight:900;letter-spacing:.05em}
+.ucs-result-description{margin-top:5px;color:#d3d5dc;font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
