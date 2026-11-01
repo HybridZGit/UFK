@@ -697,10 +697,11 @@ function renderChampionShowcase(){
     const photo=champ&&safeHttps(champ.showcase_image_url)?champ.showcase_image_url:null;
     const flag=champ?.showcase_flag||'';
     const portraitY=Number.isFinite(+champ?.portrait_y)?Math.min(100,Math.max(0,+champ.portrait_y)):50;
+    const headOffset=(portraitY-50)*1.5+(division==='UCS World'?-36:0);
     return `<article class="ucs-champ-showcase-card ${fighter?'':'ucs-champ-vacant'}" ${fighter?`role="button" tabindex="0" data-champ-profile="${esc(fighter.id)}" aria-label="View ${esc(fighter.name)} fighter profile"`:''}>
       <span class="ucs-champ-showcase-division">${esc(division.toUpperCase())}</span>
       <span class="ucs-champ-vertical" aria-hidden="true">${esc(division.replace(/^UCS\s*/,'').toUpperCase())}</span>
-      ${photo?`<img src="${esc(photo)}" alt="${esc(fighter.name)} boxer portrait" loading="lazy">`:`<div class="ucs-champ-silhouette" aria-hidden="true"><span>♟</span></div>`}
+      ${photo?`<img src="${esc(photo)}" alt="${esc(fighter.name)} boxer portrait" loading="lazy" style="transform:translateY(${headOffset}px)!important">`:`<div class="ucs-champ-silhouette" aria-hidden="true"><span>♟</span></div>`}
       <div class="ucs-champ-showcase-info">${fighter?'<small>♛ CHAMPION</small>':''}<div class="ucs-champ-name-line"><strong>${fighter?esc(fighter.name):'VACANT'}</strong>${flag&&fighter?`<span class="ucs-champ-flag" aria-label="Champion country flag">${esc(flag)}</span>`:''}</div></div>
     </article>`;
   }).join('');
