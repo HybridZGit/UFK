@@ -1857,3 +1857,75 @@ body:before{z-index:-1!important;background:repeating-linear-gradient(135deg,rgb
 .ucs-studio-corners strong{font:900 25px 'Barlow Condensed',Impact,sans-serif;overflow-wrap:anywhere}
 .ucs-studio-corners>div:last-child{text-align:right}.ucs-studio-corners>div:last-child span{color:#7c9bf2}
 .ucs-studio-vs{text-align:center;font:italic 900 36px 'Barlow Condensed',Impact,sans-serif;color:#efc05b}
+
+/* UCS mobile usability system: readable cards, easy navigation, no page-wide overflow */
+html{max-width:100%;overflow-x:clip}
+body{max-width:100%;overflow-x:clip}
+.page,.shell,main{min-width:0;max-width:100%}
+img,video,iframe{max-width:100%}
+button,a,input,select,textarea{touch-action:manipulation}
+@media(max-width:800px){
+ .topbar{display:flex!important;align-items:center!important;gap:8px!important;padding:8px 12px!important;min-height:60px!important;position:sticky!important;top:0!important;z-index:1100!important;background:#0b0b10!important}
+ .topbar .brand{min-width:0!important;flex:1 1 auto!important;max-width:none!important}
+ .topbar .brand img{max-height:36px!important;max-width:100px!important}
+ .topbar .brand span{font-size:8px!important;line-height:1.2!important}
+ .topbar .menu-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;flex:0 0 auto!important;min-width:68px!important;min-height:44px!important;padding:8px!important;border:1px solid #754052!important;background:#25141e!important;color:#fff!important;border-radius:4px!important;font:900 12px Inter,sans-serif!important;cursor:pointer!important}
+ .topbar .ucs-watch-button{flex:0 0 auto!important;min-height:42px!important;padding:8px!important;font-size:10px!important;white-space:nowrap!important}
+ .topbar nav#nav{display:none!important;position:absolute!important;top:100%!important;left:0!important;right:0!important;max-height:calc(100dvh - 60px)!important;overflow-y:auto!important;background:#121017!important;border:1px solid #5c3442!important;box-shadow:0 18px 45px #000b!important;padding:12px!important;z-index:1101!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ .topbar nav#nav.open{display:grid!important}
+ .topbar nav#nav a{display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;min-height:49px!important;padding:11px 8px!important;border:1px solid #3d3540!important;background:#1c1a23!important;border-radius:4px!important;font-size:13px!important;white-space:normal!important}
+ .topbar nav#nav a.active{background:#a72545!important;color:white!important;border-color:#e73d5c!important}
+ .page{padding-left:0!important;padding-right:0!important}
+ .shell{width:calc(100% - 24px)!important;max-width:100%!important;margin-left:auto!important;margin-right:auto!important}
+ .section-title-row{flex-wrap:wrap!important;gap:8px!important}
+ .section-title-row h2{font-size:clamp(30px,8vw,46px)!important;line-height:1!important}
+ .hero{padding-top:28px!important;padding-bottom:30px!important}
+ .hero h1{font-size:clamp(46px,12vw,78px)!important;line-height:.92!important}
+ .hero-actions{display:flex!important;flex-wrap:wrap!important;gap:9px!important}
+ .hero-actions .btn{min-height:44px!important}
+ .ucs-home-champions-stage{min-width:0!important;max-width:100%!important;overflow:hidden!important}
+ .ucs-tott-tabs{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;scroll-snap-type:x proximity!important;scrollbar-width:thin!important;padding-bottom:8px!important}
+ .ucs-tott-tabs button{flex:0 0 auto!important;min-height:44px!important;scroll-snap-align:start}
+ #rankings .ucs-rank-title-match,#rankings .ucs-rank-title-fighters,#rankings .ucs-title-contender{min-width:0!important}
+ #rankings .ucs-rank-title-fighters{grid-template-columns:minmax(0,1fr) 52px minmax(0,1fr)!important;gap:7px!important;padding:12px!important}
+ #rankings .ucs-title-contender{flex-direction:column!important;text-align:center!important;justify-content:center!important;gap:9px!important;padding:12px 5px!important}
+ #rankings .ucs-title-contender-avatar{width:85px!important;height:85px!important;max-width:85px!important;max-height:85px!important;flex:0 0 85px!important}
+ #rankings .ucs-title-contender-copy strong{font-size:clamp(22px,6vw,35px)!important;overflow-wrap:anywhere!important}
+ #rankings .ucs-rank-title-versus strong{font-size:48px!important}
+ #fights #fightList .ucs-match-card{width:100%!important;max-width:100%!important}
+ #fights #fightList .ucs-match-contest{grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr)!important;gap:5px!important;padding:10px!important}
+ #fights #fightList .ucs-match-person,#fights #fightList .ucs-match-person-right{min-width:0!important;padding:12px 5px!important;flex-direction:column!important;text-align:center!important}
+ #fights #fightList .ucs-match-person-info,#fights #fightList .ucs-match-person-right .ucs-match-person-info{align-items:center!important;min-width:0!important}
+ #fights #fightList .ucs-match-person-info strong{font-size:clamp(23px,6vw,32px)!important;overflow-wrap:anywhere!important}
+ #fights #fightList .ucs-match-versus{width:42px!important;height:50px!important;font-size:40px!important}
+ #fights #fightList .ucs-match-bottom{flex-wrap:wrap!important;gap:9px!important}
+ #fights #fightList .ucs-see-bout{min-height:42px!important}
+ .ucs-bout-facts{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .ucs-bout-facts strong{overflow-wrap:anywhere}
+ .ucs-bout-posters{grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr)!important;gap:6px!important}
+ .ucs-bout-poster{height:clamp(260px,80vw,370px)!important}
+ .ucs-bout-poster-info strong{font-size:clamp(23px,6vw,40px)!important}
+ .ucs-bout-center strong{font-size:44px!important}
+ .fighter-modal,.fighter-modal-content,.fighter-modal-body{max-width:100%!important;min-width:0!important}
+ .fighter-modal-content{max-height:calc(100dvh - 20px)!important;overflow-y:auto!important;overscroll-behavior:contain}
+ .profile-stats,.profile-metrics,.profile-stat-grid{min-width:0!important}
+ #profileUpcomingFights .ucs-inline-bout-details{white-space:normal!important;overflow-x:visible!important;flex-wrap:wrap!important;gap:8px!important}
+ #profileUpcomingFights .ucs-inline-bout{flex-wrap:wrap!important}
+ #profileUpcomingFights .ucs-see-bout{min-height:42px!important}
+ .admin-card{min-width:0!important;max-width:100%!important}
+ .admin-card input,.admin-card select,.admin-card textarea{max-width:100%!important;min-width:0!important;font-size:16px!important}
+ .admin-card .split-2{grid-template-columns:minmax(0,1fr)!important}
+ .admin-card .button-row{flex-wrap:wrap!important}
+ .admin-card .button-row button{min-height:44px!important}
+ .ucs-studio-corners{grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr)!important;gap:5px!important;padding:12px!important}
+ .ucs-studio-corners strong{font-size:22px!important}
+ .ucs-studio-vs{font-size:27px!important}
+}
+@media(max-width:390px){
+ .topbar .ucs-watch-button{font-size:0!important;min-width:43px!important}
+ .topbar .ucs-watch-button .ucs-watch-arrow{font-size:14px!important}
+ .topbar .menu-btn{min-width:58px!important;font-size:11px!important}
+ .topbar nav#nav{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #fights #fightList .ucs-match-avatar{width:66px!important;height:66px!important;min-width:66px!important;max-width:66px!important;max-height:66px!important;flex-basis:66px!important}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}}
