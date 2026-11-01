@@ -1126,3 +1126,28 @@ body .ucs-result-title{color:#e6b94c}
 body .ucs-tott-section .ucs-tott-engine-label{color:#e9e9ec}
 body .admin-card{border-color:rgba(180,44,66,.3)}
 body .btn.primary:hover{filter:brightness(1.12)}
+
+/* UCS flat visual system — clean, sharp, and independent */
+:root{--bg:#090a0d;--panel:#111217;--panel2:#17181e;--line:#292b34;--gold:#e83b52}
+body{background:#090a0d!important;background-image:none!important}
+body:before,body:after{background-image:none!important;box-shadow:none!important}
+.topbar{background:#0c0d10!important;backdrop-filter:none!important;box-shadow:none!important;border-bottom:1px solid #303038!important}
+#home .hero{grid-template-columns:1fr!important;min-height:420px!important;padding-top:28px;padding-bottom:36px}
+#home .hero-copy{padding:40px 0!important;max-width:900px}
+#home .hero-copy:before{display:none!important}
+#home .hero h1{font-style:normal!important;font-size:clamp(64px,9vw,112px)!important;letter-spacing:-.025em!important;line-height:.88!important}
+#home .hero h1 em{font-style:normal!important;color:#fff!important;background:none!important;-webkit-text-fill-color:#fff!important}
+#home .hero-art{display:none!important}
+.red-glow{display:none!important}
+.btn,.btn.primary,.btn.ghost,.panel,.card,.mega-card,.fight-card,.ucs-tott-card,.ucs-featured-poster,.ucs-home-countdown-strip,.ucs-marquee-stage,.ucs-home-twitch-details{border-radius:3px!important;box-shadow:none!important;filter:none!important;backdrop-filter:none!important}
+.btn.primary,button.btn.primary{background:#db2140!important}
+.btn.primary:hover,button.btn.primary:hover{background:#f03250!important}
+.panel,.card,.mega-card,.fight-card,.ucs-tott-card,.ucs-featured-poster,.ucs-home-countdown-strip,.ucs-marquee-stage,.ucs-home-twitch-details{background:#14151a!important;background-image:none!important}
+.panel:before,.card:before,.mega-card:before,.ucs-featured-poster:before,.ucs-featured-poster:after{background-image:none!important;box-shadow:none!important}
+.panel:hover,.card:hover,.mega-card:hover{transform:none!important;box-shadow:none!important}
+#home .dashboard-grid .panel:hover{transform:none!important}
+h1,h2,h3,.section-title-row h2{font-style:normal!important}
+.topbar nav a,.topbar nav a.active{border-radius:2px!important}
+.topbar nav a.active{border-bottom:2px solid #e62945!important}
+[class*="glow"],[class*="shine"]{filter:none!important;text-shadow:none!important}
+@media(max-width:760px){#home .hero{min-height:310px!important}#home .hero-copy{padding:32px 0!important}}
