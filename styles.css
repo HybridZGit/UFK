@@ -1671,3 +1671,55 @@ body:before{z-index:-1!important;background:repeating-linear-gradient(135deg,rgb
 #fighterModal .profile-stat-grid .profile-earnings-number{color:#f1c76d!important}
 @media(max-width:800px){#fighterModal .profile-hero{grid-template-columns:105px minmax(0,1fr)!important;min-height:230px!important;padding:22px!important;gap:17px!important}#fighterModal .profile-avatar{height:135px!important}#fighterModal .profile-rank-actions{grid-column:1/-1!important;flex-direction:row!important;align-items:center!important}#fighterModal .profile-rank-badge{min-height:70px!important;min-width:110px!important}#fighterModal .profile-rank-badge strong{font-size:34px!important}#fighterModal .profile-identity h2{font-size:clamp(42px,8vw,75px)!important}#fighterModal .profile-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
 @media(max-width:480px){#fighterModal .profile-hero{grid-template-columns:85px minmax(0,1fr)!important;padding:17px!important;gap:12px!important}#fighterModal .profile-avatar{height:110px!important}#fighterModal .profile-identity h2{font-size:43px!important}#fighterModal .profile-overline{font-size:10px!important}#fighterModal .profile-rank-actions{flex-wrap:wrap!important}#fighterModal .profile-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;margin:0 14px 18px!important}#fighterModal .ucs-champion-spotlight{margin:0 14px 17px!important;gap:10px!important;padding:15px!important}#fighterModal .ucs-champion-seal{display:none!important}}
+
+/* UCS FIGHT INTELLIGENCE — broadcast-grade Tale of the Tape */
+.ucs-tott-section{position:relative;padding-top:38px;padding-bottom:60px}
+.ucs-tott-header{padding-bottom:22px;border-bottom:1px solid #36313b;margin-bottom:20px}
+.ucs-tott-header h2{font:900 clamp(46px,6vw,80px)/.88 'Barlow Condensed',Impact,sans-serif!important;color:#fff!important;letter-spacing:-.015em!important}
+.ucs-tott-header h2 em{color:#ef3154!important}
+.ucs-tott-engine-label{background:#2b1721!important;border:1px solid #8d3950!important;color:#f4b2c0!important;border-radius:3px!important}
+.ucs-tott-tabs{gap:10px;margin-bottom:14px}
+.ucs-tott-tabs button,.ucs-tott-tabs [data-tott-bout]{background:#161820!important;border:1px solid #3e3844!important;border-radius:4px!important;color:#c1bbc8!important;padding:13px 19px!important;font:900 12px 'Barlow Condensed',Impact,sans-serif!important;letter-spacing:.08em!important;transition:background .2s,border-color .2s}
+.ucs-tott-tabs button:hover{background:#36202b!important;border-color:#b5425e!important}
+.ucs-tott-tabs button.active,.ucs-tott-tabs [data-tott-bout].active{background:#ad2443!important;border-color:#ed4261!important;color:#fff!important;box-shadow:0 4px 18px #bb214633!important}
+.ucs-tott-card{border:1px solid #423641!important;border-top:3px solid #e52c50!important;border-radius:5px!important;background:#101117!important;box-shadow:0 22px 55px #0008!important}
+.ucs-tott-card-heading{padding:18px clamp(15px,3vw,35px)!important;background:linear-gradient(90deg,#2a1720,#16151d 55%,#1a2230)!important;border-bottom:1px solid #493640!important}
+.ucs-tott-card-heading span{color:#ff6a82!important;font-size:11px!important}
+.ucs-tott-card-heading strong{font:900 clamp(14px,2vw,20px) 'Barlow Condensed',Impact,sans-serif!important;color:#fff!important;letter-spacing:.06em!important}
+.ucs-tott-card-heading small{color:#b4b0bd!important}
+.ucs-tott-main-grid{grid-template-columns:minmax(0,1fr) minmax(255px,1.04fr) minmax(0,1fr)!important;gap:clamp(10px,2vw,25px)!important;padding:clamp(16px,3vw,38px)!important;align-items:stretch!important;background:radial-gradient(ellipse at 0% 25%,#6a20301f,transparent 45%),radial-gradient(ellipse at 100% 25%,#3159a51b,transparent 45%)}
+.ucs-tott-fighter{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:10px!important;padding:25px 12px!important;background:linear-gradient(155deg,#231820,#13141a 75%)!important;border:1px solid #5e3544!important;border-top:4px solid #f02c50!important;border-radius:5px!important}
+.ucs-tott-fighter:nth-child(3){background:linear-gradient(205deg,#19253a,#13141a 75%)!important;border-color:#344c73!important;border-top-color:#4d83e2!important}
+.ucs-tott-corner{color:#ff617d!important;font:900 11px Inter,sans-serif!important;letter-spacing:.17em!important}
+.ucs-tott-fighter:nth-child(3) .ucs-tott-corner{color:#86aeff!important}
+.ucs-tott-avatar{width:clamp(125px,15vw,205px)!important;height:clamp(125px,15vw,205px)!important;border:3px solid #e13b5b!important;border-radius:7px!important;box-shadow:10px 10px 0 #d5274724,0 18px 35px #0008!important;background:#15151b!important}
+.ucs-tott-fighter:nth-child(3) .ucs-tott-avatar{border-color:#4f83d9!important;box-shadow:10px 10px 0 #4277cf24,0 18px 35px #0008!important}
+.ucs-tott-fighter h3{font:900 clamp(38px,5vw,70px)/.9 'Barlow Condensed',Impact,sans-serif!important;color:#fff!important;margin:12px 0 0!important;letter-spacing:.01em!important}
+.ucs-tott-fighter .ucs-tott-record{font:900 28px 'Barlow Condensed',Impact,sans-serif!important;color:#f1c1cb!important}
+.ucs-tott-fighter:nth-child(3) .ucs-tott-record{color:#bbd0ff!important}
+.ucs-tott-fighter-score{color:#a7a4b2!important}
+.ucs-tott-fighter-score b{color:#fff!important;text-shadow:none!important;font-size:27px!important}
+.ucs-tott-rank{color:#c3beca!important}
+.ucs-tott-view{margin-top:13px!important;background:#34202a!important;border:1px solid #9e4159!important;border-radius:3px!important;color:#fff!important;font:900 12px 'Barlow Condensed',Impact,sans-serif!important;padding:12px 18px!important}
+.ucs-tott-view:hover{background:#b52b49!important}
+.ucs-tott-center{display:flex;flex-direction:column;justify-content:center;min-width:0}
+.ucs-tott-vs{color:#fff!important;text-shadow:5px 5px 0 #bb2546!important;font:italic 900 clamp(65px,8vw,115px)/.85 'Barlow Condensed',Impact,sans-serif!important;margin:0 0 25px!important}
+.ucs-tott-stat-table{background:#11131a!important;border:1px solid #42404c!important;border-radius:5px!important;gap:0!important}
+.ucs-tott-stat{min-height:39px!important;padding:10px 8px!important;border-bottom:1px solid #30313b!important;grid-template-columns:minmax(0,1fr) minmax(85px,1.2fr) minmax(0,1fr)!important}
+.ucs-tott-stat:nth-child(odd){background:#ffffff05}
+.ucs-tott-stat strong{color:#fff!important;font:900 19px 'Barlow Condensed',Impact,sans-serif!important}
+.ucs-tott-stat strong:first-child{color:#ff8097!important}
+.ucs-tott-stat strong:last-child{color:#90b5ff!important}
+.ucs-tott-stat span{color:#b5b3c0!important;font:800 10px Inter,sans-serif!important}
+.ucs-tott-stat .ucs-tott-stat-edge{color:#fff!important;text-shadow:0 0 10px #ffffff70!important}
+.ucs-tott-verdict{padding:25px clamp(18px,3vw,36px)!important;background:#191a23!important;border-top:1px solid #3f3a47!important;border-left:4px solid #e82e50!important}
+.ucs-tott-verdict-head span{color:#f2768d!important;font:900 11px Inter,sans-serif!important;letter-spacing:.13em!important}
+.ucs-tott-verdict-head strong{color:#fff!important;font:900 clamp(20px,2.8vw,30px) 'Barlow Condensed',Impact,sans-serif!important}
+.ucs-tott-verdict p{color:#c9c6d1!important;line-height:1.7!important}
+.ucs-tott-likely{padding:30px 20px 35px!important;background:linear-gradient(105deg,#2c1822,#17151d 52%,#211b2c)!important;border-top:1px solid #614050!important;gap:13px!important}
+.ucs-tott-likely>span{color:#f18ba0!important;letter-spacing:.15em!important}
+.ucs-tott-likely>strong{font:900 clamp(46px,7vw,82px)/.95 'Barlow Condensed',Impact,sans-serif!important;color:#fff!important;text-shadow:4px 4px 0 #b32646!important}
+.ucs-tott-likely>p{color:#b7b2c1!important}
+@media(max-width:900px){.ucs-tott-main-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}.ucs-tott-center{grid-column:1/-1!important;grid-row:2!important}.ucs-tott-fighter{grid-row:1!important}.ucs-tott-fighter:nth-child(3){grid-column:2!important}.ucs-tott-avatar{width:120px!important;height:120px!important}.ucs-tott-vs{font-size:68px!important}}
+@media(max-width:500px){.ucs-tott-main-grid{padding:10px!important;gap:8px!important}.ucs-tott-fighter{padding:15px 5px!important}.ucs-tott-avatar{width:92px!important;height:92px!important}.ucs-tott-fighter h3{font-size:36px!important}.ucs-tott-fighter .ucs-tott-record{font-size:21px!important}.ucs-tott-card-heading{gap:8px!important}.ucs-tott-stat{padding:10px 4px!important}.ucs-tott-stat span{font-size:9px!important}.ucs-tott-tabs button{padding:11px!important}}
+@media(prefers-reduced-motion:reduce){.ucs-tott-tabs button{transition:none}}
