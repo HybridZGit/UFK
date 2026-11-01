@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=ucs-red-cinema-full-20261101b" />
+  <link rel="stylesheet" href="styles.css?v=ucs-vs-netflix-20261101c" />
 </head>
 <body>
 
@@ -88,7 +88,7 @@
             <div class="ucs-tott-card-heading"><span>★ MAIN EVENT</span><strong>UCS WORLD TITLE FIGHT</strong><small>21 Oct 2026</small></div>
             <div class="ucs-tott-main-grid">
               <div class="ucs-tott-fighter"><span class="ucs-tott-corner">RED CORNER</span><img class="ucs-tott-avatar" src="https://inmogjfgtmnnelwaliua.supabase.co/storage/v1/object/public/fighter-avatars/admin/6bffe32b-1cdb-4c96-b988-af5d3929a35c/5939200a-427f-4d19-8b00-d2ad5f71d2dd.png" alt="RAFA fighter profile picture" loading="lazy"><h3>RAFA</h3><strong class="ucs-tott-record">2-0-0</strong><span class="ucs-tott-fighter-score">UCS SCORE <b>7.3</b></span><span class="ucs-tott-rank">UCS WORLD CHAMPIONSHIP</span></div>
-              <div class="ucs-tott-center"><span class="ucs-tott-vs">VS</span><div class="ucs-tott-stat-table">
+              <div class="ucs-tott-center"><span class="ucs-tott-vs ucs-red-vs-logo" role="img" aria-label="VS"></span><div class="ucs-tott-stat-table">
                 <div class="ucs-tott-stat"><strong>2-0-0</strong><span>OFFICIAL RECORD</span><strong>0-0-0</strong></div>
                 <div class="ucs-tott-stat"><strong>2</strong><span>KO WINS</span><strong>0</strong></div>
                 <div class="ucs-tott-stat"><strong>100%</strong><span>KO WIN RATE</span><strong>—</strong></div>
@@ -161,7 +161,7 @@
             </div>
             <div class="ucs-featured-vs">
               <span>UCS FIGHT NIGHT</span>
-              <strong>VS</strong>
+              <strong class="ucs-red-vs-logo" role="img" aria-label="VS"></strong>
               <small id="featuredFightType">OFFICIAL MATCHUP</small>
             </div>
             <div class="ucs-featured-fighter right">
@@ -589,7 +589,7 @@
 <form class="admin-card ucs-bout-studio-admin" id="ucsBoutStudioForm">
             <div class="ucs-studio-heading"><span>★ UCS CREATIVE STUDIO</span><h3>BOUT PROFILE MANAGER</h3><p>A dedicated admin section for the fighter-versus-fighter page. Set each fighter's matchup portrait and official scheduled rounds independently from the standard fight editor.</p></div>
             <label>SELECT SCHEDULED BOUT<select id="ucsBoutStudioSelect" name="bout_id" required></select></label>
-            <div class="ucs-studio-corners"><div><span>RED CORNER</span><strong id="ucsStudioRedName">FIGHTER A</strong></div><div class="ucs-studio-vs">VS</div><div><span>BLUE CORNER</span><strong id="ucsStudioBlueName">FIGHTER B</strong></div></div>
+            <div class="ucs-studio-corners"><div><span>RED CORNER</span><strong id="ucsStudioRedName">FIGHTER A</strong></div><div class="ucs-studio-vs ucs-red-vs-logo" role="img" aria-label="VS"></div><div><span>BLUE CORNER</span><strong id="ucsStudioBlueName">FIGHTER B</strong></div></div>
                         <label>Scheduled rounds<input name="scheduled_rounds" type="number" min="1" max="15" placeholder="TBA"></label>
             <p class="ucs-admin-help">Use the exact agreed round count, or leave blank until confirmed. Title fights can have their own number of rounds.</p>
             <div class="split-2">
