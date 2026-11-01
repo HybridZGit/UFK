@@ -1962,3 +1962,14 @@ button,a,input,select,textarea{touch-action:manipulation}
 .ucs-tott-fighter.ucs-tott-has-portrait h3{font-size:clamp(38px,4.3vw,68px)!important;text-shadow:0 3px 15px #000!important}
 .ucs-tott-fighter.ucs-tott-has-portrait .ucs-tott-corner{margin-bottom:auto!important}
 @media(max-width:760px){.ucs-tott-fighter.ucs-tott-has-portrait{min-height:370px!important;padding:12px!important}.ucs-tott-fighter.ucs-tott-has-portrait h3{font-size:clamp(25px,7vw,40px)!important}}
+
+/* Subtle premium champion poster motion: gentle float, staggered, no layout shift */
+@keyframes ucsChampionFloat{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-7px,0)}}
+@media(min-width:761px) and (prefers-reduced-motion:no-preference){
+ #rankings .ucs-champion-showcase .ucs-champ-showcase-card{animation:ucsChampionFloat 6s ease-in-out infinite!important;will-change:transform;transition:box-shadow .25s ease,border-color .25s ease!important}
+ #rankings .ucs-champion-showcase .ucs-champ-showcase-card:nth-child(2){animation-delay:-1.5s!important}
+ #rankings .ucs-champion-showcase .ucs-champ-showcase-card:nth-child(3){animation-delay:-3s!important}
+ #rankings .ucs-champion-showcase .ucs-champ-showcase-card:nth-child(4){animation-delay:-4.5s!important}
+ #rankings .ucs-champion-showcase .ucs-champ-showcase-card:hover{animation-play-state:paused!important;box-shadow:0 16px 38px #0008,0 0 22px #e7b45b1b!important;border-color:#bc9252!important}
+}
+@media(prefers-reduced-motion:reduce){#rankings .ucs-champion-showcase .ucs-champ-showcase-card{animation:none!important}}
