@@ -67,6 +67,9 @@ $('#ucsHomeTwitchDetails')?.addEventListener('toggle',e=>{
 });
 
 function showPage(id){
+  document.body.classList.remove('ucs-cinema-navigating');
+  void document.body.offsetWidth;
+  document.body.classList.add('ucs-cinema-navigating');
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));
   document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('active',a.dataset.page===id));
   $('#nav')?.classList.remove('open');
