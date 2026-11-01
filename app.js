@@ -673,7 +673,7 @@ function renderRankingTitleFights(){
       ${face(f)}<span class="ucs-title-contender-copy"><strong>${name(f)}</strong><small>${f?esc(record(f)):'TO BE ANNOUNCED'}</small></span>
     </button>`;
     return `<article class="ucs-rank-title-match" aria-label="${esc(division)} championship fight">
-      <header class="ucs-rank-title-heading"><span>${b.is_title_eliminator?'★ TITLE ELIMINATOR':'★ TITLE ON THE LINE'}</span><strong>${esc(division.toUpperCase())} ${b.is_title_eliminator?'INTERNATIONAL TITLE ELIMINATOR':esc(division.toUpperCase())+' CHAMPIONSHIP'}</strong></header>
+      <header class="ucs-rank-title-heading"><span>${b.is_title_eliminator?'★ TITLE ELIMINATOR':'★ TITLE ON THE LINE'}</span><strong>${esc(division.toUpperCase())} ${b.is_title_eliminator?'TITLE ELIMINATOR':'CHAMPIONSHIP'}</strong></header>
       <div class="ucs-rank-title-fighters">${contender(left)}<div class="ucs-rank-title-versus"><span>${b.is_title_eliminator?'ELIMINATOR':'CHAMPIONSHIP'}</span><strong>VS</strong><small>${esc(date)}</small></div>${contender(right)}</div>
       <footer class="ucs-rank-title-footer"><span>${esc(b.event_name||'UCS FIGHT NIGHT')} · ${b.is_title_eliminator?'TITLE ELIMINATOR':'SCHEDULED TITLE FIGHT'}</span></footer>
     </article>`;
