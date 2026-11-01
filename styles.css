@@ -1073,3 +1073,24 @@ input:focus,select:focus,textarea:focus{outline:1px solid #ee3049;box-shadow:0 0
 .mega-card{background:linear-gradient(115deg,#310c17,#121015 53%,#2a0b15)}
 .season-pill{color:#ff7788;border-color:#7a2935}
 @media(prefers-reduced-motion:reduce){.btn.primary{transition:none!important}.btn.primary:hover{transform:none}}
+
+/* UCS PROFESSIONAL TYPOGRAPHY AND FINISH — NOV 2026 */
+:root{--text:#f5f4f5;--muted:#a8a7ae;--line:#403039;--gold:#ef475b}
+body{font-family:"Inter",Arial,sans-serif;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body,body button,body select,body option,body label,body a,body textarea,body input,body input::placeholder,body textarea::placeholder{text-transform:none!important}
+h1,h2,h3,h4,.section-title-row h2,.hero h1,.fighter h3{font-family:"Barlow Condensed","Inter",sans-serif;font-style:normal!important;letter-spacing:.015em;line-height:1.08}
+.hero h1{font-size:clamp(3.3rem,6.5vw,5.2rem);font-weight:800;letter-spacing:-.018em}
+.hero h1 em{font-style:normal!important}
+.section-title-row h2{font-size:clamp(1.65rem,3vw,2.2rem);font-weight:800}
+p,small,li,textarea,input,select{letter-spacing:0;line-height:1.6}
+label,.section-kicker,.eyebrow,.panel h3,.admin-card h3{font-weight:700;letter-spacing:.055em}
+.topbar nav a{font-size:12px;font-weight:600;letter-spacing:.025em}
+.brand strong{font-family:"Inter",sans-serif;font-weight:800;letter-spacing:.08em}
+.brand span{font-size:8px;letter-spacing:.12em}
+.btn,button{font-family:"Inter",sans-serif;font-weight:700;letter-spacing:.025em}
+.btn.primary{border-radius:7px}
+.panel,.admin-card,.card{border-radius:12px}
+input,select,textarea{border-radius:7px}
+.hero-copy p{font-size:15px;line-height:1.75;color:#bfc0c8}
+.ticker-inner{font-size:11px}
+.ucs-matcherino-tick{font-family:"Inter",sans-serif}
