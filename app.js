@@ -123,6 +123,11 @@ function ucsFighterFlag(region){
   const flags={'UK':'🇬🇧','GB':'🇬🇧','UNITED KINGDOM':'🇬🇧','USA':'🇺🇸','US':'🇺🇸','UNITED STATES':'🇺🇸','CANADA':'🇨🇦','IRELAND':'🇮🇪','AUSTRALIA':'🇦🇺','FRANCE':'🇫🇷','GERMANY':'🇩🇪','SPAIN':'🇪🇸','ITALY':'🇮🇹','NETHERLANDS':'🇳🇱','BRAZIL':'🇧🇷','MEXICO':'🇲🇽','JAPAN':'🇯🇵','PHILIPPINES':'🇵🇭','NEW ZEALAND':'🇳🇿','NIGERIA':'🇳🇬'};
   return flags[key]||'';
 }
+function ucsFlagHtml(region){
+  const key=String(region||'').trim().toUpperCase();
+  const codes={'UK':'gb','GB':'gb','UNITED KINGDOM':'gb','ENGLAND':'gb-eng','SCOTLAND':'gb-sct','WALES':'gb-wls','USA':'us','US':'us','UNITED STATES':'us','CANADA':'ca','IRELAND':'ie','AUSTRALIA':'au','FRANCE':'fr','GERMANY':'de','SPAIN':'es','ITALY':'it','NETHERLANDS':'nl','BRAZIL':'br','MEXICO':'mx','JAPAN':'jp','PHILIPPINES':'ph','NEW ZEALAND':'nz','NIGERIA':'ng'};
+  const code=codes[key];return code?'<img src="https://flagcdn.com/w40/'+code+'.png" alt="" aria-hidden="true" style="width:22px;height:15px;object-fit:cover;vertical-align:middle;margin-right:5px;border-radius:2px" loading="lazy">':'';
+}
 function avatarHtml(f,size='rank-avatar'){
   return f?.avatar_url ? `<img class="${size}" src="${esc(f.avatar_url)}" alt="${esc(f.name)} profile picture" loading="lazy">` : `<div class="${size} avatar-fallback">${esc(initials(f?.name))}</div>`;
 }
@@ -662,7 +667,7 @@ function renderRanks(filter=''){
   const platform=['UCS PS5','UCS PC','UCS XBOX'].includes(state.rankingDivision)?state.rankingDivision.replace('UCS ',''):null;
   const championIds=new Set(state.champions.filter(c=>c.fighter_id).map(c=>String(c.fighter_id)));
   const rows=state.fighters.filter(f=>!championIds.has(String(f.id))&&f.name.toLowerCase().includes(filter.toLowerCase())&&(state.rankingDivision!=='UCS SIM World'||f.sim_division===true)&&(!platform||(f.platform||'').toUpperCase()===platform)&&ucsEligibleForDivision(f,state.rankingDivision));
-  $('#rankRows').innerHTML=rows.length?rows.map((f,i)=>`<tr class="fighter-rank-row" data-fighter-profile="${f.id}" tabindex="0"><td><span class="rank-number">${i+1}</span></td><td class="rank-name"><div class="rank-fighter-cell">${avatarHtml(f)}<div><strong>${ucsFighterFlag(f.region)?'<span class="ucs-rank-flag" title="'+esc(f.region)+'">'+ucsFighterFlag(f.region)+'</span> ':''}${esc(f.name)}</strong><span>${esc(record(f))} · ${esc(f.platform||'UNASSIGNED')}</span></div></div></td><td>${chip(f.resume)}</td><td>${chip(f.momentum)}</td><td>${chip(f.finishing)}</td><td>${chip(f.activity)}</td><td>${chip(f.big_fight)}</td><td class="overall">${Number(f.score||0).toFixed(1)}</td></tr>`).join(''):`<tr><td colspan="8">${empty(`No ${state.rankingDivision} fighters in the database yet.`)}</td></tr>`;
+  $('#rankRows').innerHTML=rows.length?rows.map((f,i)=>`<tr class="fighter-rank-row" data-fighter-profile="${f.id}" tabindex="0"><td><span class="rank-number">${i+1}</span></td><td class="rank-name"><div class="rank-fighter-cell">${avatarHtml(f)}<div><strong>${ucsFlagHtml(f.region)}${esc(f.name)}</strong><span>${esc(record(f))} · ${esc(f.platform||'UNASSIGNED')}</span></div></div></td><td>${chip(f.resume)}</td><td>${chip(f.momentum)}</td><td>${chip(f.finishing)}</td><td>${chip(f.activity)}</td><td>${chip(f.big_fight)}</td><td class="overall">${Number(f.score||0).toFixed(1)}</td></tr>`).join(''):`<tr><td colspan="8">${empty(`No ${state.rankingDivision} fighters in the database yet.`)}</td></tr>`;
   renderRankingChampion();
 }
 function renderRankingTitleFights(){
@@ -797,9 +802,9 @@ function openFighterProfile(id){
   $('#ucsChampionCrownProfile')?.classList.toggle('hidden',!titles.length);
   $('#ucsMatcherinoVerifiedProfile')?.classList.toggle('hidden',!f.matcherino_verified);
   $('#profilePlatform').textContent=`UCS ${f.platform||'WORLD'}`;
-  $('#profileRegion').textContent=`${ucsFighterFlag(f.region)?ucsFighterFlag(f.region)+' ':''}${f.region||'Region not set'}`;
+  $('#profileRegion').innerHTML=`${ucsFlagHtml(f.region)}${esc(f.region||'Region not set')}`;
   const regionFact=$('#ucsProfileRegionFact');
-  if(regionFact)regionFact.textContent=`${ucsFighterFlag(f.region)?ucsFighterFlag(f.region)+' ':''}${f.region||'Not specified'}`;
+  if(regionFact)regionFact.innerHTML=`${ucsFlagHtml(f.region)}${f.region||'Not specified'}`;
   const banner=$('#profileBanner'),bannerImage=$('#profileBannerImage');
   const showBanner=Boolean(f.banner_url&&safeHttps(f.banner_url));
   banner?.classList.toggle('hidden',!showBanner);
