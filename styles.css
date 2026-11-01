@@ -1511,3 +1511,40 @@ body:before{z-index:-1!important;background:repeating-linear-gradient(135deg,rgb
 #fighterModal .ucs-ko-track span{display:block;background:#e91d45;height:100%;border-radius:10px}
 #fighterModal .ucs-ko-panel p{font-size:14px;line-height:1.5;color:#fff}
 @media(max-width:720px){#fighterModal .ucs-reference-results{grid-template-columns:1fr;margin:14px}#fighterModal .profile-rating-bars{margin:14px;padding:14px}#fighterModal .ucs-reference-meter{grid-template-columns:74px minmax(0,1fr) 35px;gap:8px;font-size:11px}#fighterModal .ucs-ref-fight-row{grid-template-columns:minmax(0,1fr) 24px 65px 75px;gap:6px}#fighterModal .ucs-ref-opponent strong{font-size:12px}#fighterModal .ucs-ref-date{font-size:9px}}
+
+/* UCS Fight Desk: redesigned live homepage dashboard */
+#home .ucs-command-heading{display:flex;justify-content:space-between;align-items:end;gap:20px;margin:24px 0 22px;padding:0 2px}
+#home .ucs-command-kicker{font:800 11px Inter,sans-serif;letter-spacing:.2em;color:#d3a9ae;display:flex;align-items:center;gap:9px}
+#home .ucs-command-kicker i{width:8px;height:8px;border-radius:50%;background:#f0274c;box-shadow:0 0 13px #e81e48}
+#home .ucs-command-heading h2{font:900 clamp(32px,4vw,58px)/.98 'Barlow Condensed',Impact,sans-serif;letter-spacing:.025em;color:#fff;margin:9px 0 7px}
+#home .ucs-command-heading h2 em{font-style:normal;color:#f02c50}
+#home .ucs-command-heading p{margin:0;color:#9c9ba8;font-size:13px}
+#home .ucs-command-mark{font:900 13px Inter,sans-serif;letter-spacing:.22em;color:#65616b;white-space:nowrap;padding-bottom:5px}
+#home .ucs-command-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;align-items:stretch}
+#home .ucs-command-card{position:relative;display:flex;flex-direction:column;min-width:0;min-height:365px;overflow:hidden;background:linear-gradient(150deg,#1c1a22 0%,#101116 60%,#0c0d12 100%)!important;border:1px solid #35343e!important;border-radius:8px!important;box-shadow:0 18px 36px #0005!important;transition:transform .2s,border-color .2s}
+#home .ucs-command-card:hover{transform:translateY(-3px);border-color:#a03950!important}
+#home .ucs-command-card:before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ec254b,transparent 85%)}
+#home .ucs-command-champions:before{background:linear-gradient(90deg,#d7a94d,transparent 85%)}
+#home .ucs-command-betting:before{background:linear-gradient(90deg,#6e82df,transparent 85%)}
+#home .ucs-command-contracts:before{background:linear-gradient(90deg,#ab637e,transparent 85%)}
+#home .ucs-command-card>header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:19px 16px 16px;background:transparent!important;border-bottom:1px solid #333039}
+#home .ucs-command-card header small{display:block;color:#8d8796;font:800 9px Inter,sans-serif;letter-spacing:.12em;margin-bottom:8px}
+#home .ucs-command-card header h3{margin:0;color:#fff;font:900 clamp(17px,1.6vw,22px) 'Barlow Condensed',Impact,sans-serif;letter-spacing:.025em}
+#home .ucs-command-card header a{color:#d9cbd0;font:800 10px Inter,sans-serif;text-decoration:none;white-space:nowrap}
+#home .ucs-command-card header a span{color:#f13b5b;font-size:17px;margin-left:3px}
+#home .ucs-command-card #recentResults,#home .ucs-command-card #championList,#home .ucs-command-card #contractFeed{flex:1;min-height:0}
+#home .ucs-command-card .mini-row{padding:14px 15px!important;min-height:62px;border-bottom:1px solid #292a32!important;background:transparent!important}
+#home .ucs-command-card .mini-row:hover{background:#ffffff08!important}
+#home .ucs-command-card .mini-copy strong{color:#f6f3f5;font-size:12px}
+#home .ucs-command-card .mini-copy span{color:#a4a4b1;font-size:11px}
+#home .ucs-command-champions .mini-copy strong{color:#f4e2b7}
+#home .ucs-command-card .empty-state{display:flex;flex:1;flex-direction:column;justify-content:center;align-items:center;gap:16px;padding:24px 15px;text-align:center;background:transparent!important}
+#home .ucs-command-betting-icon{font-size:52px;line-height:1;color:#ee385d;opacity:.8}
+#home .ucs-command-card .empty-state p{color:#a9a8b4;font-size:12px;line-height:1.6}
+#home .ucs-command-card .empty-state .btn{width:100%;min-height:44px;border:1px solid #8d3c52!important;background:#3d1522!important;color:#fff!important;font:900 12px 'Barlow Condensed',Impact,sans-serif;letter-spacing:.07em}
+#home .ucs-command-card .empty-state .btn:hover{background:#7a1c37!important}
+#home .ucs-command-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding:12px 15px;border-top:1px solid #32303a;color:#777684;font:800 9px Inter,sans-serif;letter-spacing:.08em}
+#home .ucs-command-foot span{color:#c0a0a9;white-space:nowrap}
+@media(max-width:1150px){#home .ucs-command-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){#home .ucs-command-grid{grid-template-columns:minmax(0,1fr);gap:12px}#home .ucs-command-card{min-height:275px}#home .ucs-command-heading{margin-top:14px}#home .ucs-command-mark{display:none}}
+@media(prefers-reduced-motion:reduce){#home .ucs-command-card{transition:none}#home .ucs-command-card:hover{transform:none}}
