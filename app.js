@@ -666,17 +666,17 @@ function renderRankingTitleFights(){
   const bouts=(state.scheduledBouts||[]).filter(b=>b.status!=='cancelled'&&b.belt===division);
   if(!bouts.length){box.innerHTML='';box.classList.add('hidden');return;}
   box.classList.remove('hidden');
-  const face=(fighter)=>fighter?avatarHtml(fighter,'ucs-title-contender-avatar'):'<span class="ucs-title-contender-avatar ucs-title-avatar-placeholder">?</span>';
+  const face=(fighter,portrait)=>safeHttps(portrait)?`<img class="ucs-title-contender-avatar ucs-title-portrait" src="${esc(portrait)}" alt="${esc(fighter?.name||'Fighter')} bout portrait" loading="lazy">`:fighter?avatarHtml(fighter,'ucs-title-contender-avatar'):'<span class="ucs-title-contender-avatar ucs-title-avatar-placeholder">?</span>';
   box.innerHTML=bouts.map(b=>{
     const left=fighterById(b.fighter_a_id),right=fighterById(b.fighter_b_id);
     const date=b.bout_date?fmtDate(b.bout_date):'DATE TO BE ANNOUNCED';
     const name=f=>esc(f?.name||'FIGHTER TBA');
-    const contender=f=>`<button type="button" class="ucs-title-contender" data-title-fighter="${esc(f?.id||'')}" ${f?'':'disabled'} aria-label="View ${name(f)} fighter profile">
-      ${face(f)}<span class="ucs-title-contender-copy"><strong>${name(f)}</strong><small>${f?esc(record(f)):'TO BE ANNOUNCED'}</small></span>
+    const contender=(f,portrait)=>`<button type="button" class="ucs-title-contender" data-title-fighter="${esc(f?.id||'')}" ${f?'':'disabled'} aria-label="View ${name(f)} fighter profile">
+      ${face(f,portrait)}<span class="ucs-title-contender-copy"><strong>${name(f)}</strong><small>${f?esc(record(f)):'TO BE ANNOUNCED'}</small></span>
     </button>`;
     return `<article class="ucs-rank-title-match" aria-label="${esc(division)} championship fight">
       <header class="ucs-rank-title-heading"><span>${b.is_title_eliminator?'★ TITLE ELIMINATOR':'★ TITLE ON THE LINE'}</span><strong>${esc(division.toUpperCase())} ${b.is_title_eliminator?'TITLE ELIMINATOR':'CHAMPIONSHIP'}</strong></header>
-      <div class="ucs-rank-title-fighters">${contender(left)}<div class="ucs-rank-title-versus"><span>${b.is_title_eliminator?'ELIMINATOR':'CHAMPIONSHIP'}</span><strong>VS</strong><small>${esc(date)}</small></div>${contender(right)}</div>
+      <div class="ucs-rank-title-fighters">${contender(left,b.fighter_a_bout_image)}<div class="ucs-rank-title-versus"><span>${b.is_title_eliminator?'ELIMINATOR':'CHAMPIONSHIP'}</span><strong>VS</strong><small>${esc(date)}</small></div>${contender(right,b.fighter_b_bout_image)}</div>
       <footer class="ucs-rank-title-footer"><span>${esc(b.event_name||'UCS FIGHT NIGHT')} · ${b.is_title_eliminator?'TITLE ELIMINATOR':'SCHEDULED TITLE FIGHT'}</span></footer>
     </article>`;
   }).join('');
@@ -2063,6 +2063,8 @@ function ucsFillBoutStudio(){
  form.elements.scheduled_rounds.value=b?.scheduled_rounds??'';
  for(const field of ['fighter_a_bout_image','fighter_b_bout_image'])form.elements[field].value=b?.[field]||'';
  for(const field of ['fighter_a_bout_file','fighter_b_bout_file'])form.elements[field].value='';
+ form.elements.remove_red_portrait.checked=false;
+ form.elements.remove_blue_portrait.checked=false;
  $('#ucsStudioRedName').textContent=fighterById(b?.fighter_a_id)?.name||'TBA';
  $('#ucsStudioBlueName').textContent=fighterById(b?.fighter_b_id)?.name||'TBA';
 }
@@ -2089,6 +2091,7 @@ $('#ucsBoutStudioForm')?.addEventListener('submit',async e=>{
     if(error)throw error;
     url=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
    }
+   if(d.get(field==='fighter_a_bout_image'?'remove_red_portrait':'remove_blue_portrait')==='on')url='';
    payload[field]=url||null;
   }
   const {error}=await db.from('scheduled_bouts').update(payload).eq('id',boutId);
