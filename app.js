@@ -70,13 +70,15 @@ function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));
   document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('active',a.dataset.page===id));
   $('#nav')?.classList.remove('open');
+  $('#menuBtn')?.setAttribute('aria-expanded','false');
   if(id==='watch')ucsMountTwitch();else ucsUnmountTwitch();
   if(id==='home')ucsMountHomeTwitch();else ucsUnmountHomeTwitch();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 $$('[data-page]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();showPage(a.dataset.page);history.replaceState(null,'','#'+a.dataset.page)}));
 $$('[data-jump]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.jump)));
-$('#menuBtn').onclick=()=>$('#nav').classList.toggle('open');
+$('#menuBtn').onclick=()=>{const open=$('#nav').classList.toggle('open');$('#menuBtn').setAttribute('aria-expanded',String(open));};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#nav')?.classList.contains('open')){$('#nav').classList.remove('open');$('#menuBtn').setAttribute('aria-expanded','false');$('#menuBtn').focus();}});
 
 function toast(msg,bad=false){
   const t=$('#toast'); t.textContent=msg; t.classList.toggle('error',bad); t.classList.add('show');
@@ -1988,7 +1990,7 @@ if(db){
   try{await loadPublicData();}catch(error){console.error('UCS public rankings/events load',error);}
   try{renderAll();}catch(error){console.error('UCS render',error);}
   try{updateAdminUI();await refreshSession();}catch(error){console.error('UCS account',error);}
-  try{if(location.hash.startsWith('#fighter/')){showPage('rankings');openFighterProfile(decodeURIComponent(location.hash.slice(9)));}else if(location.hash&&$(location.hash))showPage(location.hash.slice(1));}catch(error){console.error('UCS navigation',error);}
+  try{if(location.hash.startsWith('#fighter/')){showPage('rankings');openFighterProfile(decodeURIComponent(location.hash.slice(9)));}else if(location.hash.startsWith('#bout/'))ucsOpenBout(decodeURIComponent(location.hash.slice(6)));else if(location.hash&&$(location.hash))showPage(location.hash.slice(1));}catch(error){console.error('UCS navigation',error);}
 })();
 
 $('#ucsEventPosterInput')?.addEventListener('change',e=>{
