@@ -700,7 +700,7 @@ function renderChampionShowcase(){
       <span class="ucs-champ-showcase-division">${esc(division.toUpperCase())}</span>
       <span class="ucs-champ-vertical" aria-hidden="true">${esc(division.replace(/^UCS\s*/,'').toUpperCase())}</span>
       ${photo?`<img src="${esc(photo)}" alt="${esc(fighter.name)} boxer portrait" loading="lazy">`:`<div class="ucs-champ-silhouette" aria-hidden="true"><span>♟</span></div>`}
-      <div class="ucs-champ-showcase-info">${fighter?'<small>♛ CHAMPION</small>':''}<strong>${fighter?esc(fighter.name):'VACANT'}</strong>${flag&&fighter?`<span class="ucs-champ-flag" aria-label="Champion country flag">${esc(flag)}</span>`:''}</div>
+      <div class="ucs-champ-showcase-info">${fighter?'<small>♛ CHAMPION</small>':''}<div class="ucs-champ-name-line"><strong>${fighter?esc(fighter.name):'VACANT'}</strong>${flag&&fighter?`<span class="ucs-champ-flag" aria-label="Champion country flag">${esc(flag)}</span>`:''}</div></div>
     </article>`;
   }).join('');
 }
