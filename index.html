@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=ucs-champion-form-20261101" />
+  <link rel="stylesheet" href="styles.css?v=ucs-event-hero-20261101" />
 </head>
 <body>
 
@@ -52,6 +52,10 @@
         <div class="hero-art ucs-flat-logo-stage"><img src="assets/ucs-white-flat-logo.svg" alt="UCS Undisputed Championship Series logo" /></div>
       </section>
 
+      <section id="ucsEventHero" class="ucs-event-hero hidden" aria-label="Featured UCS event poster">
+        <img id="ucsEventHeroImage" alt="Featured UCS event poster" decoding="async">
+        <div class="ucs-event-hero-caption"><span id="ucsEventHeroTitle">UCS FIGHT NIGHT</span><a id="ucsEventHeroLink" href="#fights" data-page="fights">VIEW FIGHT CARD</a></div>
+      </section>
       <div class="ticker"><div class="shell ticker-inner"><strong>UCS LIVE</strong><span>Official fight cards • Rankings • Results • Champions</span></div></div>
       <div class="ucs-home-countdown-strip shell"><div><span class="ucs-home-countdown-label">UCS#001 · OCT 21 · 8 PM ET</span><strong>FIGHT NIGHT COUNTDOWN</strong></div><div class="ucs-home-countdown-numbers" id="ucsHomeCountdown" aria-label="Live time until fight night">--d --h --m --s</div><a href="#watch" data-page="watch" class="ucs-home-countdown-link">WATCH THE EVENT →</a></div>
 
@@ -388,6 +392,7 @@
         <div class="ucs-admin-tabs" role="tablist" aria-label="Admin tools">
           <button type="button" class="ucs-admin-tab active" id="adminOperationsTab" role="tab" aria-controls="adminOperationsPanel" aria-selected="true">LEAGUE OPERATIONS</button>
           <button type="button" class="ucs-admin-tab" id="adminEarningsTab" role="tab" aria-controls="adminEarningsPanel" aria-selected="false">FIGHTER EARNINGS</button>
+          <button type="button" class="ucs-admin-tab" id="adminEventHeroTab" role="tab" aria-controls="adminEventHeroPanel" aria-selected="false">EVENT POSTER & COUNTDOWN</button>
           <button type="button" class="ucs-admin-tab" id="adminNewsTab" role="tab" aria-controls="adminNewsPanel" aria-selected="false">NEWS EDITOR</button>
         </div>
         <div id="adminOperationsPanel" role="tabpanel" aria-labelledby="adminOperationsTab">
@@ -600,6 +605,19 @@
         </section>
         </div>
 
+        <section id="adminEventHeroPanel" role="tabpanel" aria-labelledby="adminEventHeroTab" class="hidden" aria-hidden="true">
+          <div class="ucs-earnings-header"><div class="section-kicker">UCS EVENT PROMOTION</div><h2>EVENT POSTER & COUNTDOWN</h2><p>Control the featured homepage event banner and its live countdown. Upload your own 1920 × 1080 event poster.</p></div>
+          <form class="admin-card ucs-event-hero-form" id="ucsEventHeroForm">
+            <label>Event title<input name="title" id="ucsEventTitleInput" maxlength="100" placeholder="UCS FIGHT NIGHT"></label>
+            <label>Event date and time (your local time)<input name="event_at" id="ucsEventDateInput" type="datetime-local" required></label>
+            <label>1920 × 1080 event poster (JPG, PNG or WEBP, max 8 MB)<input name="poster" id="ucsEventPosterInput" type="file" accept="image/jpeg,image/png,image/webp"></label>
+            <div id="ucsEventPosterPreview" class="ucs-event-admin-preview" aria-live="polite">No poster selected</div>
+            <label class="ucs-event-toggle"><input name="visible" id="ucsEventVisibleInput" type="checkbox" checked> Show poster on homepage</label>
+            <button class="btn primary" type="submit">SAVE EVENT POSTER & COUNTDOWN</button>
+            <button class="btn ghost" id="ucsEventHideBtn" type="button">HIDE POSTER</button>
+            <p class="ucs-admin-help">Upload a 16:9 poster to display it full-width. The countdown uses the date you set and updates for all visitors.</p>
+          </form>
+        </section>
         <section id="adminNewsPanel" role="tabpanel" aria-labelledby="adminNewsTab" class="hidden" aria-hidden="true">
           <div class="ucs-earnings-header"><div class="section-kicker">UCS NEWSROOM</div><h2>PUBLISH NEWS</h2><p>Upload an image, write a headline and article, then publish it to the public News page.</p></div>
           <div class="ucs-news-admin-grid">
@@ -770,6 +788,6 @@
   <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=ucs-events-20261017"></script>
+  <script src="app.js?v=ucs-event-hero-20261101"></script>
 </body>
 </html>
