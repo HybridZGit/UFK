@@ -871,6 +871,7 @@ function openFighterProfile(id){
         ${belt}
         ${contribute}
         <span class="ucs-inline-status">SCHEDULED</span>
+        <button class="ucs-see-bout" type="button" data-see-bout="${esc(b.id)}">SEE BOUT ↗</button>
       </div>
     </div>`;
   }).join(''):empty('No upcoming bouts scheduled.');
@@ -1143,7 +1144,7 @@ function renderEvents(){
         <div class="ucs-match-versus">VS</div>
         <div class="ucs-match-person ucs-match-person-right">${portrait(c)}<div class="ucs-match-person-info"><strong>${esc(c?.name||'TBA')}</strong><small>${c?esc(record(c)):'Fighter TBA'}</small></div></div>
       </div>
-      <div class="ucs-match-bottom"><span>${esc(b.belt?b.belt+' TITLE FIGHT':b.event_name||'Non-title bout')} · UPCOMING</span>${boutLink(b)}</div>
+      <div class="ucs-match-bottom"><span>${esc(b.belt?b.belt+' TITLE FIGHT':b.event_name||'Non-title bout')} · UPCOMING</span><button type="button" class="ucs-see-bout" data-see-bout="${esc(b.id)}">SEE BOUT ↗</button>${boutLink(b)}</div>
     </article>`;
   };
   // Don't repeat scheduled pairings from legacy event rows; leave stored records untouched.
@@ -1528,6 +1529,9 @@ function fillScheduledBoutEditor(){
   for(const field of ['event_name','bout_date','belt','poster_url','contribution_url'])form.elements[field].value=b?.[field]||'';
   form.elements.is_title_eliminator.value=b?.is_title_eliminator?'true':'false';
   form.elements.is_co_main.value=b?.is_co_main?'true':'false';
+  form.elements.scheduled_rounds.value=b?.scheduled_rounds??'';
+  for(const field of ['fighter_a_bout_image','fighter_b_bout_image'])form.elements[field].value=b?.[field]||'';
+  for(const field of ['fighter_a_bout_file','fighter_b_bout_file'])form.elements[field].value='';
   if(form.elements.poster_file)form.elements.poster_file.value='';
   updateBoutPosterPreview();
 }
@@ -1923,6 +1927,10 @@ $('#editScheduledBoutForm')?.addEventListener('submit',async e=>{
   const posterFile=d.get('poster_file'),contribution=(d.get('contribution_url')||'').trim();
   let posterUrl=(d.get('poster_url')||'').trim();
   if(d.get('is_title_eliminator')==='true'&&!d.get('belt'))return toast('Choose which championship the eliminator is for.',true);
+  const roundsRaw=String(d.get('scheduled_rounds')||'').trim();
+  const scheduledRounds=roundsRaw?Number(roundsRaw):null;
+  if(roundsRaw&&(!Number.isInteger(scheduledRounds)||scheduledRounds<1||scheduledRounds>15))return toast('Rounds must be between 1 and 15.',true);
+  for(const field of ['fighter_a_bout_image','fighter_b_bout_image'])if(d.get(field)&&!safeHttps(String(d.get(field)).trim()))return toast('Bout photos require HTTPS URLs.',true);
   if(contribution&&!safeHttps(contribution))return toast('Use a valid HTTPS contribution link.',true);
   if(posterUrl&&!safeHttps(posterUrl))return toast('Use an HTTPS poster image URL.',true);
   const button=form.querySelector('[type="submit"]');button.disabled=true;
@@ -1936,7 +1944,21 @@ $('#editScheduledBoutForm')?.addEventListener('submit',async e=>{
       if(uploadError)throw uploadError;
       posterUrl=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
     }
-    const payload={event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,is_title_eliminator:d.get('is_title_eliminator')==='true',poster_url:posterUrl||null,contribution_url:contribution||null,is_co_main:d.get('is_co_main')==='true',updated_at:new Date().toISOString()};
+    const boutImages={};
+    for(const field of ['fighter_a_bout_image','fighter_b_bout_image']){
+      let url=String(d.get(field)||'').trim();
+      const file=d.get(field.replace('_image','_file'));
+      if(file instanceof File&&file.size){
+        const types={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'},ext=types[file.type];
+        if(!ext||file.size>5*1024*1024)throw Error('Bout fighter photos must be JPG, PNG or WebP under 5 MB.');
+        const path=`bout-fighters/${boutId}/${field}/${crypto.randomUUID()}.${ext}`;
+        const {error:uploadError}=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type,upsert:false});
+        if(uploadError)throw uploadError;
+        url=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
+      }
+      boutImages[field]=url||null;
+    }
+    const payload={...boutImages,scheduled_rounds:scheduledRounds,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,is_title_eliminator:d.get('is_title_eliminator')==='true',poster_url:posterUrl||null,contribution_url:contribution||null,is_co_main:d.get('is_co_main')==='true',updated_at:new Date().toISOString()};
     const {error}=await db.from('scheduled_bouts').update(payload).eq('id',boutId);
     if(error)throw error;
     await loadPublicData();updateBoutPosterPreview();toast('Scheduled bout updated. Poster banner refreshed.');
@@ -2025,3 +2047,23 @@ $('#ucsEventHideBtn')?.addEventListener('click',async()=>{
   if(error)return toast(error.message,true);
   await loadPublicData();toast('Event poster hidden.');
 });
+
+let ucsBoutReturnPage='rankings';
+let ucsCurrentBoutId=null;
+function ucsBoutPortrait(f,url,side){
+  const src=safeHttps(url)?url:(safeHttps(f?.avatar_url)?f.avatar_url:null);
+  return `<div class="ucs-bout-poster ucs-bout-poster-${side}"><div class="ucs-bout-poster-art">${src?`<img src="${esc(src)}" alt="${esc(f?.name||'Fighter')} fight portrait">`:`<span class="ucs-bout-poster-placeholder">${esc(initials(f?.name||'UCS'))}</span>`}</div><div class="ucs-bout-poster-info"><span>${side==='red'?'RED CORNER':'BLUE CORNER'}</span><strong>${esc(f?.name||'TBA')}</strong><small>${f?esc(record(f)):'RECORD TBA'} · ${esc(f?.country||f?.region||'UCS')}</small></div></div>`;
+}
+function ucsOpenBout(id){
+  const b=state.scheduledBouts.find(x=>x.id===id);
+  if(!b)return toast('This bout is no longer scheduled.',true);
+  ucsCurrentBoutId=id;
+  ucsBoutReturnPage=$('#fighterModal')?.classList.contains('open')?'rankings':(document.querySelector('.page.active')?.id||'fights');
+  closeFighterProfile();
+  const fa=fighterById(b.fighter_a_id),fb=fighterById(b.fighter_b_id);
+  const title=b.belt?b.belt+' CHAMPIONSHIP':b.is_title_eliminator?'TITLE ELIMINATOR':'OFFICIAL UCS BOUT';
+  $('#ucsBoutDetail').innerHTML=`<div class="ucs-bout-heading"><span>UCS / OFFICIAL BOUT PROFILE</span><h1>${esc(title)}</h1><p>${esc(b.event_name||'UCS Fight Night')} · ${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</p></div><div class="ucs-bout-posters">${ucsBoutPortrait(fa,b.fighter_a_bout_image,'red')}<div class="ucs-bout-center"><span>${b.belt?'★ TITLE ON THE LINE':'FIGHT NIGHT'}</span><strong>VS</strong><small>${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</small></div>${ucsBoutPortrait(fb,b.fighter_b_bout_image,'blue')}</div><div class="ucs-bout-facts"><div><span>FIGHT TYPE</span><strong>${esc(b.belt?'TITLE BOUT':b.is_title_eliminator?'TITLE ELIMINATOR':'REGULAR BOUT')}</strong></div><div><span>CHAMPIONSHIP</span><strong>${esc(b.belt||'NONE')}</strong></div><div><span>SCHEDULED ROUNDS</span><strong>${b.scheduled_rounds?esc(b.scheduled_rounds)+' ROUNDS':'TBA'}</strong></div><div><span>STATUS</span><strong>SCHEDULED</strong></div></div><p class="ucs-bout-disclaimer">Official scheduled bout details. Fighter images and round counts are managed by UCS administrators. Results and records are not affected.</p>${boutLink(b)}`;
+  showPage('bout');history.replaceState(null,'','#bout/'+encodeURIComponent(id));
+}
+document.addEventListener('click',e=>{const btn=e.target.closest('[data-see-bout]');if(btn){e.preventDefault();ucsOpenBout(btn.dataset.seeBout);}});
+$('#ucsBoutBack')?.addEventListener('click',()=>{showPage(ucsBoutReturnPage);history.replaceState(null,'','#'+ucsBoutReturnPage);});
