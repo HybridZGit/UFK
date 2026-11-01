@@ -872,18 +872,18 @@ function openFighterProfile(id){
     const date=b.bout_date?fmtDate(b.bout_date):'DATE TBA';
     const belt=b.belt?`<span class="ucs-inline-belt">🏆 ${esc(b.belt)} TITLE FIGHT</span>`:'<span class="ucs-inline-nontitle">NON-TITLE BOUT</span>';
     const contribute=safeHttps(b.contribution_url)?`<a class="ucs-inline-contribute" href="${esc(b.contribution_url)}" target="_blank" rel="noopener noreferrer">Contribute to fight ↗</a>`:'';
-    return `<div class="profile-fight-row ucs-inline-bout">
-      <span class="result-pill">VS</span>
-      <div class="ucs-inline-bout-details">
-        <span class="ucs-inline-date">${esc(date)}</span>
-        <span class="ucs-inline-opponent">${esc(other?.name||'Unknown')} (${esc(opponentRecord)})</span>
-        <span class="ucs-inline-event">${esc(b.event_name||'UCS scheduled bout')}</span>
-        ${belt}
-        ${contribute}
-        <span class="ucs-inline-status">SCHEDULED</span>
-        <button class="ucs-see-bout" type="button" data-see-bout="${esc(b.id)}">SEE BOUT ↗</button>
+    const opponentPhoto=other?[other.showcase_image_url,other.avatar_url,other.profile_image_url].find(safeHttps):null;
+    return `<article class="ucs-upcoming-card">
+      <div class="ucs-upcoming-main">
+        <div class="ucs-upcoming-fighter">
+          <div class="ucs-upcoming-avatar">${opponentPhoto?`<img src="${esc(opponentPhoto)}" alt="" loading="lazy">`:'<span>UCS</span>'}</div>
+          <div class="ucs-upcoming-fighter-info"><small>NEXT OPPONENT</small><strong>${esc(other?.name||'Opponent TBA')}</strong><span>${esc(opponentRecord)} · ${esc(b.event_name||'UCS Fight Night')}</span></div>
+        </div>
+        <div class="ucs-upcoming-meta"><strong>${esc(date)}</strong>${belt}<span class="ucs-inline-status">● SCHEDULED</span></div>
+        <button class="ucs-see-bout ucs-upcoming-action" type="button" data-see-bout="${esc(b.id)}">VIEW BOUT ↗</button>
       </div>
-    </div>`;
+      ${contribute?`<div class="ucs-upcoming-footer">${contribute}</div>`:''}
+    </article>`;
   }).join(''):empty('No upcoming bouts scheduled.');
   const contractBtn=$('#profileContractBtn');
   // Keep the contract CTA visible on every opponent profile. The click handler
