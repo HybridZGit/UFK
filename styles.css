@@ -1555,3 +1555,43 @@ body:before{z-index:-1!important;background:repeating-linear-gradient(135deg,rgb
 #rankings .ucs-champ-name-line .ucs-champ-flag .ucs-flag-image{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;max-width:none!important}
 @media(min-width:681px){#rankings .ucs-champ-name-line{flex-wrap:wrap!important;justify-content:flex-start!important;gap:8px!important}#rankings .ucs-champ-name-line strong{flex:0 1 auto!important;min-width:0!important}#rankings .ucs-champ-name-line .ucs-champ-flag{flex:none!important;visibility:visible!important;opacity:1!important}}
 @media(max-width:680px){#rankings .ucs-champ-name-line .ucs-champ-flag{width:30px;min-width:30px;height:22px}}
+
+/* UCS Broadcast Arena — Watch page visual redesign */
+#watch.ucs-watch-page{max-width:1500px;padding-top:clamp(28px,4vw,58px);padding-bottom:70px}
+#watch .ucs-watch-heading{position:relative;align-items:end;gap:22px;padding:0 0 24px;margin-bottom:24px;border-bottom:1px solid #373039}
+#watch .ucs-watch-heading .section-kicker{color:#fa3455!important;letter-spacing:.18em;font-size:11px}
+#watch .ucs-watch-heading h1{font:900 clamp(54px,8vw,112px)/.85 'Barlow Condensed',Impact,sans-serif!important;letter-spacing:-.01em;margin:15px 0 18px!important;color:#fff!important}
+#watch .ucs-watch-heading h1 em{font-style:normal;color:#ef2b4d!important}
+#watch .ucs-watch-heading p{max-width:620px;color:#aaaab5;font-size:14px;line-height:1.6}
+#watch .ucs-stream-channel{border:1px solid #713445;background:#26141d;color:#f4c4cd;border-radius:3px;padding:12px 15px;letter-spacing:.1em;font-size:10px}
+#watch .ucs-watch-live-dot,#watch .ucs-watch-stream-pulse{background:#f02b50!important;box-shadow:0 0 14px #f02b50}
+#watch .ucs-watch-countdown-wrap{position:relative;min-height:0!important;padding:clamp(26px,4vw,52px)!important;background:radial-gradient(ellipse at 75% 0%,rgba(129,25,48,.22),transparent 55%),linear-gradient(135deg,#1d171e,#0d0e13 66%,#171219)!important;border:1px solid #49404a!important;border-top:4px solid #ed2a4d!important;border-radius:6px!important;box-shadow:0 20px 55px #0008!important}
+#watch .ucs-watch-countdown-wrap:before{content:"UCS";position:absolute;inset:0;display:grid;place-items:center;font:900 clamp(150px,30vw,430px)/1 'Barlow Condensed',Impact,sans-serif;color:#ffffff05;transform:rotate(-8deg);pointer-events:none}
+#watch .ucs-watch-countdown-wrap:after{border-radius:6px!important;border-color:#ffffff09!important;box-shadow:none!important}
+#watch .ucs-countdown-aura{opacity:.12!important}
+#watch .ucs-countdown-watermark{color:#ffffff06!important}
+#watch .ucs-watch-event-overline{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font:900 11px Inter,sans-serif;letter-spacing:.1em;color:#e5a5b3!important}
+#watch .ucs-countdown-crown{margin:30px 0 12px!important;color:#f13a5a!important;font:900 11px Inter,sans-serif;letter-spacing:.19em}
+#watch .ucs-watch-countdown-wrap h2{font:900 clamp(58px,8.5vw,116px)/.84 'Barlow Condensed',Impact,sans-serif!important;letter-spacing:0!important;margin:0 auto 18px!important;text-shadow:none!important}
+#watch .ucs-watch-countdown-wrap h2>span{font-size:.3em!important;color:#eee!important;letter-spacing:.2em}
+#watch .ucs-watch-countdown-wrap h2 em{color:#fff!important;text-shadow:none!important}
+#watch .ucs-watch-countdown-sub{color:#aaaab4!important;font-size:12px!important}
+#watch .ucs-watch-countdown{gap:clamp(5px,1.4vw,18px);margin:26px auto 15px}
+#watch .ucs-count-unit{background:#14141b!important;border:1px solid #50414a!important;border-bottom:3px solid #e82c4e!important;border-radius:4px!important;box-shadow:none!important;padding:clamp(12px,2vw,22px) clamp(5px,1.8vw,20px)!important}
+#watch .ucs-count-unit strong{color:#fff!important;text-shadow:none!important;font-size:clamp(34px,6vw,78px)!important}
+#watch .ucs-count-unit span{color:#c5aeb5!important}
+#watch .ucs-count-divider{color:#9d4057!important;text-shadow:none!important}
+#watch .ucs-count-status{color:#e2b2be!important}
+#watch .ucs-countdown-bottom-line{color:#a19ca6!important}
+#watch .ucs-watch-stream-label{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:36px 0 14px;padding:0 0 16px;border-bottom:1px solid #38323c}
+#watch .ucs-watch-stream-label strong{font:900 23px 'Barlow Condensed',Impact,sans-serif!important;color:#fff!important;letter-spacing:.03em}
+#watch .ucs-watch-stream-label>div>span:last-child{color:#9999a6}
+#watch .ucs-watch-stream-label>a{background:#e92b4b!important;border:1px solid #f54b66!important;color:#fff!important;border-radius:3px!important;padding:12px 18px!important;font-weight:900}
+#watch .ucs-twitch-layout{grid-template-columns:minmax(0,1fr) minmax(275px,340px);gap:16px}
+#watch .ucs-twitch-player,#watch .ucs-twitch-chat-wrap{border:1px solid #41404b!important;border-radius:5px!important;background:#101116!important;box-shadow:0 16px 40px #0005}
+#watch .ucs-twitch-player{min-height:390px}
+#watch .ucs-twitch-chat-title{background:#211b23!important;border-bottom:2px solid #e52c4c!important;padding:14px!important;font:900 16px 'Barlow Condensed',Impact,sans-serif!important;color:#fff!important}
+#watch .ucs-twitch-chat-title span{font:800 10px Inter,sans-serif;color:#ed4664!important}
+#watch .ucs-watch-disclaimer{color:#888896;margin-top:15px}
+@media(max-width:900px){#watch .ucs-twitch-layout{grid-template-columns:minmax(0,1fr)}#watch .ucs-twitch-chat-wrap{min-height:380px}#watch .ucs-watch-heading{align-items:flex-start;flex-direction:column}#watch .ucs-watch-countdown-wrap{padding:20px!important}}
+@media(max-width:600px){#watch .ucs-watch-heading h1{font-size:clamp(50px,13vw,75px)!important}#watch .ucs-watch-event-overline{font-size:9px}#watch .ucs-countdown-crown{margin-top:22px!important}#watch .ucs-watch-countdown-wrap h2{font-size:clamp(42px,12vw,66px)!important}#watch .ucs-watch-stream-label{align-items:flex-start;flex-direction:column}#watch .ucs-twitch-player{min-height:220px}}
