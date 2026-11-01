@@ -8,14 +8,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=ucs-premium-design-20261101" />
+  <link rel="stylesheet" href="styles.css?v=ucs-official-red-20261101" />
 </head>
 <body>
 
   <header class="topbar">
     <a href="#home" class="brand" data-page="home" aria-label="UCS Home">
       
-      <div><strong>UCS</strong><span>UNDISPUTED CHAMPIONSHIP SERIES</span></div>
+      <img class="ucs-header-white-logo" src="assets/ucs-white-flat-logo.svg" alt="UCS logo"><div><strong>UCS</strong><span>UNDISPUTED CHAMPIONSHIP SERIES</span></div>
     </a>
 
     <button class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
@@ -59,6 +59,14 @@
       <div class="ticker"><div class="shell ticker-inner"><strong>UCS LIVE</strong><span>Official fight cards • Rankings • Results • Champions</span></div></div>
       <div class="ucs-home-countdown-strip shell"><div><span class="ucs-home-countdown-label">UCS#001 · OCT 21 · 8 PM ET</span><strong>FIGHT NIGHT COUNTDOWN</strong></div><div class="ucs-home-countdown-numbers" id="ucsHomeCountdown" aria-label="Live time until fight night">--d --h --m --s</div><a href="#watch" data-page="watch" class="ucs-home-countdown-link">WATCH THE EVENT →</a></div>
 
+      <section class="ucs-home-champions shell" aria-label="UCS champion spotlight">
+        <div class="ucs-home-champions-heading"><div><span class="section-kicker">THE UNDISPUTED</span><h2>OUR <em>CHAMPIONS</em></h2></div><span class="ucs-home-champions-eyebrow">OFFICIAL UCS TITLE HOLDERS</span></div>
+        <div class="ucs-home-champions-stage">
+          <div class="ucs-home-champion-image" id="ucsHomeChampionImage"></div>
+          <div class="ucs-home-champion-details" id="ucsHomeChampionDetails" aria-live="polite"></div>
+        </div>
+        <div class="ucs-home-champions-controls"><div><button type="button" id="ucsChampionPrev" aria-label="Previous champion">←</button><button type="button" id="ucsChampionNext" aria-label="Next champion">→</button></div><div id="ucsChampionDots" class="ucs-home-champion-dots" aria-label="Champion slides"></div><a href="#rankings" data-page="rankings">VIEW ALL RANKINGS →</a></div>
+      </section>
       <section class="shell ucs-sponsor-banner" aria-label="Thirteen Threads sponsor">
         <img class="ucs-sponsor-original" src="https://cdn.discordapp.com/attachments/1193606504939520040/1560875692684476567/d04c6118-a49c-479c-96f1-443bd3671994.png?ex=6ad44e44&amp;is=6ad2fcc4&amp;hm=23c138d397f255c548449032aa253dc418c85b47c08232bd49517ffc4e687475&amp;" alt="Thirteen Threads Fight Kits — Buy top tier Undisputed kits from Thirteen Threads today, proudly sponsoring UCS" loading="lazy" decoding="async">
       </section>
@@ -788,6 +796,6 @@
   <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=ucs-event-hero-20261101"></script>
+  <script src="app.js?v=ucs-champ-carousel-20261101"></script>
 </body>
 </html>
