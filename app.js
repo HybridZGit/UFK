@@ -294,9 +294,9 @@ function renderTaleOfTheTape(){
     const ko=f=>ucsTottKoWins(f),wins=f=>Number(f.wins||0);
     const pct=f=>wins(f)>0?Math.round(100*ko(f)/wins(f))+'%':'—';
     const officialRecord=f=>[f.wins??0,f.losses??0,f.draws??0].join('-');
-    const side=(f,corner)=>`<div class="ucs-tott-fighter">
+    const side=(f,corner)=>`<div class="ucs-tott-fighter ${safeHttps(corner==='RED CORNER'?bout.fighter_a_bout_image:bout.fighter_b_bout_image)?'ucs-tott-has-portrait':''}">
       <span class="ucs-tott-corner">${corner}</span>
-      ${avatarHtml(f,'ucs-tott-avatar')}
+      ${safeHttps(corner==='RED CORNER'?bout.fighter_a_bout_image:bout.fighter_b_bout_image)?`<img class="ucs-tott-avatar ucs-tott-custom-portrait" src="${esc(corner==='RED CORNER'?bout.fighter_a_bout_image:bout.fighter_b_bout_image)}" alt="${esc(f.name)} matchup portrait" loading="lazy">`:avatarHtml(f,'ucs-tott-avatar')}
       <h3>${esc(f.name)}</h3>
       <strong class="ucs-tott-record">${esc(officialRecord(f))}</strong>
       <span class="ucs-tott-fighter-score">UCS SCORE <b>${esc(scoreText(f))}</b></span>
