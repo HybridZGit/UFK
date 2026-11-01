@@ -795,7 +795,9 @@ function openFighterProfile(id){
   $('#ucsChampionCrownProfile')?.classList.toggle('hidden',!titles.length);
   $('#ucsMatcherinoVerifiedProfile')?.classList.toggle('hidden',!f.matcherino_verified);
   $('#profilePlatform').textContent=`UCS ${f.platform||'WORLD'}`;
-  $('#profileRegion').textContent=f.region||'Region not set';
+  $('#profileRegion').textContent=`${ucsFighterFlag(f.region)?ucsFighterFlag(f.region)+' ':''}${f.region||'Region not set'}`;
+  const regionFact=$('#ucsProfileRegionFact');
+  if(regionFact)regionFact.textContent=`${ucsFighterFlag(f.region)?ucsFighterFlag(f.region)+' ':''}${f.region||'Not specified'}`;
   const banner=$('#profileBanner'),bannerImage=$('#profileBannerImage');
   const showBanner=Boolean(f.banner_url&&safeHttps(f.banner_url));
   banner?.classList.toggle('hidden',!showBanner);
@@ -827,7 +829,7 @@ function openFighterProfile(id){
   const soon=booked[0],opp=soon?fighterById(soon.fighter_a_id===f.id?soon.fighter_b_id:soon.fighter_a_id):null;
   $('#profileNextFight').textContent=opp?'vs '+opp.name:'Not booked';
 
-  $('#profileRank').textContent=rank?`#${rank}`:'#—';
+  $('#profileRank').textContent=titles.length?'#C':(rank?`#${rank}`:'#—');
   $('#ucsDossierWins').textContent=String(f.wins||0);
   $('#ucsDossierLosses').textContent=String(f.losses||0);
   $('#ucsDossierDraws').textContent=String(f.draws||0);
