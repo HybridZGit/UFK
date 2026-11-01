@@ -1238,3 +1238,7 @@ h1,h2,h3,.section-title-row h2{font-style:normal!important}
 #rankings .ucs-champ-showcase-division{top:13px!important}
 #rankings .ucs-champ-vacant .ucs-champ-silhouette{inset:0!important}
 @media(max-width:680px){#rankings .ucs-champ-showcase-card{height:355px!important;flex-basis:215px!important}}
+
+/* Champion head-height correction: portraits can be shifted within a clipped viewport */
+#rankings .ucs-champ-showcase-card>img{transform:translateY(0)!important;object-position:center center!important}
+#rankings .ucs-champ-showcase-card{overflow:hidden!important}
