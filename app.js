@@ -698,11 +698,17 @@ function renderChampionShowcase(){
     const flag=champ?.showcase_flag||'';
     const portraitY=Number.isFinite(+champ?.portrait_y)?Math.min(100,Math.max(0,+champ.portrait_y)):50;
     const headOffset=(portraitY-50)*1.5+(division==='UCS World'?-36:0);
+    const wins=Math.max(0,Math.min(40,Number(fighter?.wins)||0));
+    const losses=Math.max(0,Math.min(40,Number(fighter?.losses)||0));
+    const draws=Math.max(0,Math.min(40,Number(fighter?.draws)||0));
+    const form=[...Array(wins).fill('W'),...Array(losses).fill('L'),...Array(draws).fill('D')];
+    const recordStrip=fighter?`<div class="ucs-champ-record-strip" aria-label="${wins} wins, ${losses} losses, ${draws} draws">${form.length?form.map(letter=>`<span class="ucs-champ-result ucs-champ-result-${letter.toLowerCase()}">${letter}</span>`).join(''):'<span class="ucs-champ-unbeaten">0-0-0</span>'}</div>`:'';
+
     return `<article class="ucs-champ-showcase-card ${fighter?'':'ucs-champ-vacant'}" ${fighter?`role="button" tabindex="0" data-champ-profile="${esc(fighter.id)}" aria-label="View ${esc(fighter.name)} fighter profile"`:''}>
       <span class="ucs-champ-showcase-division">${esc(division.toUpperCase())}</span>
       <span class="ucs-champ-vertical" aria-hidden="true">${esc(division.replace(/^UCS\s*/,'').toUpperCase())}</span>
       ${photo?`<img src="${esc(photo)}" alt="${esc(fighter.name)} boxer portrait" loading="lazy" style="transform:translateY(${headOffset}px)!important">`:`<div class="ucs-champ-silhouette" aria-hidden="true"><span>♟</span></div>`}
-      <div class="ucs-champ-showcase-info">${fighter?'<small>♛ CHAMPION</small>':''}<div class="ucs-champ-name-line"><strong>${fighter?esc(fighter.name):'VACANT'}</strong>${flag&&fighter?`<span class="ucs-champ-flag" aria-label="Champion country flag">${esc(flag)}</span>`:''}</div></div>
+      ${recordStrip}<div class="ucs-champ-showcase-info">${fighter?'<small>♛ CHAMPION</small>':''}<div class="ucs-champ-name-line"><strong>${fighter?esc(fighter.name):'VACANT'}</strong>${flag&&fighter?`<span class="ucs-champ-flag" aria-label="Champion country flag">${esc(flag)}</span>`:''}</div></div>
     </article>`;
   }).join('');
 }
