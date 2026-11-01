@@ -1991,3 +1991,23 @@ button,a,input,select,textarea{touch-action:manipulation}
 .ucs-home-has-belt{position:relative}
 .ucs-home-has-belt:after{content:"";position:absolute;right:2%;bottom:5%;width:30%;height:30%;background:var(--ucs-home-belt) center/contain no-repeat;filter:drop-shadow(0 9px 14px #000a);pointer-events:none;opacity:.75}
 @media(max-width:650px){.ucs-home-has-belt:after{width:27%;height:20%;right:1%;bottom:2%;opacity:.6}}
+
+/* Fighter profile upcoming fight cards */
+#profileUpcomingFights{display:grid!important;gap:12px!important}
+#profileUpcomingFights .ucs-upcoming-card{border:1px solid #37343e;border-radius:12px;background:linear-gradient(110deg,#1b1920,#111116);overflow:hidden}
+#profileUpcomingFights .ucs-upcoming-main{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;align-items:center;gap:20px;padding:18px}
+#profileUpcomingFights .ucs-upcoming-fighter{display:flex;align-items:center;gap:14px;min-width:0}
+#profileUpcomingFights .ucs-upcoming-avatar{width:60px;height:60px;flex-shrink:0;display:grid;place-items:center;border:1px solid #826437;border-radius:8px;overflow:hidden;color:#d7b574;font-weight:900}
+#profileUpcomingFights .ucs-upcoming-avatar img{width:100%;height:100%;object-fit:cover}
+#profileUpcomingFights .ucs-upcoming-fighter-info{display:flex;flex-direction:column;gap:4px;min-width:0}
+#profileUpcomingFights .ucs-upcoming-fighter-info small{color:#d4ac62;font-size:10px;letter-spacing:1.2px;font-weight:800}
+#profileUpcomingFights .ucs-upcoming-fighter-info strong{font-size:clamp(19px,2vw,26px);line-height:1.1;color:white;text-transform:uppercase;overflow-wrap:anywhere}
+#profileUpcomingFights .ucs-upcoming-fighter-info>span{color:#aeb0ba;font-size:12px}
+#profileUpcomingFights .ucs-upcoming-meta{display:flex;flex-direction:column;gap:7px;font-size:12px;color:#d9d9e0}
+#profileUpcomingFights .ucs-upcoming-meta .ucs-inline-belt{color:#e9c06a;font-size:11px;font-weight:800}
+#profileUpcomingFights .ucs-upcoming-meta .ucs-inline-status{color:#a9aab5;font-size:10px;letter-spacing:1px}
+#profileUpcomingFights .ucs-upcoming-action{background:#dcb567!important;border:1px solid #edce8c!important;border-radius:7px!important;color:#1a1510!important;font-size:12px!important;font-weight:900!important;padding:12px 17px!important;white-space:nowrap;cursor:pointer}
+#profileUpcomingFights .ucs-upcoming-action:hover{background:#f2d48c!important}
+#profileUpcomingFights .ucs-upcoming-footer{border-top:1px solid #37343e;padding:10px 18px}
+@media(max-width:750px){#profileUpcomingFights .ucs-upcoming-main{grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:14px}#profileUpcomingFights .ucs-upcoming-meta{grid-column:1/-1;grid-row:2}#profileUpcomingFights .ucs-upcoming-action{grid-column:2;grid-row:1;padding:10px!important}#profileUpcomingFights .ucs-upcoming-avatar{width:48px;height:48px}}
+@media(max-width:420px){#profileUpcomingFights .ucs-upcoming-main{grid-template-columns:1fr}#profileUpcomingFights .ucs-upcoming-action{grid-column:1;grid-row:3;width:100%}}
