@@ -1028,8 +1028,8 @@ function renderEvents(){
   const boutCard=b=>{
     const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);
     const isMain=b.id===main?.id,isCoMain=b.id===coMain?.id;
-    return `<article class="ucs-match-card${isMain?' ucs-match-featured':''}${isCoMain?' ucs-match-co-main':''}">
-      <div class="ucs-match-top"><span>${isMain?'★ MAIN EVENT':isCoMain?'★ CO-MAIN EVENT':b.is_title_eliminator?'★ INTERNATIONAL TITLE ELIMINATOR':'UCS FIGHT NIGHT'}</span><span>${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</span></div>
+    return `<article class="ucs-match-card${b.belt?' ucs-match-title-bout':''}${isMain?' ucs-match-featured':''}${isCoMain?' ucs-match-co-main':''}">
+      <div class="ucs-match-top"><span>${isMain?'★ MAIN EVENT':isCoMain?'★ CO-MAIN EVENT':b.is_title_eliminator?'★ INTERNATIONAL TITLE ELIMINATOR':b.belt?'★ CHAMPIONSHIP FIGHT':'UCS FIGHT NIGHT'}</span><span>${esc(b.bout_date?fmtDate(b.bout_date):'DATE TBA')}</span></div>
       ${safeHttps(b.poster_url)?`<a class="ucs-match-poster-banner" href="${esc(b.poster_url)}" target="_blank" rel="noopener noreferrer" aria-label="View full fight poster for ${esc(a?.name||'fighter')} versus ${esc(c?.name||'fighter')}">
         <img src="${esc(b.poster_url)}" alt="${esc(a?.name||'Fighter')} vs ${esc(c?.name||'Fighter')} fight poster" loading="lazy">
         <span class="ucs-match-poster-caption"><strong>${esc(a?.name||'TBA')} VS ${esc(c?.name||'TBA')}</strong><small>VIEW FULL POSTER ↗</small></span>
