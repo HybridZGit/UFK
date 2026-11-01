@@ -1477,3 +1477,37 @@ body:before{z-index:-1!important;background:repeating-linear-gradient(135deg,rgb
 #home [class*="tott"] [class*="gold"],#home [class*="tott"] [class*="pick"]{color:#f04460!important;text-shadow:none!important}
 #home .ucs-home-countdown-strip{background:#d51d3d!important}
 @media(max-width:760px){#rankings .tabs{overflow-x:auto!important;flex-wrap:nowrap!important}#rankings .tabs button{flex-shrink:0!important}#rankings .ranking-head{padding-top:18px!important}}
+
+/* UCS rankings fighter profile — reference layout; official values remain data-driven */
+#fighterModal .profile-rating-bars{display:grid;gap:16px;padding:22px 24px;background:#111116;border:1px solid #2b2d36;border-radius:4px;margin:16px 24px}
+#fighterModal .ucs-reference-meter{display:grid;grid-template-columns:88px minmax(0,1fr) 42px;align-items:center;gap:16px;font-size:13px;font-weight:800}
+#fighterModal .ucs-meter-name{display:flex;align-items:center;gap:10px;color:#fff}
+#fighterModal .ucs-meter-name:before{content:"";width:10px;height:10px;flex:none;border-radius:50%;background:#4198e9}
+#fighterModal .ucs-reference-meter:nth-child(2) .ucs-meter-name:before{background:#1ab778}
+#fighterModal .ucs-reference-meter:nth-child(3) .ucs-meter-name:before{background:#f01948}
+#fighterModal .ucs-reference-meter:nth-child(4) .ucs-meter-name:before{background:#8a7be3}
+#fighterModal .ucs-meter-track{height:8px;border:1px solid #30313b;background:#1c1c24;border-radius:10px;overflow:hidden}
+#fighterModal .ucs-meter-track>span{display:block;height:100%;border-radius:10px;background:#4198e9}
+#fighterModal .ucs-reference-meter:nth-child(2) .ucs-meter-track>span{background:#1ab778}
+#fighterModal .ucs-reference-meter:nth-child(3) .ucs-meter-track>span{background:#f01948}
+#fighterModal .ucs-reference-meter:nth-child(4) .ucs-meter-track>span{background:#8a7be3}
+#fighterModal .ucs-reference-meter>strong{text-align:right;color:#fff;font-variant-numeric:tabular-nums}
+#fighterModal .ucs-ref-fight-row{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(75px,.35fr) 96px;align-items:center;gap:12px;min-height:47px;border-bottom:1px solid #30313a;padding:9px 0;font-size:12px}
+#fighterModal .ucs-ref-fight-row:last-child{border-bottom:0}
+#fighterModal .ucs-ref-opponent{min-width:0}
+#fighterModal .ucs-ref-opponent strong{font-size:14px;color:#fff;overflow-wrap:anywhere}
+#fighterModal .ucs-ref-opponent small{display:block;font-size:10px;color:#aaa;line-height:1.4;margin-top:4px}
+#fighterModal .ucs-ref-title-tag{display:inline-block;background:#f2c64f;color:#141414;font-size:9px;font-weight:900;padding:2px 5px;margin-left:7px}
+#fighterModal .ucs-ref-fight-row .result-pill{justify-self:start}
+#fighterModal .ucs-ref-method{color:#d5d5dc}
+#fighterModal .ucs-ref-date{font-size:11px;color:#b6c5e3;text-align:right;white-space:nowrap}
+#fighterModal .ucs-reference-results{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(230px,1fr);gap:22px;margin:22px 24px}
+#fighterModal .ucs-reference-results .profile-history{margin:0;background:#111116;border:1px solid #30313b;padding:20px}
+#fighterModal .ucs-reference-results .profile-section-title{margin-bottom:12px}
+#fighterModal .ucs-ko-panel{padding:22px;background:#1c1c24;border:1px solid #30313b}
+#fighterModal .ucs-ko-panel h3{font-family:'Barlow Condensed',Impact,sans-serif;font-size:22px;margin:0 0 18px;color:#fff}
+#fighterModal .ucs-ko-number{font-family:'Barlow Condensed',Impact,sans-serif;font-size:70px;font-weight:900;color:#ef1944;line-height:1}
+#fighterModal .ucs-ko-track{height:8px;border-radius:10px;background:#d6d6d6;overflow:hidden;margin:10px 0 18px}
+#fighterModal .ucs-ko-track span{display:block;background:#e91d45;height:100%;border-radius:10px}
+#fighterModal .ucs-ko-panel p{font-size:14px;line-height:1.5;color:#fff}
+@media(max-width:720px){#fighterModal .ucs-reference-results{grid-template-columns:1fr;margin:14px}#fighterModal .profile-rating-bars{margin:14px;padding:14px}#fighterModal .ucs-reference-meter{grid-template-columns:74px minmax(0,1fr) 35px;gap:8px;font-size:11px}#fighterModal .ucs-ref-fight-row{grid-template-columns:minmax(0,1fr) 24px 65px 75px;gap:6px}#fighterModal .ucs-ref-opponent strong{font-size:12px}#fighterModal .ucs-ref-date{font-size:9px}}
