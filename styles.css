@@ -2164,3 +2164,59 @@ button,a,input,select,textarea{touch-action:manipulation}
 .ucs-footer .ucs-footer-qr{display:block;width:112px;height:112px;object-fit:contain;background:transparent;border:0;box-shadow:none}
 .ucs-footer .ucs-footer-inner>small{font-size:11px;color:#747782;white-space:nowrap}
 @media(max-width:620px){.ucs-footer .ucs-footer-inner{justify-content:center!important;text-align:center}.ucs-footer .ucs-footer-identity{width:170px}.ucs-footer .ucs-footer-discord{margin:0}.ucs-footer .ucs-footer-discord-copy{align-items:flex-start}.ucs-footer .ucs-footer-inner>small{width:100%}}
+
+/* UCS RED CINEMA | Streaming-inspired visual system */
+:root{--ucs-cinema-red:#e50914;--ucs-cinema-red-bright:#ff2435;--ucs-cinema-black:#09090b;--ucs-cinema-panel:#151518;--ucs-cinema-border:#29292e}
+html{background:#09090b!important;scroll-behavior:smooth}
+body{background:#09090b!important;color:#f6f6f7!important}
+body::before{background:radial-gradient(ellipse at 82% 3%,rgba(191,0,25,.13),transparent 40%)!important;pointer-events:none}
+.topbar{background:linear-gradient(180deg,rgba(8,8,10,.98),rgba(10,10,12,.94))!important;border-bottom:1px solid #27272b!important;backdrop-filter:blur(20px)!important;box-shadow:0 10px 35px #0008!important}
+.topbar nav a{color:#c5c5ca!important;font-weight:700!important;letter-spacing:.1px!important;transition:color .2s,background .2s!important}
+.topbar nav a:hover,.topbar nav a.active{color:#fff!important}
+.topbar nav a.active{background:rgba(229,9,20,.13)!important}
+.topbar nav a.active::after{background:#e50914!important}
+.ucs-watch-button{background:#e50914!important;color:#fff!important;border:1px solid #fa2532!important;box-shadow:0 6px 24px #e5091433!important}
+.ucs-watch-button:hover{background:#ff2435!important;transform:translateY(-2px)!important}
+#home>.hero{position:relative!important;min-height:clamp(520px,68vh,790px)!important;display:grid!important;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr)!important;align-items:center!important;overflow:hidden!important;isolation:isolate!important;padding-top:76px!important;padding-bottom:100px!important;background:radial-gradient(ellipse at 78% 43%,rgba(174,0,20,.23),transparent 48%),linear-gradient(105deg,#09090b 4%,#121013 57%,#0a090c 100%)!important}
+#home>.hero::before{content:""!important;position:absolute!important;inset:0!important;z-index:-1!important;background:linear-gradient(0deg,#09090b 0%,transparent 25%),radial-gradient(circle at 90% 25%,rgba(229,9,20,.1),transparent 36%)!important;pointer-events:none!important}
+#home>.hero .hero-copy{position:relative!important;z-index:2!important;max-width:780px!important}
+#home>.hero .eyebrow{color:#f64a55!important;letter-spacing:2.6px!important;font-size:11px!important;font-weight:850!important}
+#home>.hero h1{font-size:clamp(56px,8.5vw,134px)!important;line-height:.88!important;letter-spacing:-2px!important;color:#fff!important;text-shadow:0 6px 34px #0009!important}
+#home>.hero h1 em{color:#f12633!important;font-style:normal!important}
+#home>.hero .hero-copy>p{max-width:440px!important;color:#c6c6cc!important;font-size:clamp(14px,1.35vw,18px)!important;line-height:1.65!important}
+#home>.hero .hero-art.ucs-cinema-hero-art{position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;min-width:0!important;min-height:360px!important;background:transparent!important;box-shadow:none!important;border:0!important}
+#home>.hero .hero-art.ucs-cinema-hero-art::before{content:""!important;position:absolute!important;inset:13% 7%!important;background:radial-gradient(circle,#d809243f,transparent 65%)!important;filter:blur(25px)!important}
+#home>.hero .hero-art.ucs-cinema-hero-art img{position:relative!important;display:block!important;width:min(100%,560px)!important;max-height:520px!important;object-fit:contain!important;filter:drop-shadow(0 18px 40px #e509142a)!important;transform:rotate(-4deg)!important;animation:ucsVsFloat 6s ease-in-out infinite!important}
+@keyframes ucsVsFloat{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-12px) rotate(-3deg)}}
+.btn.primary,button.btn.primary{background:#e50914!important;border-color:#e50914!important;color:#fff!important;box-shadow:0 8px 25px #e5091426!important}
+.btn.primary:hover,button.btn.primary:hover{background:#ff2435!important;border-color:#ff2435!important;transform:translateY(-2px)!important}
+.btn.ghost{border-color:#ffffff65!important;background:#ffffff13!important;color:#fff!important}
+.btn.ghost:hover{background:#ffffff27!important}
+.ticker{background:#151012!important;border-top:1px solid #401a20!important;border-bottom:1px solid #401a20!important}
+.ticker strong{color:#ff3345!important}
+.ucs-live-pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ff2335;box-shadow:0 0 12px #ff2335;vertical-align:middle;margin-right:7px;animation:ucsPulse 1.8s ease-in-out infinite}
+@keyframes ucsPulse{50%{opacity:.4}}
+.ticker b{color:#e50914;padding:0 12px}
+.page:not(#home){background:linear-gradient(180deg,#111013 0,#09090b 340px)!important}
+.page h1,.page h2,.page h3{letter-spacing:-.35px}
+.section-kicker,.eyebrow{color:#ed3344!important}
+.page .shell>section,.page .shell>article{scroll-margin-top:100px}
+.ucs-home-champions,.ucs-tott-section,.ucs-home-countdown-strip{position:relative}
+.ucs-home-champions-stage,.ucs-tott-stage,.ucs-event-hero,.ucs-sponsor-banner{border-color:#29292e!important}
+.ucs-home-champions-stage{background:linear-gradient(110deg,#171316,#0e0e11)!important}
+.ucs-home-champions-controls button,.ucs-tott-tabs button{transition:background .2s,transform .2s,border-color .2s!important}
+.ucs-home-champions-controls button:hover,.ucs-tott-tabs button:hover{background:#e50914!important;border-color:#e50914!important;color:#fff!important;transform:translateY(-2px)}
+.ucs-home-champions-controls a,.ucs-home-countdown-link{color:#fff!important}
+.ucs-home-champions-controls a:hover,.ucs-home-countdown-link:hover{color:#ff3546!important}
+#home .ucs-tott-card,#home .ucs-tott-fighter,.page .fighter-card,.page .event-card,.page .news-card,.page .photo-card{transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease!important}
+#home .ucs-tott-card:hover,.page .fighter-card:hover,.page .event-card:hover,.page .news-card:hover,.page .photo-card:hover{transform:translateY(-5px)!important;border-color:#6e2731!important;box-shadow:0 16px 42px #0009!important}
+.ucs-tott-vs{color:#ff2638!important;text-shadow:0 0 24px #d9002260!important}
+.ucs-footer{background:#09090b!important;border-top-color:#2b1b20!important}
+.ucs-footer .ucs-footer-discord-copy a{color:#ff3546!important}
+.ucs-cinema-navigating .page.active{animation:ucsPageReveal .4s cubic-bezier(.2,.7,.2,1) both}
+@keyframes ucsPageReveal{from{opacity:.4;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+a,button{transition-property:color,background-color,border-color,transform,box-shadow;transition-duration:.2s}
+:focus-visible{outline:2px solid #ff3546!important;outline-offset:3px}
+@media(max-width:850px){#home>.hero{grid-template-columns:1fr!important;min-height:0!important;padding-top:55px!important;padding-bottom:40px!important}#home>.hero .hero-copy{z-index:2!important}#home>.hero .hero-art.ucs-cinema-hero-art{min-height:200px!important;max-height:280px!important;opacity:.78!important}#home>.hero .hero-art.ucs-cinema-hero-art img{max-height:280px!important}#home>.hero h1{font-size:clamp(51px,11vw,86px)!important}}
+@media(max-width:520px){#home>.hero{padding-top:40px!important;gap:0!important}#home>.hero h1{font-size:clamp(45px,12vw,66px)!important;letter-spacing:-1px!important}#home>.hero .hero-art.ucs-cinema-hero-art{min-height:150px!important;max-height:190px!important}#home>.hero .hero-art.ucs-cinema-hero-art img{max-height:190px!important}.ticker-inner{font-size:10px!important}.ticker b{padding:0 4px}}
+@media(prefers-reduced-motion:reduce){#home>.hero .hero-art.ucs-cinema-hero-art img,.ucs-live-pulse{animation:none!important}.ucs-cinema-navigating .page.active{animation:none!important}html{scroll-behavior:auto!important}}
