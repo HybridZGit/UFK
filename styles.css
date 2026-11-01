@@ -1439,3 +1439,41 @@ body:before{z-index:-1!important;background:repeating-linear-gradient(135deg,rgb
 #events .ucs-event-results-layout li{padding:13px 10px;border-bottom:1px solid #3c3b43;border-left:3px solid #d92c49;margin-bottom:6px;background:#19171d}
 #events .ucs-event-results-pending{color:#b9b8c0}
 @media(max-width:740px){#events .ucs-events-grid{grid-template-columns:1fr!important}#events .ucs-event-results-layout{grid-template-columns:1fr}}
+
+/* Red carbon ranking experience — championship-level presentation */
+#rankings{position:relative;background:repeating-linear-gradient(135deg,rgba(220,28,56,.035) 0,rgba(220,28,56,.035) 1px,transparent 1px,transparent 8px),radial-gradient(ellipse at 82% 5%,rgba(135,22,41,.17),transparent 48%),#090a0e!important}
+#rankings .ranking-head{padding:28px 0!important;border-bottom:1px solid #4c2934!important}
+#rankings .ranking-head .section-kicker{color:#ef3654!important}
+#rankings .ranking-head h2{font-size:clamp(34px,4vw,58px)!important;color:#fff!important}
+#rankings .ranking-head .section-title-row{border:0!important;margin:0!important;padding:0!important}
+#rankings .presented-by{background:#121217!important;border:1px solid #4a2a34!important;border-radius:2px!important}
+#rankings .presented-by span{color:#b4b2b9!important}
+#rankings .ucs-champions-heading{border-bottom:1px solid #5b2938!important;padding-bottom:18px!important;margin-bottom:24px!important}
+#rankings .ucs-champions-heading h2{color:#fff!important;text-shadow:none!important}
+#rankings .ucs-champions-crown{color:#e72e4d!important}
+#rankings .ucs-champion-showcase{margin-bottom:30px!important}
+#rankings .ucs-champ-showcase-card{border:1px solid #5a3540!important;background:#121116!important}
+#rankings .ucs-champ-showcase-card:hover{border-color:#e72e4d!important}
+#rankings .tabs{background:#101015!important;border:1px solid #39313a!important;padding:7px!important;gap:7px!important}
+#rankings .tabs button{background:#19171d!important;border:1px solid #49303a!important;border-radius:2px!important;color:#d5d4da!important;padding:12px 18px!important}
+#rankings .tabs button.active,#rankings .tabs button:hover{background:#bc2140!important;border-color:#e93250!important;color:#fff!important}
+#rankings .champion-banner{background:linear-gradient(110deg,#28131d,#101116)!important;border:1px solid #733043!important;border-left:4px solid #e72e4d!important}
+#rankings .champion-banner small{color:#ed3d59!important}
+#rankings .rank-table-wrap,#rankings .ranking-table-wrap{border:1px solid #4c343e!important;background:#101015!important}
+#rankings table thead th{background:#24141c!important;border-bottom:2px solid #e32c4b!important;color:#fff!important}
+#rankings table tbody tr{background:#101116!important;border-bottom:1px solid #302b32!important;transition:background .15s}
+#rankings table tbody tr:nth-child(even){background:#16141a!important}
+#rankings table tbody tr:hover{background:#2b1821!important}
+#rankings table tbody td{border-color:#302b32!important}
+#rankings .rank-fighter-cell strong{font-family:"Barlow Condensed",sans-serif!important;font-size:17px!important;letter-spacing:.035em!important;color:#fff!important}
+#rankings .rank-fighter-cell img{border:2px solid #833046!important}
+#rankings .search{background:#131217!important;border:1px solid #5a303d!important}
+#home .ucs-red-cross{display:inline-block;color:#f03251;font-size:17px;line-height:1;margin-right:7px;vertical-align:middle}
+#home .hero-copy .eyebrow{color:#e6e6ea!important}
+#home .hero{border-color:#55313d!important}
+#home .hero-art{background:transparent!important}
+#home .hero-copy em{color:#fff!important}
+#home .ucs-tott-disclaimer{display:none!important}
+#home [class*="tott"] [class*="gold"],#home [class*="tott"] [class*="pick"]{color:#f04460!important;text-shadow:none!important}
+#home .ucs-home-countdown-strip{background:#d51d3d!important}
+@media(max-width:760px){#rankings .tabs{overflow-x:auto!important;flex-wrap:nowrap!important}#rankings .tabs button{flex-shrink:0!important}#rankings .ranking-head{padding-top:18px!important}}
