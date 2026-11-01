@@ -548,7 +548,8 @@ function marqueePlatformCompatible(a,b){
 function marqueeCandidates(){
   // Mirror the UCS World leaderboard: rank 1 vs rank 2, 3 vs 4, etc.
   // Losses and draws are allowed; official score decides ranking order.
-  const ranked=[...state.fighters].filter(f=>f.active!==false)
+  const championIds=new Set(state.champions.filter(c=>c.fighter_id).map(c=>String(c.fighter_id)));
+  const ranked=[...state.fighters].filter(f=>f.active!==false&&!championIds.has(String(f.id)))
     .sort((a,b)=>Number(b.score||0)-Number(a.score||0)
       ||Number(b.wins||0)-Number(a.wins||0)
       ||String(a.name||'').localeCompare(String(b.name||'')));
@@ -659,7 +660,8 @@ function renderHome(){
 
 function renderRanks(filter=''){
   const platform=['UCS PS5','UCS PC','UCS XBOX'].includes(state.rankingDivision)?state.rankingDivision.replace('UCS ',''):null;
-  const rows=state.fighters.filter(f=>f.name.toLowerCase().includes(filter.toLowerCase())&&(state.rankingDivision!=='UCS SIM World'||f.sim_division===true)&&(!platform||(f.platform||'').toUpperCase()===platform)&&ucsEligibleForDivision(f,state.rankingDivision));
+  const championIds=new Set(state.champions.filter(c=>c.fighter_id).map(c=>String(c.fighter_id)));
+  const rows=state.fighters.filter(f=>!championIds.has(String(f.id))&&f.name.toLowerCase().includes(filter.toLowerCase())&&(state.rankingDivision!=='UCS SIM World'||f.sim_division===true)&&(!platform||(f.platform||'').toUpperCase()===platform)&&ucsEligibleForDivision(f,state.rankingDivision));
   $('#rankRows').innerHTML=rows.length?rows.map((f,i)=>`<tr class="fighter-rank-row" data-fighter-profile="${f.id}" tabindex="0"><td><span class="rank-number">${i+1}</span></td><td class="rank-name"><div class="rank-fighter-cell">${avatarHtml(f)}<div><strong>${ucsFighterFlag(f.region)?'<span class="ucs-rank-flag" title="'+esc(f.region)+'">'+ucsFighterFlag(f.region)+'</span> ':''}${esc(f.name)}</strong><span>${esc(record(f))} · ${esc(f.platform||'UNASSIGNED')}</span></div></div></td><td>${chip(f.resume)}</td><td>${chip(f.momentum)}</td><td>${chip(f.finishing)}</td><td>${chip(f.activity)}</td><td>${chip(f.big_fight)}</td><td class="overall">${Number(f.score||0).toFixed(1)}</td></tr>`).join(''):`<tr><td colspan="8">${empty(`No ${state.rankingDivision} fighters in the database yet.`)}</td></tr>`;
   renderRankingChampion();
 }
@@ -698,7 +700,7 @@ function renderRankingChampion(){
   $('#worldChampionBanner').classList.toggle('ucs-banner-with-belt',Boolean(ucsBeltArt(state.rankingDivision)));
   $('#worldChampionBanner').style.setProperty('--ucs-belt-image',ucsBeltArt(state.rankingDivision)?`url("${ucsBeltArt(state.rankingDivision)}")`:'none');
   $('#worldChampionBanner').innerHTML=f
-    ? `<small>${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><div class="champion-inline">${avatarHtml(f,'champion-avatar')}<div><strong>${esc(f.name)}</strong><span>${esc(record(f))} · ${c.defenses||0} title defenses</span></div></div>`
+    ? `<small>#C · ${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><div class="champion-inline">${avatarHtml(f,'champion-avatar')}<div><strong>${esc(f.name)}</strong><span>${esc(record(f))} · ${c.defenses||0} title defenses</span></div></div>`
     : `<small>${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><strong>VACANT</strong><span>No champion assigned</span>`;
   renderRankingTitleFights();
 }
