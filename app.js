@@ -158,7 +158,7 @@ async function loadPublicData(){
   state.news=results[9].data||[];
   state.photos=results[10].data||[];
   state.formerChampionships=results[11].data||[];
-  renderAll();renderChampionShowcase();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
+  renderAll();renderChampionShowcase();ucsRenderHomeChampion();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
 }
 
 // UCS Photography: public read-only gallery; approved users can upload.
@@ -692,6 +692,44 @@ function renderRankingChampion(){
     : `<small>${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><strong>VACANT</strong><span>No champion assigned</span>`;
   renderRankingTitleFights();
 }
+
+let ucsHomeChampionIndex=0;
+function ucsHomeChampionSlides(){
+  const divisions=['UCS World','UCS International',...ucsDivisions().filter(d=>!['UCS World','UCS International'].includes(d))];
+  return divisions.map(division=>{
+    const champ=state.champions.find(c=>c.division===division&&c.fighter_id);
+    const fighter=champ&&fighterById(champ.fighter_id);
+    return {division,champ,fighter};
+  }).filter(x=>x.fighter);
+}
+function ucsRenderHomeChampion(){
+  const image=$('#ucsHomeChampionImage'),details=$('#ucsHomeChampionDetails'),dots=$('#ucsChampionDots');
+  if(!image||!details||!dots)return;
+  const slides=ucsHomeChampionSlides();
+  const root=$('.ucs-home-champions');
+  root?.classList.toggle('hidden',!slides.length);
+  if(!slides.length)return;
+  ucsHomeChampionIndex=(ucsHomeChampionIndex+slides.length)%slides.length;
+  const {division,champ,fighter}=slides[ucsHomeChampionIndex];
+  const picture=[champ?.showcase_image_url,fighter?.avatar_url,fighter?.profile_image_url].find(url=>safeHttps(url));
+  const flag=champ?.showcase_flag||'';
+  const record=Number(fighter.wins||0)+'-'+Number(fighter.losses||0)+'-'+Number(fighter.draws||0);
+  const defenses=Number(champ?.defenses||0);
+  const total=Number(fighter.wins||0)+Number(fighter.losses||0)+Number(fighter.draws||0);
+  const winRate=total?Math.round(Number(fighter.wins||0)/total*100):0;
+  image.innerHTML=picture?'<img src="'+esc(picture)+'" alt="'+esc(fighter.name)+' champion portrait">':'<span class="ucs-home-champion-silhouette">♛</span>';
+  details.innerHTML='<span class="ucs-home-champion-division">'+esc(division.toUpperCase())+' · UCS CHAMPION</span><h3>'+esc(fighter.name)+'</h3><div class="ucs-home-champion-record">OFFICIAL RECORD · '+esc(record)+(flag?' <span>'+esc(flag)+'</span>':'')+'</div><div class="ucs-home-champion-stats"><div><small>TITLE DEFENSES</small><strong>'+defenses+'</strong></div><div><small>WIN RATE</small><strong>'+winRate+'%</strong></div><div><small>WINS</small><strong>'+Number(fighter.wins||0)+'</strong></div></div><button type="button" class="ucs-home-champion-profile" data-spotlight-profile="'+esc(fighter.id)+'">VIEW FIGHTER PROFILE →</button>';
+  dots.innerHTML=slides.map((x,i)=>'<button type="button" data-champion-slide="'+i+'" aria-label="Show '+esc(x.fighter.name)+'" aria-current="'+(i===ucsHomeChampionIndex)+'" class="'+(i===ucsHomeChampionIndex?'active':'')+'"></button>').join('');
+}
+function ucsMoveHomeChampion(step){ucsHomeChampionIndex+=step;ucsRenderHomeChampion();}
+$('#ucsChampionPrev')?.addEventListener('click',()=>ucsMoveHomeChampion(-1));
+$('#ucsChampionNext')?.addEventListener('click',()=>ucsMoveHomeChampion(1));
+$('#ucsChampionDots')?.addEventListener('click',e=>{const b=e.target.closest('[data-champion-slide]');if(!b)return;ucsHomeChampionIndex=Number(b.dataset.championSlide);ucsRenderHomeChampion();});
+$('#ucsHomeChampionDetails')?.addEventListener('click',e=>{const b=e.target.closest('[data-spotlight-profile]');if(b)openFighterProfile(b.dataset.spotlightProfile);});
+let ucsChampionTouchStart=null;
+$('.ucs-home-champions-stage')?.addEventListener('touchstart',e=>{ucsChampionTouchStart=e.touches[0]?.clientX??null},{passive:true});
+$('.ucs-home-champions-stage')?.addEventListener('touchend',e=>{if(ucsChampionTouchStart===null)return;const delta=(e.changedTouches[0]?.clientX??ucsChampionTouchStart)-ucsChampionTouchStart;if(Math.abs(delta)>45)ucsMoveHomeChampion(delta<0?1:-1);ucsChampionTouchStart=null},{passive:true});
+
 function renderChampionShowcase(){
   const root=$('#ucsChampionShowcase');if(!root)return;
   const ordered=['UCS World','UCS International',...ucsDivisions().filter(d=>!['UCS World','UCS International'].includes(d))];
