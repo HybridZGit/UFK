@@ -564,7 +564,14 @@
             <div class="button-row"><button class="btn primary" type="submit">SAVE BOUT</button><button class="btn danger-btn" type="button" id="cancelScheduledBout">CANCEL BOUT</button></div>
           </form>
 
-          <form class="admin-card ucs-bout-studio-admin" id="ucsBoutStudioForm">
+          <form class="admin-card ucs-belt-art-admin" id="ucsBeltArtForm">
+  <div class="ucs-studio-heading"><span>✦ UCS CHAMPIONSHIP BRANDING</span><h3>OFFICIAL BELT ARTWORK</h3><p>Upload the official UCS World and International belt photographs. These appear in the Rankings champion spotlight and title-fight presentation. Fighter portraits and all real statistics remain unchanged.</p></div>
+  <div class="split-2"><label>UCS World Championship belt image<input type="file" name="world_file" accept="image/jpeg,image/png,image/webp"></label><label>UCS International Championship belt image<input type="file" name="international_file" accept="image/jpeg,image/png,image/webp"></label></div>
+  <div class="split-2"><label>World belt image URL (optional)<input type="url" name="world_url" placeholder="https://..."></label><label>International belt image URL (optional)<input type="url" name="international_url" placeholder="https://..."></label></div>
+  <p class="ucs-admin-help">Upload the official belt images once. JPG, PNG or WebP, up to 5 MB each. You can update either image without changing the other.</p>
+  <div class="button-row"><button class="btn primary" type="submit">SAVE CHAMPIONSHIP ARTWORK</button></div>
+</form>
+<form class="admin-card ucs-bout-studio-admin" id="ucsBoutStudioForm">
             <div class="ucs-studio-heading"><span>★ UCS CREATIVE STUDIO</span><h3>BOUT PROFILE MANAGER</h3><p>A dedicated admin section for the fighter-versus-fighter page. Set each fighter's matchup portrait and official scheduled rounds independently from the standard fight editor.</p></div>
             <label>SELECT SCHEDULED BOUT<select id="ucsBoutStudioSelect" name="bout_id" required></select></label>
             <div class="ucs-studio-corners"><div><span>RED CORNER</span><strong id="ucsStudioRedName">FIGHTER A</strong></div><div class="ucs-studio-vs">VS</div><div><span>BLUE CORNER</span><strong id="ucsStudioBlueName">FIGHTER B</strong></div></div>
