@@ -564,9 +564,25 @@
             <div class="button-row"><button class="btn primary" type="submit">SAVE BOUT</button><button class="btn danger-btn" type="button" id="cancelScheduledBout">CANCEL BOUT</button></div>
           </form>
 
-          <form class="admin-card ucs-belt-art-admin" id="ucsBeltArtForm">
-  <div class="ucs-studio-heading"><span>✦ UCS CHAMPIONSHIP BRANDING</span><h3>OFFICIAL BELT ARTWORK</h3><p>Upload the official UCS World and International belt photographs. These appear in the Rankings champion spotlight and title-fight presentation. Fighter portraits and all real statistics remain unchanged.</p></div>
+          <section class="admin-card ucs-poster-studio" id="ucsPosterStudio">
+ <div class="ucs-studio-heading"><span>UCS CREATIVE STUDIO / ADMIN ONLY</span><h3>FIGHT POSTER GENERATOR</h3><p>Make a polished 1080 × 1350 promotional poster. Choose the fighters, upload their fight portraits, and the layout automatically adapts. Export a PNG directly to your device.</p></div>
+ <form id="ucsPosterForm">
+  <div class="split-2"><label>Red corner fighter<select name="red" id="ucsPosterRed" required></select></label><label>Blue corner fighter<select name="blue" id="ucsPosterBlue" required></select></label></div>
+  <div class="split-2"><label>Bout type<select name="bout_type" id="ucsPosterType"><option value="regular">REGULAR BOUT</option><option value="title">CHAMPIONSHIP BOUT</option></select></label><label>Scheduled rounds<select name="rounds"><option value="3">3 ROUNDS</option><option value="5">5 ROUNDS</option><option value="4">4 ROUNDS</option><option value="6">6 ROUNDS</option><option value="8">8 ROUNDS</option><option value="10">10 ROUNDS</option><option value="12">12 ROUNDS</option></select></label></div>
+  <div class="split-2"><label>Championship contested<select name="division" id="ucsPosterDivision"></select></label><label>Event / headline<input name="event" maxlength="65" value="UCS FIGHT NIGHT" placeholder="UCS FIGHT NIGHT"></label></div>
+  <div class="split-2"><label>Event date / venue (optional)<input name="event_details" maxlength="90" placeholder="NOVEMBER 2026 · LIVE"></label><label>Poster theme<select name="theme"><option value="gold">CHAMPIONSHIP GOLD</option><option value="red">FIGHT NIGHT RED</option></select></label></div>
+  <div class="split-2"><label>Red fighter portrait<input name="red_file" type="file" accept="image/png,image/jpeg,image/webp"></label><label>Blue fighter portrait<input name="blue_file" type="file" accept="image/png,image/jpeg,image/webp"></label></div>
+  <p class="ucs-admin-help">Use transparent cutout fighter portraits for the best result. Without uploads, the generator uses the fighters' existing photos. The selected championship artwork appears automatically for title bouts.</p>
+  <div class="button-row"><button class="btn primary" type="submit">GENERATE FIGHT POSTER</button><button class="btn ghost" type="button" id="ucsPosterDownload" disabled>DOWNLOAD PNG</button></div>
+ </form>
+ <div class="ucs-poster-preview"><canvas id="ucsPosterCanvas" width="1080" height="1350" role="img" aria-label="Generated UCS promotional fight poster"></canvas></div>
+ <p id="ucsPosterStatus" class="ucs-admin-help" aria-live="polite">Select fighters and generate a preview.</p>
+</section>
+<form class="admin-card ucs-belt-art-admin" id="ucsBeltArtForm">
+  <div class="ucs-studio-heading"><span>✦ UCS CHAMPIONSHIP BRANDING</span><h3>OFFICIAL BELT ARTWORK</h3><p>Upload the official World, International, EU Division and SIM World championship belt artwork. These appear in the Rankings champion spotlight and title-fight presentation. Fighter portraits and all real statistics remain unchanged.</p></div>
   <div class="split-2"><label>UCS World Championship belt image<input type="file" name="world_file" accept="image/jpeg,image/png,image/webp"></label><label>UCS International Championship belt image<input type="file" name="international_file" accept="image/jpeg,image/png,image/webp"></label></div>
+  <div class="split-2"><label>UCS EU Division belt image<input type="file" name="eu_file" accept="image/jpeg,image/png,image/webp"></label><label>UCS SIM World belt image<input type="file" name="sim_world_file" accept="image/jpeg,image/png,image/webp"></label></div>
+  <div class="split-2"><label>EU belt image URL (optional)<input type="url" name="eu_url" placeholder="https://..."></label><label>SIM World belt image URL (optional)<input type="url" name="sim_world_url" placeholder="https://..."></label></div>
   <div class="split-2"><label>World belt image URL (optional)<input type="url" name="world_url" placeholder="https://..."></label><label>International belt image URL (optional)<input type="url" name="international_url" placeholder="https://..."></label></div>
   <p class="ucs-admin-help">Upload the official belt images once. JPG, PNG or WebP, up to 5 MB each. You can update either image without changing the other.</p>
   <div class="button-row"><button class="btn primary" type="submit">SAVE CHAMPIONSHIP ARTWORK</button></div>
