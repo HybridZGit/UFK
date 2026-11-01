@@ -1548,3 +1548,10 @@ body:before{z-index:-1!important;background:repeating-linear-gradient(135deg,rgb
 @media(max-width:1150px){#home .ucs-command-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){#home .ucs-command-grid{grid-template-columns:minmax(0,1fr);gap:12px}#home .ucs-command-card{min-height:275px}#home .ucs-command-heading{margin-top:14px}#home .ucs-command-mark{display:none}}
 @media(prefers-reduced-motion:reduce){#home .ucs-command-card{transition:none}#home .ucs-command-card:hover{transform:none}}
+
+/* Champion showcase portrait baseline and desktop flag rendering */
+#rankings .ucs-champ-showcase-card>img{object-position:center 50%!important}
+#rankings .ucs-champ-name-line .ucs-champ-flag{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:37px;min-width:37px;height:27px;overflow:hidden;border:1px solid #ffffff35;background:#16171d}
+#rankings .ucs-champ-name-line .ucs-champ-flag .ucs-flag-image{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;max-width:none!important}
+@media(min-width:681px){#rankings .ucs-champ-name-line{flex-wrap:wrap!important;justify-content:flex-start!important;gap:8px!important}#rankings .ucs-champ-name-line strong{flex:0 1 auto!important;min-width:0!important}#rankings .ucs-champ-name-line .ucs-champ-flag{flex:none!important;visibility:visible!important;opacity:1!important}}
+@media(max-width:680px){#rankings .ucs-champ-name-line .ucs-champ-flag{width:30px;min-width:30px;height:22px}}
