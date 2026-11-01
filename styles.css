@@ -1151,3 +1151,20 @@ h1,h2,h3,.section-title-row h2{font-style:normal!important}
 .topbar nav a.active{border-bottom:2px solid #e62945!important}
 [class*="glow"],[class*="shine"]{filter:none!important;text-shadow:none!important}
 @media(max-width:760px){#home .hero{min-height:310px!important}#home .hero-copy{padding:32px 0!important}}
+
+/* UCS CHAMPION GALLERY — flat editorial ranking header */
+.ucs-champion-showcase{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:26px 0 28px}
+.ucs-champ-showcase-card{height:335px;position:relative;overflow:hidden;background:#17181d;border:1px solid #2c2d34;cursor:pointer;isolation:isolate}
+.ucs-champ-showcase-card:after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:#d8203d;z-index:4}
+.ucs-champ-showcase-info{position:absolute;z-index:3;left:24px;top:22px;right:16px;display:flex;flex-direction:column;align-items:flex-start;gap:9px}
+.ucs-champ-showcase-division{font:800 11px Inter,sans-serif;color:#f33851;letter-spacing:.13em}
+.ucs-champ-showcase-info strong{font:900 clamp(33px,3.9vw,58px)/.9 "Barlow Condensed",sans-serif;text-transform:uppercase;color:white;max-width:55%;overflow-wrap:anywhere}
+.ucs-champ-showcase-info small{font:700 10px Inter,sans-serif;color:#b6b6bf;letter-spacing:.18em}
+.ucs-champ-showcase-card>img{position:absolute;right:0;bottom:4px;height:86%;width:66%;object-fit:contain;object-position:bottom right;z-index:2;filter:none}
+.ucs-champ-showcase-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;padding:28px;background:linear-gradient(115deg,#17181d 20%,#202027 100%)}
+.ucs-champ-showcase-placeholder span{font:900 150px/.8 "Barlow Condensed",sans-serif;color:#35353e}
+.ucs-champ-showcase-placeholder small{font:700 9px Inter,sans-serif;color:#8f8f99;letter-spacing:.13em}
+.ucs-champ-showcase-card:hover{border-color:#e22c48}
+.ucs-champ-showcase-card:focus-visible{outline:2px solid #f23b55;outline-offset:3px}
+.ucs-admin-help{font-size:11px!important;color:#a4a4b0!important;line-height:1.5}
+@media(max-width:700px){.ucs-champion-showcase{grid-template-columns:1fr;gap:12px}.ucs-champ-showcase-card{height:290px}.ucs-champ-showcase-info strong{font-size:48px}.ucs-champ-showcase-card>img{width:65%}}
