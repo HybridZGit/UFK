@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=ucs-flat-fightcards-20261101" />
+  <link rel="stylesheet" href="styles.css?v=ucs-champion-gallery-20261101" />
 </head>
 <body>
 
@@ -182,6 +182,7 @@
         <div><div class="section-kicker">OFFICIAL UCS RATINGS</div><div class="section-title-row"><h2>FIGHTER RANKINGS</h2><span>Official fighter rankings</span></div></div>
         <div class="presented-by"><span>PRESENTED BY</span><img src="assets/ufk-fight-kit.png" alt="UFK Fight Kit"></div>
       </div>
+      <div class="ucs-champions-heading" aria-label="UCS Champions"><span class="ucs-champions-crown">♛</span><h2>UCS CHAMPIONS</h2></div>
       <section class="ucs-champion-showcase" id="ucsChampionShowcase" aria-label="UCS current champions"></section>
       <div class="tabs" id="rankingTabs">
         <button class="active" data-div="UCS World">UCS WORLD</button><button data-div="UCS International">UCS INTERNATIONAL</button><button data-div="UCS SIM World">UCS SIM WORLD</button><button data-div="UCS PS5">UCS PS5</button><button data-div="UCS PC">UCS PC</button><button data-div="UCS XBOX">UCS XBOX</button>
@@ -485,6 +486,7 @@
             <label>Champion<select name="fighter_id" class="fighter-select" required></select></label>
             <label>Title defenses<input name="defenses" type="number" min="0" value="0"></label>
             <label>Champion showcase boxer image (PNG, JPG or WEBP)<input name="showcase_image" type="file" accept="image/png,image/jpeg,image/webp"></label>
+            <label>Champion flag<select name="showcase_flag"><option value="">No flag</option><option value="🇺🇸">🇺🇸 United States</option><option value="🇬🇧">🇬🇧 United Kingdom</option><option value="🇪🇺">🇪🇺 Europe</option><option value="🇨🇦">🇨🇦 Canada</option><option value="🇲🇽">🇲🇽 Mexico</option><option value="🇧🇷">🇧🇷 Brazil</option><option value="🇮🇪">🇮🇪 Ireland</option><option value="🇫🇷">🇫🇷 France</option><option value="🇩🇪">🇩🇪 Germany</option><option value="🇪🇸">🇪🇸 Spain</option><option value="🇵🇹">🇵🇹 Portugal</option><option value="🇳🇱">🇳🇱 Netherlands</option><option value="🇵🇱">🇵🇱 Poland</option><option value="🇷🇺">🇷🇺 Russia</option><option value="🇺🇦">🇺🇦 Ukraine</option><option value="🇰🇬">🇰🇬 Kyrgyzstan</option><option value="🇭🇹">🇭🇹 Haiti</option><option value="🇯🇵">🇯🇵 Japan</option><option value="🇦🇺">🇦🇺 Australia</option><option value="🇳🇬">🇳🇬 Nigeria</option><option value="🇿🇦">🇿🇦 South Africa</option></select></label>
             <p class="ucs-admin-help">Upload a clean boxer cutout or portrait from the game. It appears above the rankings. Leave empty to keep the current champion image.</p>
             <div class="button-row"><button class="btn primary" type="submit">GRANT TITLE</button><button class="btn danger-btn" id="vacateTitleBtn" type="button">VACATE</button></div>
           </form>
