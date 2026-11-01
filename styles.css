@@ -2037,3 +2037,42 @@ button,a,input,select,textarea{touch-action:manipulation}
 #fighterModal .profile-stat-grid>div:nth-child(1) strong,#fighterModal .profile-stat-grid>div:nth-child(4) strong{color:#e9c172!important}
 @media(max-width:850px){#fighterModal .profile-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}#fighterModal .profile-stat-grid>div{border-bottom:1px solid #34313a!important}#fighterModal .profile-hero{grid-template-columns:82px minmax(0,1fr)!important;padding:20px!important;gap:14px!important}#fighterModal .profile-avatar{width:78px!important;height:90px!important}#fighterModal .profile-rank-actions{grid-column:1/-1!important;display:flex!important;flex-direction:row!important;justify-content:space-between!important}#fighterModal .ucs-champion-spotlight{margin:0 18px 16px!important}#fighterModal .profile-stat-grid{margin:0 18px 20px!important}#fighterModal .ucs-boxrec-stats-head{margin:0 18px!important}}
 @media(max-width:480px){#fighterModal .profile-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}#fighterModal .ucs-champion-seal{display:none!important}#fighterModal .ucs-champion-details>strong{font-size:22px!important}#fighterModal .ucs-boxrec-stats-head span:last-child{display:none!important}}
+
+/* UCS fighter dossier — BoxRec-inspired editorial layout */
+#fighterModal .ucs-dossier{padding:22px 30px 28px!important;background:#111116!important;border-bottom:1px solid #39343d!important}
+#fighterModal .ucs-dossier-heading{text-align:center!important;padding:8px 0 22px!important}
+#fighterModal .ucs-dossier-heading>span{color:#d6ae61;font-size:11px;letter-spacing:2px;font-weight:900}
+#fighterModal .ucs-dossier-heading .ucs-fighter-name-row{justify-content:center!important;margin:10px 0!important}
+#fighterModal .ucs-dossier-heading h2{font-size:clamp(30px,4vw,43px)!important;line-height:1.1!important;color:#fff!important}
+#fighterModal .ucs-dossier-heading p{font-size:13px!important;color:#aaaab5!important}
+#fighterModal .ucs-dossier-heading #profilePlatform{color:#e1b966}
+#fighterModal .ucs-dossier-heading .ucs-former-titles{justify-content:center!important}
+#fighterModal .ucs-dossier-tabs{display:flex!important;justify-content:center!important;border-bottom:3px solid #3a3941!important;margin-bottom:24px!important}
+#fighterModal .ucs-dossier-tabs span{padding:12px 24px!important;font-size:12px!important;color:#a9a7b1!important;font-weight:800!important;letter-spacing:.6px!important}
+#fighterModal .ucs-dossier-tabs span:first-child{color:#f0c36c!important;border-bottom:4px solid #d6274c!important;margin-bottom:-3px!important}
+#fighterModal .ucs-dossier-body{display:grid!important;grid-template-columns:205px minmax(0,1fr) minmax(0,1fr)!important;gap:30px!important;align-items:start!important}
+#fighterModal .ucs-dossier-left{min-width:0!important}
+#fighterModal .ucs-dossier-wld{display:grid!important;grid-template-columns:repeat(3,1fr)!important;border-radius:6px!important;overflow:hidden!important;margin-bottom:10px!important}
+#fighterModal .ucs-dossier-wld>div{background:#118642!important;text-align:center!important;padding:8px 3px!important}
+#fighterModal .ucs-dossier-wld>div:nth-child(2){background:#c1273e!important}
+#fighterModal .ucs-dossier-wld>div:nth-child(3){background:#648de4!important}
+#fighterModal .ucs-dossier-wld strong{display:block!important;color:white!important;font-size:28px!important;line-height:1!important}
+#fighterModal .ucs-dossier-wld small{font-size:10px!important;color:white!important;font-weight:900!important}
+#fighterModal .ucs-dossier-left .profile-avatar{position:relative!important;inset:auto!important;transform:none!important;display:block!important;width:100%!important;height:240px!important;border:1px solid #6a5a4b!important;border-radius:7px!important;overflow:hidden!important;background:#232128!important}
+#fighterModal .ucs-dossier-left .profile-avatar img{width:100%!important;height:100%!important;object-fit:cover!important}
+#fighterModal .ucs-dossier-left>small{display:block!important;text-align:center!important;margin-top:10px!important;color:#9997a3!important;font-size:10px!important;letter-spacing:1px!important}
+#fighterModal .ucs-dossier-facts{min-width:0!important}
+#fighterModal .ucs-dossier-facts h3{font-size:12px!important;color:#e5bd70!important;letter-spacing:1.2px!important;border-bottom:2px solid #6c513a!important;padding-bottom:12px!important;margin:4px 0 8px!important}
+#fighterModal .ucs-dossier-facts>div:not(.ucs-champion-spotlight){display:grid!important;grid-template-columns:105px minmax(0,1fr)!important;gap:12px!important;padding:10px 0!important;border-bottom:1px solid #2c2b33!important}
+#fighterModal .ucs-dossier-facts>div>span{font-size:12px!important;color:#aaa8b2!important;font-weight:700!important}
+#fighterModal .ucs-dossier-facts>div>strong{font-size:13px!important;color:#f5f4f5!important;overflow-wrap:anywhere!important}
+#fighterModal .ucs-dossier-facts #profileRank{color:#e9bf6d!important;font-size:19px!important}
+#fighterModal .ucs-dossier .ucs-champion-spotlight{position:static!important;display:flex!important;align-items:center!important;gap:10px!important;margin:16px 0!important;padding:13px!important;min-height:0!important;border:1px solid #846a3b!important;border-left:3px solid #e2b664!important;background:#262019!important;border-radius:7px!important}
+#fighterModal .ucs-dossier .ucs-champion-spotlight.hidden{display:none!important}
+#fighterModal .ucs-dossier .ucs-champion-emblem{width:auto!important;height:auto!important;font-size:23px!important}
+#fighterModal .ucs-dossier .ucs-champion-details>strong{font-size:18px!important}
+#fighterModal .ucs-dossier .ucs-champion-seal{display:none!important}
+#fighterModal .ucs-dossier .contract-challenge-btn{margin-top:16px!important;width:100%!important}
+#fighterModal .ucs-dossier #profileBanner{display:none!important}
+@media(max-width:820px){#fighterModal .ucs-dossier-body{grid-template-columns:160px minmax(0,1fr)!important;gap:18px!important}#fighterModal .ucs-dossier-facts:last-child{grid-column:2!important}#fighterModal .ucs-dossier-left .profile-avatar{height:195px!important}}
+@media(max-width:520px){#fighterModal .ucs-dossier{padding:16px!important}#fighterModal .ucs-dossier-body{grid-template-columns:1fr!important;gap:20px!important}#fighterModal .ucs-dossier-left{max-width:210px!important;margin:auto!important;width:100%!important}#fighterModal .ucs-dossier-facts:last-child{grid-column:auto!important}#fighterModal .ucs-dossier-tabs span{padding:10px 8px!important;font-size:10px!important}#fighterModal .ucs-dossier-left .profile-avatar{height:240px!important}}
