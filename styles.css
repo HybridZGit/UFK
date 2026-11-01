@@ -1218,3 +1218,13 @@ h1,h2,h3,.section-title-row h2{font-style:normal!important}
 #rankings .ucs-champ-vacant .ucs-champ-showcase-info{background:none!important}
 #rankings .ucs-champ-showcase-card:hover{border-color:#f0324e!important}
 @media(max-width:680px){#rankings .ucs-champ-showcase-card{flex-basis:210px!important;height:355px!important}#rankings .ucs-champ-showcase-info strong{font-size:28px!important}#rankings .ucs-champions-heading{margin-top:18px}}
+
+/* Champion card footer: keep the entire name and flag inside the frame */
+#rankings .ucs-champ-showcase-card{box-sizing:border-box!important}
+#rankings .ucs-champ-showcase-info{left:0!important;right:0!important;bottom:0!important;top:auto!important;box-sizing:border-box!important;padding:35px 13px 17px!important;min-height:102px!important;background:linear-gradient(to top,#08090d 0%,rgba(8,9,13,.96) 65%,transparent 100%)!important}
+#rankings .ucs-champ-name-line{display:flex!important;align-items:flex-end!important;justify-content:space-between!important;gap:10px!important;min-width:0!important}
+#rankings .ucs-champ-name-line strong{flex:1 1 auto!important;min-width:0!important;max-width:none!important;padding-right:0!important;margin:0!important;font:900 clamp(25px,2.6vw,35px)/.98 "Barlow Condensed",sans-serif!important;overflow-wrap:anywhere!important}
+#rankings .ucs-champ-name-line .ucs-champ-flag{position:static!important;display:block!important;flex:0 0 auto!important;align-self:center!important;font-size:27px!important;line-height:1!important;padding:0!important}
+#rankings .ucs-champ-showcase-card>img{bottom:0!important}
+#rankings .ucs-champ-vacant .ucs-champ-showcase-info{background:linear-gradient(to top,#08090d,transparent)!important}
+@media(max-width:680px){#rankings .ucs-champ-showcase-info{padding:30px 11px 15px!important}#rankings .ucs-champ-name-line strong{font-size:29px!important}#rankings .ucs-champ-name-line .ucs-champ-flag{font-size:24px!important}}
