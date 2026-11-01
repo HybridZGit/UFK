@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=ucs-professional-20261101" />
+  <link rel="stylesheet" href="styles.css?v=ucs-clean-red-20261101" />
 </head>
 <body>
 
@@ -41,9 +41,9 @@
     <section class="page active" id="home">
       <section class="hero shell">
         <div class="hero-copy">
-          <div class="eyebrow">THE HOME OF COMPETITIVE BOXING · UCS</div>
-          <h1>BUILT FOR THE<br><em>BIGGEST MOMENTS.</em></h1>
-          <p>The official Undisputed Championship Series. Elite competitors. Championship stakes. Every fight writes a new chapter.</p>
+          <div class="eyebrow">UNDISPUTED CHAMPIONSHIP SERIES</div>
+          <h1>UCS<br><em>FIGHT NIGHT.</em></h1>
+          <p>Fight cards, rankings, results and champions.</p>
           <div class="hero-actions">
             <button class="btn primary" data-jump="fights">VIEW FIGHT CARD →</button>
             <button class="btn ghost" data-jump="rankings">FIGHTER RANKINGS</button>
@@ -55,7 +55,7 @@
         </div>
       </section>
 
-      <div class="ticker"><div class="shell ticker-inner"><strong>UCS LIVE</strong><span>Official fight cards • Rankings • Results • Champions</span><b>POWERED BY UFK FIGHT KIT</b></div></div>
+      <div class="ticker"><div class="shell ticker-inner"><strong>UCS LIVE</strong><span>Official fight cards • Rankings • Results • Champions</span></div></div>
       <div class="ucs-home-countdown-strip shell"><div><span class="ucs-home-countdown-label">UCS#001 · OCT 21 · 8 PM ET</span><strong>FIGHT NIGHT COUNTDOWN</strong></div><div class="ucs-home-countdown-numbers" id="ucsHomeCountdown" aria-label="Live time until fight night">--d --h --m --s</div><a href="#watch" data-page="watch" class="ucs-home-countdown-link">WATCH THE EVENT →</a></div>
 
       <section class="shell ucs-sponsor-banner" aria-label="Thirteen Threads sponsor">
@@ -64,8 +64,8 @@
 
       <section class="shell ucs-tott-section" aria-labelledby="ucsTottHeading">
         <div class="ucs-tott-header">
-          <div><span class="section-kicker">OFFICIAL UCS MATCHUP INTELLIGENCE</span><h2 id="ucsTottHeading">TALE OF <em>THE TAPE</em></h2><p>Data-driven scouting of the main event, co-main and every scheduled undercard bout.</p></div>
-          <span class="ucs-tott-engine-label">✦ UCS SCOUTING ENGINE</span>
+          <div><span class="section-kicker">FIGHT PREVIEW</span><h2 id="ucsTottHeading">TALE OF <em>THE TAPE</em></h2><p>Fighter records and ratings for upcoming bouts.</p></div>
+          <span class="ucs-tott-engine-label">FIGHT STATISTICS</span>
         </div>
         <div class="ucs-tott-tabs" id="ucsTottTabs" role="tablist" aria-label="Select featured fight analysis">
           <button type="button" id="ucsTottMainTab" role="tab" aria-controls="ucsTottStage" aria-selected="true" data-tott-slot="main" class="active">★ MAIN EVENT</button>
@@ -90,17 +90,17 @@
               </div></div>
               <div class="ucs-tott-fighter"><span class="ucs-tott-corner">BLUE CORNER</span><img class="ucs-tott-avatar" src="https://inmogjfgtmnnelwaliua.supabase.co/storage/v1/object/public/fighter-avatars/admin/34a672bf-8ce3-4267-bbc7-2c5140e7ad7b/06ac2675-8854-4854-b47b-d1159dc2e41d.png" alt="BBK fighter profile picture" loading="lazy"><h3>BBK</h3><strong class="ucs-tott-record">0-0-0</strong><span class="ucs-tott-fighter-score">UCS SCORE <b>0.0</b></span><span class="ucs-tott-rank">UCS WORLD CHAMPIONSHIP</span></div>
             </div>
-            <div class="ucs-tott-verdict"><div class="ucs-tott-verdict-head"><span>✦ UCS SCOUTING REPORT</span><strong>RAFA HOLDS THE RATING EDGE</strong></div><p>RAFA currently leads in official UCS ratings and recorded victories. BBK has not yet recorded a UCS win.</p></div>
-            <div class="ucs-tott-likely"><span>★ LIKELY TO WIN · UCS SCOUTING PICK</span><strong>RAFA</strong><p>Based on current recorded UCS scores. Not betting odds or a guaranteed result.</p></div>
+            <div class="ucs-tott-verdict"><div class="ucs-tott-verdict-head"><span>FIGHT ANALYSIS</span><strong>RAFA HOLDS THE RATING EDGE</strong></div><p>RAFA currently leads in official UCS ratings and recorded victories. BBK has not yet recorded a UCS win.</p></div>
+            <div class="ucs-tott-likely"><span>RATING ADVANTAGE</span><strong>RAFA</strong><p>Based on current recorded UCS scores. Not betting odds or a guaranteed result.</p></div>
           </article>
         </div>
-        <p class="ucs-tott-disclaimer">UCS AI-style scouting is calculated from recorded fighter ratings and results, not a guarantee, official prediction or betting odds. Missing stats aren't estimated.</p>
+        <p class="ucs-tott-disclaimer">Ratings are based on recorded results and do not predict fight outcomes.</p>
       </section>
 
       <section class="shell ucs-marquee-section" aria-labelledby="ucsMarqueeHeading">
         <div class="ucs-marquee-header">
-          <div><span class="section-kicker">RECORD-DRIVEN MATCHMAKING</span><h2 id="ucsMarqueeHeading">MARQUEE MATCHUPS</h2></div>
-          <span class="ucs-marquee-subtitle">Rank #1 vs #2 · updates from official UCS rankings</span>
+          <div><span class="section-kicker">RANKINGS</span><h2 id="ucsMarqueeHeading">MARQUEE MATCHUPS</h2></div>
+          <span class="ucs-marquee-subtitle">Top-ranked fighter matchups</span>
         </div>
         <div class="ucs-marquee-stage" id="ucsMarqueeStage" aria-live="off">
           <div class="data-empty">Loading marquee matchups…</div>
@@ -707,13 +707,13 @@
       </div>
       <div class="profile-rating-bars" id="profileRatingBars"></div>
       <section class="ucs-fighter-analysis">
-        <div class="ucs-fighter-analysis-heading"><h3>FIGHTER BREAKDOWN</h3><span>UCS SCOUTING REPORT</span></div>
+        <div class="ucs-fighter-analysis-heading"><h3>FIGHTER BREAKDOWN</h3><span>FIGHTER PROFILE</span></div>
         <p id="profileBio" class="ucs-fighter-bio">No fighter biography available yet.</p>
         <div class="ucs-fighter-insights">
           <div><small>KNOCKOUTS</small><strong id="profileKOs">—</strong></div>
           <div><small>KO RATE</small><strong id="profileKOInsight">—</strong></div>
           <div><small>NEXT FIGHT</small><strong id="profileNextFight">Not booked</strong></div>
-          <div><small>SCOUTING LABEL</small><strong id="profileScoutLabel">Contender</strong></div>
+          <div><small>STATUS</small><strong id="profileScoutLabel">Contender</strong></div>
         </div>
         <p class="ucs-fighter-analysis-note">KO percentage uses official UCS recorded results only; incomplete results may not reflect the full career record.</p>
       </section>
