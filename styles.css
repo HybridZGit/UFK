@@ -1929,3 +1929,6 @@ button,a,input,select,textarea{touch-action:manipulation}
  #fights #fightList .ucs-match-avatar{width:66px!important;height:66px!important;min-width:66px!important;max-width:66px!important;max-height:66px!important;flex-basis:66px!important}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}}
+
+/* Center the four champion posters on desktop without altering mobile swipe behavior */
+@media(min-width:1000px){#rankings .ucs-champion-showcase{display:flex!important;justify-content:center!important;align-items:stretch!important;gap:12px!important;overflow-x:visible!important;scroll-snap-type:none!important;width:100%!important;max-width:100%!important;margin-left:auto!important;margin-right:auto!important}#rankings .ucs-champ-showcase-card{flex:0 1 225px!important;width:225px!important;max-width:calc((100% - 36px)/4)!important;min-width:0!important}}
