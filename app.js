@@ -162,7 +162,7 @@ function renderPhotoGallery(){
   const root=$('#ucsPhotoGallery');if(!root)return;
   const published=state.photos.filter(p=>p.published);
   root.innerHTML=published.length?published.map(p=>{
-    const image=safeHttps(p.image_url)?`<img src="${esc(p.image_url)}" alt="${esc(p.caption||p.event_name||'UCS event photo')}" loading="lazy">`:'';
+    const image=safeHttps(p.image_url)?`<img src="${esc(p.image_url)}" alt="${esc(p.caption||p.event_name||'UCS event photo')}" loading="lazy" style="object-position:center ${portraitY}%">`:'';
     return `<figure class="ucs-photo-card">${image}<figcaption><strong>${esc(p.event_name||'UCS Photography')}</strong><span>${esc(p.caption||'Official UCS event photo')}</span></figcaption></figure>`;
   }).join(''):'<p class="data-empty">No photography has been published yet.</p>';
   const mine=$('#ucsMyPhotoList');if(!mine)return;
@@ -696,6 +696,7 @@ function renderChampionShowcase(){
     const fighter=champ&&fighterById(champ.fighter_id);
     const photo=champ&&safeHttps(champ.showcase_image_url)?champ.showcase_image_url:null;
     const flag=champ?.showcase_flag||'';
+    const portraitY=Number.isFinite(+champ?.portrait_y)?Math.min(100,Math.max(0,+champ.portrait_y)):50;
     return `<article class="ucs-champ-showcase-card ${fighter?'':'ucs-champ-vacant'}" ${fighter?`role="button" tabindex="0" data-champ-profile="${esc(fighter.id)}" aria-label="View ${esc(fighter.name)} fighter profile"`:''}>
       <span class="ucs-champ-showcase-division">${esc(division.toUpperCase())}</span>
       <span class="ucs-champ-vertical" aria-hidden="true">${esc(division.replace(/^UCS\s*/,'').toUpperCase())}</span>
@@ -1771,7 +1772,7 @@ $('#championForm')?.addEventListener('submit',async e=>{
   const form=e.target,d=new FormData(form),button=form.querySelector('[type="submit"]');
   const division=String(d.get('division')),fighterId=String(d.get('fighter_id'));
   const existing=state.champions.find(c=>c.division===division);
-  const payload={division,fighter_id:fighterId,defenses:+d.get('defenses')||0,showcase_flag:String(d.get('showcase_flag')||''),granted_at:new Date().toISOString()};
+  const payload={division,fighter_id:fighterId,defenses:+d.get('defenses')||0,showcase_flag:String(d.get('showcase_flag')||''),portrait_y:Math.min(100,Math.max(0,Number(d.get('portrait_y'))||50)),granted_at:new Date().toISOString()};
   const file=d.get('showcase_image');
   button.disabled=true;
   try{
