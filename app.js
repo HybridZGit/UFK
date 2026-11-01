@@ -160,7 +160,7 @@ async function loadPublicData(){
   state.news=results[9].data||[];
   state.photos=results[10].data||[];
   state.formerChampionships=results[11].data||[];
-  renderAll();renderChampionShowcase();ucsRenderHomeChampion();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
+  renderAll();renderChampionShowcase();ucsRenderHomeChampion();ucsFillBeltArtForm();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
 }
 
 // UCS Photography: public read-only gallery; approved users can upload.
@@ -670,13 +670,14 @@ function renderRankingTitleFights(){
   box.innerHTML=bouts.map(b=>{
     const left=fighterById(b.fighter_a_id),right=fighterById(b.fighter_b_id);
     const date=b.bout_date?fmtDate(b.bout_date):'DATE TO BE ANNOUNCED';
+    const titleBelt=ucsBeltArt(b.belt);
     const name=f=>esc(f?.name||'FIGHTER TBA');
     const contender=(f,portrait)=>`<button type="button" class="ucs-title-contender" data-title-fighter="${esc(f?.id||'')}" ${f?'':'disabled'} aria-label="View ${name(f)} fighter profile">
       ${face(f,portrait)}<span class="ucs-title-contender-copy"><strong>${name(f)}</strong><small>${f?esc(record(f)):'TO BE ANNOUNCED'}</small></span>
     </button>`;
     return `<article class="ucs-rank-title-match" aria-label="${esc(division)} championship fight">
       <header class="ucs-rank-title-heading"><span>${b.is_title_eliminator?'★ TITLE ELIMINATOR':'★ TITLE ON THE LINE'}</span><strong>${esc(division.toUpperCase())} ${b.is_title_eliminator?'TITLE ELIMINATOR':'CHAMPIONSHIP'}</strong></header>
-      <div class="ucs-rank-title-fighters">${contender(left,b.fighter_a_bout_image)}<div class="ucs-rank-title-versus"><span>${b.is_title_eliminator?'ELIMINATOR':'CHAMPIONSHIP'}</span><strong>VS</strong><small>${esc(date)}</small></div>${contender(right,b.fighter_b_bout_image)}</div>
+      <div class="ucs-rank-title-fighters">${contender(left,b.fighter_a_bout_image)}<div class="ucs-rank-title-versus">${titleBelt?`<img class="ucs-title-belt-art" src="${esc(titleBelt)}" alt="${esc(b.belt)} championship belt">`:``}<span>${b.is_title_eliminator?'ELIMINATOR':'CHAMPIONSHIP'}</span><strong>VS</strong><small>${esc(date)}</small></div>${contender(right,b.fighter_b_bout_image)}</div>
       <footer class="ucs-rank-title-footer"><span>${esc(b.event_name||'UCS FIGHT NIGHT')} · ${b.is_title_eliminator?'TITLE ELIMINATOR':'SCHEDULED TITLE FIGHT'}</span></footer>
     </article>`;
   }).join('');
@@ -685,10 +686,13 @@ $('#ucsRankingsTitleFights')?.addEventListener('click',e=>{
   const button=e.target.closest('[data-title-fighter]');
   if(button?.dataset.titleFighter)openFighterProfile(button.dataset.titleFighter);
 });
+function ucsBeltArt(division){const art=state.settings?.championship_belt_art||{};const url=division==='UCS World'?art.world:division==='UCS International'?art.international:null;return safeHttps(url)?url:null;}
 function renderRankingChampion(){
   const c=state.champions.find(x=>x.division===state.rankingDivision&&x.fighter_id);
   const f=c&&fighterById(c.fighter_id);
   if(!$('#worldChampionBanner')) return;
+  $('#worldChampionBanner').classList.toggle('ucs-banner-with-belt',Boolean(ucsBeltArt(state.rankingDivision)));
+  $('#worldChampionBanner').style.setProperty('--ucs-belt-image',ucsBeltArt(state.rankingDivision)?`url("${ucsBeltArt(state.rankingDivision)}")`:'none');
   $('#worldChampionBanner').innerHTML=f
     ? `<small>${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><div class="champion-inline">${avatarHtml(f,'champion-avatar')}<div><strong>${esc(f.name)}</strong><span>${esc(record(f))} · ${c.defenses||0} title defenses</span></div></div>`
     : `<small>${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><strong>VACANT</strong><span>No champion assigned</span>`;
@@ -748,6 +752,7 @@ function renderChampionShowcase(){
     const champ=state.champions.find(c=>c.division===division&&c.fighter_id);
     const fighter=champ&&fighterById(champ.fighter_id);
     const photo=champ&&safeHttps(champ.showcase_image_url)?champ.showcase_image_url:null;
+    const beltArt=ucsBeltArt(division);
     const flag=champ?.showcase_flag||'';
     const portraitY=Number.isFinite(+champ?.portrait_y)?Math.min(100,Math.max(0,+champ.portrait_y)):50;
     const headOffset=(portraitY-50)*1.5+18;
@@ -760,7 +765,7 @@ function renderChampionShowcase(){
     const form=[...Array(wins).fill('W'),...Array(losses).fill('L'),...Array(draws).fill('D')];
     const recordStrip=fighter?`<div class="ucs-champ-record-strip" aria-label="${wins} wins, ${losses} losses, ${draws} draws">${form.length?form.map(letter=>`<span class="ucs-champ-result ucs-champ-result-${letter.toLowerCase()}">${letter}</span>`).join(''):'<span class="ucs-champ-unbeaten">0-0-0</span>'}</div>`:'';
 
-    return `<article class="ucs-champ-showcase-card ${fighter?'':'ucs-champ-vacant'}" ${fighter?`role="button" tabindex="0" data-champ-profile="${esc(fighter.id)}" aria-label="View ${esc(fighter.name)} fighter profile"`:''}>
+    return `<article class="ucs-champ-showcase-card ${fighter?'':'ucs-champ-vacant'} ${beltArt?'ucs-champ-with-belt':''}" style="${beltArt?`--ucs-belt-image:url(&quot;${esc(beltArt)}&quot;)`:``}" ${fighter?`role="button" tabindex="0" data-champ-profile="${esc(fighter.id)}" aria-label="View ${esc(fighter.name)} fighter profile"`:''}>
       <span class="ucs-champ-showcase-division">${esc(division.toUpperCase())}</span>
       <span class="ucs-champ-vertical" aria-hidden="true">${esc(division.replace(/^UCS\s*/,'').toUpperCase())}</span>
       ${photo?`<img src="${esc(photo)}" alt="${esc(fighter.name)} boxer portrait" loading="lazy" style="transform:translateY(${headOffset}px)!important">`:`<div class="ucs-champ-silhouette" aria-hidden="true"><span>♟</span></div>`}
@@ -2098,4 +2103,39 @@ $('#ucsBoutStudioForm')?.addEventListener('submit',async e=>{
   if(error)throw error;
   await loadPublicData();toast('Bout profile saved successfully.');
  }catch(err){toast(err.message||'Could not save bout profile.',true);}finally{button.disabled=false;}
+});
+
+function ucsFillBeltArtForm(){
+ const form=$('#ucsBeltArtForm');if(!form)return;
+ const art=state.settings?.championship_belt_art||{};
+ form.elements.world_url.value=safeHttps(art.world)?art.world:'';
+ form.elements.international_url.value=safeHttps(art.international)?art.international:'';
+}
+$('#ucsBeltArtForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();if(!db||!state.isAdmin)return toast('UCS admin required.',true);
+ const form=e.currentTarget,d=new FormData(form),button=form.querySelector('[type="submit"]');
+ button.disabled=true;
+ try{
+  const current=state.settings?.championship_belt_art||{};
+  const art={world:current.world||'',international:current.international||''};
+  for(const type of ['world','international']){
+   let url=String(d.get(type+'_url')||'').trim();
+   if(url&&!safeHttps(url))throw Error('Belt image URL must use HTTPS.');
+   const file=d.get(type+'_file');
+   if(file instanceof File&&file.size){
+    const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
+    if(!ext||file.size>5*1024*1024)throw Error('Belt images must be JPG, PNG or WebP under 5 MB.');
+    const path='championship-belts/'+type+'/'+crypto.randomUUID()+'.'+ext;
+    const {error}=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type,upsert:false});
+    if(error)throw error;
+    url=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
+   }
+   if(url)art[type]=url;
+  }
+  const {error}=await db.from('league_settings').upsert({key:'championship_belt_art',value:art,updated_at:new Date().toISOString()},{onConflict:'key'});
+  if(error)throw error;
+  state.settings.championship_belt_art=art;
+  renderRankingChampion();renderChampionShowcase();ucsFillBeltArtForm();
+  toast('Official championship belt artwork saved.');
+ }catch(err){toast(err.message||'Could not save belt artwork.',true);}finally{button.disabled=false;}
 });
