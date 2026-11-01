@@ -363,7 +363,7 @@ $('#ucsTottStage')?.addEventListener('click',event=>{
   if(btn?.dataset.tottFighter)openFighterProfile(btn.dataset.tottFighter);
 });
 
-const ucsDefaultDivisions=['UCS World','UCS International','UCS SIM World','UCS PS5','UCS PC','UCS XBOX'];
+const ucsDefaultDivisions=['UCS World','UCS International','UCS SIM World','UCS EU Division','UCS PS5','UCS PC','UCS XBOX'];
 function ucsDivisions(){
   const saved=state.settings.ranking_divisions;
   return Array.isArray(saved)?saved.filter(x=>typeof x==='string'&&x.trim()).slice(0,40):ucsDefaultDivisions;
@@ -2150,7 +2150,7 @@ function ucsPosterFill(){
  const fighters=[...state.fighters].sort((x,y)=>String(x.name).localeCompare(String(y.name)));
  const choices='<option value="">SELECT FIGHTER</option>'+fighters.map(f=>'<option value="'+esc(f.id)+'">'+esc(f.name)+'</option>').join('');
  for(const name of ['red','blue']){const sel=form.elements[name],prior=sel.value;sel.innerHTML=choices;if(fighters.some(f=>String(f.id)===prior))sel.value=prior;}
- const divisions=ucsDivisions(),sel=form.elements.division,prior=sel.value;
+ const divisions=[...new Set([...ucsDivisions(),'UCS EU Division'])],sel=form.elements.division,prior=sel.value;
  sel.innerHTML=divisions.map(d=>'<option value="'+esc(d)+'">'+esc(d)+'</option>').join('');
  if(divisions.includes(prior))sel.value=prior;
  ucsPosterToggle();
