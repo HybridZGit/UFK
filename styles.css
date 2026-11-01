@@ -2420,3 +2420,12 @@ main{background:transparent!important}
  .ucs-tott-vs,.ucs-featured-vs strong,.ucs-marquee-middle strong{width:64px!important;height:76px!important}
  #rankings .ucs-rank-title-versus strong,#fightList .ucs-match-versus,#fights .ucs-match-versus{width:46px!important;height:55px!important}
 }
+
+/* Fighter profile: title-holder crown and explicit Matcherino verification */
+.ucs-fighter-name-row{display:flex!important;align-items:center!important;gap:10px!important;flex-wrap:wrap!important}
+.ucs-profile-champion-crown{display:inline-flex;align-items:center;justify-content:center;font-size:clamp(23px,2.4vw,34px);line-height:1;filter:drop-shadow(0 2px 7px #d9911655);flex:none}
+.ucs-matcherino-verified{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;background:#0e2334;border:1px solid #2677b7;border-radius:30px;padding:4px 10px 4px 5px;vertical-align:middle;box-shadow:0 0 12px #006bce22}
+.ucs-matcherino-verified .ucs-matcherino-tick{display:inline-flex!important;align-items:center;justify-content:center;width:23px;height:23px;border-radius:50%;background:#1688ec;color:#fff!important;font:900 16px/1 Arial,sans-serif;box-shadow:0 0 0 2px #fff3}
+.ucs-matcherino-label{color:#e8f4ff;font:800 10px/1.2 Arial,sans-serif;letter-spacing:.075em}
+.ucs-profile-champion-crown.hidden,.ucs-matcherino-verified.hidden{display:none!important}
+@media(max-width:600px){.ucs-matcherino-label{font-size:9px}.ucs-matcherino-verified{padding-right:7px}.ucs-fighter-name-row{gap:7px!important}}
