@@ -1051,3 +1051,25 @@ body, body button, body select, body option, body label, body a, body textarea, 
 
 .ucs-matcherino-tick{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:25px;height:25px;border-radius:50%;background:#1687ee;color:white;font:900 17px/1 system-ui,sans-serif;box-shadow:0 0 0 2px #ffffff24}
 .ucs-matcherino-tick.hidden{display:none!important}
+
+/* UCS CRIMSON / CARBON-FIBER REFRESH */
+:root{--bg:#08090c;--panel:#111116;--panel2:#19171a;--line:#49232b;--muted:#aaa2a7;--text:#f9f7f7;--red:#ed1635;--red2:#9d0b23;--gold:#f04455;--danger:#ff425b}
+html{background:#08090c}
+body{background-color:#09090c;background-image:radial-gradient(ellipse 75% 42% at 50% 0%,rgba(170,6,31,.18),transparent 72%),repeating-linear-gradient(45deg,rgba(255,255,255,.027) 0 1px,transparent 1px 5px),repeating-linear-gradient(-45deg,rgba(0,0,0,.55) 0 2px,transparent 2px 6px),linear-gradient(140deg,#111114,#070709 50%,#11090d);background-attachment:fixed}
+.topbar{background:rgba(10,10,13,.94)!important;border-bottom:1px solid rgba(233,30,56,.5);box-shadow:0 10px 32px rgba(0,0,0,.48),0 1px 0 rgba(255,255,255,.045) inset}
+.topbar nav a{transition:background .2s ease,color .2s ease}
+.topbar nav a.active,.topbar nav a:hover{background:rgba(230,21,52,.15);color:#fff}
+.brand img{width:52px;height:52px;filter:drop-shadow(0 0 10px rgba(236,18,50,.38))}
+.hero-art img{filter:drop-shadow(0 18px 28px rgba(0,0,0,.9)) drop-shadow(0 0 30px rgba(215,10,39,.2))}
+.red-glow{background:radial-gradient(circle,rgba(202,10,38,.42),rgba(66,5,15,.16) 48%,transparent 72%)}
+.panel,.admin-card,.card,.mega-card,.profile-modal,.ucs-tott-section{border-color:rgba(189,48,62,.32)}
+.panel,.admin-card,.card{background:linear-gradient(145deg,rgba(29,24,28,.97),rgba(12,12,16,.98));box-shadow:0 16px 40px rgba(0,0,0,.25),inset 0 1px rgba(255,255,255,.035)}
+.btn.primary,button.btn.primary{background:linear-gradient(135deg,#ff3650,#b50928)!important;color:#fff!important;border:1px solid rgba(255,107,121,.4)!important;box-shadow:0 5px 18px rgba(174,9,34,.22);transition:transform .18s ease,filter .18s ease,box-shadow .18s ease}
+.btn.primary:hover,button.btn.primary:hover{transform:translateY(-2px);filter:brightness(1.1);box-shadow:0 8px 25px rgba(224,10,46,.35)}
+input,select,textarea{border-color:rgba(206,67,82,.4)!important;background-color:#101015!important;color:#fff}
+input:focus,select:focus,textarea:focus{outline:1px solid #ee3049;box-shadow:0 0 0 3px rgba(220,21,53,.13)}
+.section-kicker,.eyebrow{color:#ff5267}
+.ticker{background:rgba(18,10,14,.9);border-color:rgba(210,42,61,.4)}
+.mega-card{background:linear-gradient(115deg,#310c17,#121015 53%,#2a0b15)}
+.season-pill{color:#ff7788;border-color:#7a2935}
+@media(prefers-reduced-motion:reduce){.btn.primary{transition:none!important}.btn.primary:hover{transform:none}}
