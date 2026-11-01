@@ -970,7 +970,7 @@ function ucsRenderEventCards(){
 function ucsOpenEventResults(id){
   const event=state.events.find(e=>String(e.id)===String(id)),root=$('#ucsEventResultsDetail');if(!event||!root)return;
   const data=ucsEventWinnerData(event.id);
-  const lines=String(data.winners||'').split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean);
+  const lines=String(data.winners||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
   root.innerHTML='<button class="ucs-event-results-back" type="button">← BACK TO EVENTS</button><div class="ucs-event-results-layout">'+(safeHttps(event.poster_url)?'<img src="'+esc(event.poster_url)+'" alt="'+esc(event.name)+' poster">':'')+'<div><span class="section-kicker">OFFICIAL UCS EVENT</span><h2>'+esc(event.name)+'</h2><p>'+esc(event.details||'')+'</p><h3>'+(data.completed?'OFFICIAL WINNERS':'EVENT RESULTS')+'</h3>'+(lines.length?'<ul>'+lines.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul>':'<p class="ucs-event-results-pending">Official results have not been published yet.</p>')+'</div></div>';
   root.classList.remove('hidden');$('#ucsEventsGrid')?.classList.add('hidden');root.scrollIntoView({behavior:'smooth',block:'start'});
 }
