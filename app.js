@@ -154,7 +154,7 @@ async function loadPublicData(){
   state.news=results[9].data||[];
   state.photos=results[10].data||[];
   state.formerChampionships=results[11].data||[];
-  renderAll();ucsRenderEventTags();
+  renderAll();renderChampionShowcase();ucsRenderEventTags();
 }
 
 // UCS Photography: public read-only gallery; approved users can upload.
@@ -688,6 +688,21 @@ function renderRankingChampion(){
     : `<small>${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><strong>VACANT</strong><span>No champion assigned</span>`;
   renderRankingTitleFights();
 }
+function renderChampionShowcase(){
+  const root=$('#ucsChampionShowcase');if(!root)return;
+  const ordered=['UCS World','UCS International'];
+  const champs=ordered.map(division=>({division,champ:state.champions.find(c=>c.division===division&&c.fighter_id)})).filter(x=>x.champ);
+  root.innerHTML=champs.length?champs.map(({division,champ})=>{
+    const fighter=fighterById(champ.fighter_id);if(!fighter)return '';
+    const photo=safeHttps(champ.showcase_image_url)?champ.showcase_image_url:null;
+    return `<article class="ucs-champ-showcase-card" role="button" tabindex="0" data-champ-profile="${esc(fighter.id)}" aria-label="View ${esc(fighter.name)} fighter profile">
+      <div class="ucs-champ-showcase-info"><span class="ucs-champ-showcase-division">${esc(division.toUpperCase())}</span><strong>${esc(fighter.name)}</strong><small>CHAMPION</small></div>
+      ${photo?`<img src="${esc(photo)}" alt="${esc(fighter.name)} championship boxer image" loading="lazy">`:`<div class="ucs-champ-showcase-placeholder"><span>${esc(fighter.name.slice(0,2).toUpperCase())}</span><small>CHAMPION IMAGE COMING SOON</small></div>`}
+    </article>`;
+  }).join(''):'';
+}
+$('#ucsChampionShowcase')?.addEventListener('click',e=>{const card=e.target.closest('[data-champ-profile]');if(card)openFighterProfile(card.dataset.champProfile);});
+$('#ucsChampionShowcase')?.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.closest('[data-champ-profile]')){e.preventDefault();openFighterProfile(e.target.closest('[data-champ-profile]').dataset.champProfile);}});
 $('#fighterSearch')?.addEventListener('input',e=>renderRanks(e.target.value));
 $('#rankingTabs')?.addEventListener('click',e=>{if(e.target.tagName==='BUTTON'){ $$('#rankingTabs button').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');state.rankingDivision=e.target.dataset.div;renderRanks($('#fighterSearch')?.value||'');}});
 $('#rankRows')?.addEventListener('click',e=>{const row=e.target.closest('[data-fighter-profile]');if(row)openFighterProfile(row.dataset.fighterProfile);});
@@ -1748,8 +1763,37 @@ $('#simDivisionForm')?.addEventListener('submit',async e=>{
   await loadPublicData();
   toast(sim_division?'Fighter added to UCS SIM World.':'Fighter removed from UCS SIM World.');
 });
-$('#championForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);if(!state.isAdmin)return;const payload={division:d.get('division'),fighter_id:d.get('fighter_id'),defenses:+d.get('defenses')||0,granted_at:new Date().toISOString()};const {error}=await db.from('champions').upsert(payload,{onConflict:'division'});if(error)return toast(error.message,true);await db.rpc('recalculate_ucs_rankings');toast(`${d.get('division')} champion granted.`);await loadPublicData();});
-$('#vacateTitleBtn')?.addEventListener('click',async()=>{const f=$('#championForm'),division=new FormData(f).get('division');if(!state.isAdmin)return;const {error}=await db.from('champions').upsert({division,fighter_id:null,defenses:0,granted_at:new Date().toISOString()},{onConflict:'division'});if(error)return toast(error.message,true);await db.rpc('recalculate_ucs_rankings');toast(`${division} title vacated.`);await loadPublicData();});
+$('#championForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!state.isAdmin)return toast('Admin permission required.',true);
+  const form=e.target,d=new FormData(form),button=form.querySelector('[type="submit"]');
+  const division=String(d.get('division')),fighterId=String(d.get('fighter_id'));
+  const existing=state.champions.find(c=>c.division===division);
+  const payload={division,fighter_id:fighterId,defenses:+d.get('defenses')||0,granted_at:new Date().toISOString()};
+  const file=d.get('showcase_image');
+  button.disabled=true;
+  try{
+    if(file instanceof File&&file.size){
+      if(!['image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Use PNG, JPG or WEBP images.');
+      if(file.size>5*1024*1024)throw new Error('Champion image must be under 5 MB.');
+      const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[file.type];
+      const path='admin/champion-showcase/'+crypto.randomUUID()+'.'+ext;
+      const {error:uploadError}=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type,upsert:false});
+      if(uploadError)throw uploadError;
+      payload.showcase_image_url=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
+    }else if(existing?.fighter_id===fighterId&&existing.showcase_image_url){
+      payload.showcase_image_url=existing.showcase_image_url;
+    }else{
+      payload.showcase_image_url=null;
+    }
+    const {error}=await db.from('champions').upsert(payload,{onConflict:'division'});
+    if(error)throw error;
+    await db.rpc('recalculate_ucs_rankings');
+    toast(division+' champion granted.');form.querySelector('[name="showcase_image"]').value='';
+    await loadPublicData();
+  }catch(error){toast(error.message||'Could not save champion image.',true)}
+  finally{button.disabled=false}
+});
+$('#vacateTitleBtn')?.addEventListener('click',async()=>{const f=$('#championForm'),division=new FormData(f).get('division');if(!state.isAdmin)return;const {error}=await db.from('champions').upsert({division,fighter_id:null,defenses:0,showcase_image_url:null,granted_at:new Date().toISOString()},{onConflict:'division'});if(error)return toast(error.message,true);await db.rpc('recalculate_ucs_rankings');toast(`${division} title vacated.`);await loadPublicData();});
 $('#resultForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);if(d.get('winner_id')===d.get('loser_id'))return toast('Winner and loser must be different.',true);if(!state.isAdmin)return toast('Admin permission required.',true);const {error}=await db.rpc('publish_ucs_result',{p_winner_id:d.get('winner_id'),p_loser_id:d.get('loser_id'),p_method:d.get('method'),p_event_date:d.get('event_date')});if(error)return toast(error.message,true);toast('Result published, records and rankings updated.');await loadPublicData();});
 $('#scheduleBoutForm')?.addEventListener('submit',async e=>{
   e.preventDefault();if(!db||!state.isAdmin)return toast('UCS admin required.',true);
