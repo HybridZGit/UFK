@@ -1168,3 +1168,10 @@ h1,h2,h3,.section-title-row h2{font-style:normal!important}
 .ucs-champ-showcase-card:focus-visible{outline:2px solid #f23b55;outline-offset:3px}
 .ucs-admin-help{font-size:11px!important;color:#a4a4b0!important;line-height:1.5}
 @media(max-width:700px){.ucs-champion-showcase{grid-template-columns:1fr;gap:12px}.ucs-champ-showcase-card{height:290px}.ucs-champ-showcase-info strong{font-size:48px}.ucs-champ-showcase-card>img{width:65%}}
+
+/* White UCS identity lockup beside the Fight Night headline */
+#home .hero{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(280px,.8fr)!important;gap:34px!important;align-items:center!important}
+#home .ucs-flat-logo-stage{display:flex!important;min-height:300px;align-items:center;justify-content:center}
+#home .ucs-flat-logo-stage img{display:block!important;width:min(100%,440px)!important;height:auto!important;max-height:340px;object-fit:contain;filter:none!important}
+#home .ucs-flat-logo-stage:before,#home .ucs-flat-logo-stage:after{display:none!important}
+@media(max-width:760px){#home .hero{grid-template-columns:1fr!important;gap:4px!important}#home .ucs-flat-logo-stage{min-height:150px!important;padding:0 0 22px}#home .ucs-flat-logo-stage img{max-width:280px!important;max-height:180px!important}}
