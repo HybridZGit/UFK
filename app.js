@@ -85,8 +85,12 @@ function toast(msg,bad=false){
 // October 21, 2026 8:00 PM America/New_York (EDT = UTC-4 on this date).
 // Using a fixed UTC instant makes the countdown identical for every viewer.
 const UCS_FIGHT_NIGHT_AT=Date.parse('2026-10-22T00:00:00.000Z');
+function ucsFeaturedEvent(){const x=state.settings?.featured_event_poster;return x&&typeof x==='object'?x:null;}
+function ucsEventDate(){const x=ucsFeaturedEvent();const ms=x?.event_at?Date.parse(x.event_at):NaN;return Number.isFinite(ms)?ms:UCS_FIGHT_NIGHT_AT;}
+function ucsRenderEventHero(){const x=ucsFeaturedEvent(),root=$('#ucsEventHero'),img=$('#ucsEventHeroImage');if(!root||!img)return;const shown=!!(x?.visible&&safeHttps(x?.poster_url));root.classList.toggle('hidden',!shown);if(shown){img.src=x.poster_url;img.alt=(x.title||'UCS Fight Night')+' event poster';$('#ucsEventHeroTitle').textContent=x.title||'UCS FIGHT NIGHT';}const label=$('.ucs-home-countdown-label');if(label&&x?.title)label.textContent=x.title;const form=$('#ucsEventHeroForm');if(form&&state.isAdmin){form.elements.title.value=x?.title||'';form.elements.event_at.value=x?.event_at?new Date(x.event_at).toLocaleString('sv-SE',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(' ','T'):'';form.elements.visible.checked=x?.visible!==false;const preview=$('#ucsEventPosterPreview');if(preview)preview.innerHTML=safeHttps(x?.poster_url)?'<img src="'+esc(x.poster_url)+'" alt="Current event poster">':'No poster uploaded';}}
+
 function ucsUpdateFightCountdown(){
-  const remaining=Math.max(0,UCS_FIGHT_NIGHT_AT-Date.now());
+  const remaining=Math.max(0,ucsEventDate()-Date.now());
   const seconds=Math.floor(remaining/1000);
   const days=Math.floor(seconds/86400);
   const hours=Math.floor((seconds%86400)/3600);
@@ -154,7 +158,7 @@ async function loadPublicData(){
   state.news=results[9].data||[];
   state.photos=results[10].data||[];
   state.formerChampionships=results[11].data||[];
-  renderAll();renderChampionShowcase();ucsRenderEventTags();
+  renderAll();renderChampionShowcase();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
 }
 
 // UCS Photography: public read-only gallery; approved users can upload.
@@ -1669,18 +1673,19 @@ $('#adminFighterAvatarForm')?.addEventListener('submit',async e=>{
 
 const ucsEarningsState={records:new Map(),loaded:false};
 function ucsShowAdminTab(tab){
-  const earnings=tab==='earnings'&&state.isAdmin,news=tab==='news'&&state.isAdmin;
-  $('#adminOperationsPanel')?.classList.toggle('hidden',earnings||news);
-  $('#adminEarningsPanel')?.classList.toggle('hidden',!earnings);
-  $('#adminNewsPanel')?.classList.toggle('hidden',!news);
-  $('#adminEarningsPanel')?.setAttribute('aria-hidden',String(!earnings));
-  $('#adminNewsPanel')?.setAttribute('aria-hidden',String(!news));
-  for(const [id,active] of [['adminOperationsTab',!earnings&&!news],['adminEarningsTab',earnings],['adminNewsTab',news]]){
+  const earnings=tab==='earnings'&&state.isAdmin,news=tab==='news'&&state.isAdmin,event=tab==='event'&&state.isAdmin;
+  $('#adminOperationsPanel')?.classList.toggle('hidden',earnings||news||event);
+  for(const [id,active] of [['adminEarningsPanel',earnings],['adminNewsPanel',news],['adminEventHeroPanel',event]]){
+    $('#'+id)?.classList.toggle('hidden',!active);
+    $('#'+id)?.setAttribute('aria-hidden',String(!active));
+  }
+  for(const [id,active] of [['adminOperationsTab',!earnings&&!news&&!event],['adminEarningsTab',earnings],['adminNewsTab',news],['adminEventHeroTab',event]]){
     $('#'+id)?.classList.toggle('active',active);
     $('#'+id)?.setAttribute('aria-selected',String(active));
   }
   if(earnings)ucsLoadEarnings();
   if(news)renderNews();
+  if(event)ucsRenderEventHero();
 }
 function ucsFormatEarnings(value){
   return String.fromCharCode(36)+Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -1716,6 +1721,7 @@ function ucsPopulateEarningsInput(fighterId){
 $('#adminOperationsTab')?.addEventListener('click',()=>ucsShowAdminTab('operations'));
 $('#adminEarningsTab')?.addEventListener('click',()=>ucsShowAdminTab('earnings'));
 $('#adminNewsTab')?.addEventListener('click',()=>ucsShowAdminTab('news'));
+$('#adminEventHeroTab')?.addEventListener('click',()=>ucsShowAdminTab('event'));
 $('#earningsFighterSelect')?.addEventListener('change',e=>ucsPopulateEarningsInput(e.target.value));
 $('#adminEarningsRows')?.addEventListener('click',e=>{
   const button=e.target.closest('[data-earnings-fighter]');
@@ -1894,3 +1900,40 @@ if(db){
   try{updateAdminUI();await refreshSession();}catch(error){console.error('UCS account',error);}
   try{if(location.hash.startsWith('#fighter/')){showPage('rankings');openFighterProfile(decodeURIComponent(location.hash.slice(9)));}else if(location.hash&&$(location.hash))showPage(location.hash.slice(1));}catch(error){console.error('UCS navigation',error);}
 })();
+
+$('#ucsEventPosterInput')?.addEventListener('change',e=>{
+  const file=e.target.files?.[0],preview=$('#ucsEventPosterPreview');if(!preview)return;
+  if(!file){preview.textContent='No poster selected';return;}
+  const url=URL.createObjectURL(file);const img=new Image();img.onload=()=>{preview.replaceChildren(img);if(img.naturalWidth!==1920||img.naturalHeight!==1080)toast('Recommended image size is exactly 1920 × 1080.',true);URL.revokeObjectURL(url);};img.onerror=()=>{preview.textContent='Could not preview image';URL.revokeObjectURL(url);};img.src=url;
+});
+$('#ucsEventHeroForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db||!state.isAdmin)return toast('Admin access required.',true);
+  const form=e.currentTarget,button=form.querySelector('[type="submit"]'),data=new FormData(form),file=data.get('poster'),old=ucsFeaturedEvent()||{};
+  const local=String(data.get('event_at')||'');const eventDate=new Date(local);
+  if(!local||Number.isNaN(eventDate.getTime()))return toast('Choose a valid event date.',true);
+  let posterUrl=old.poster_url||null;button.disabled=true;
+  try{
+    if(file instanceof File&&file.size){
+      if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('Use JPG, PNG or WEBP.');
+      if(file.size>8*1024*1024)throw Error('Poster must be 8 MB or smaller.');
+      const dimensions=await new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{resolve([img.naturalWidth,img.naturalHeight]);URL.revokeObjectURL(url)};img.onerror=()=>{reject(Error('Could not read poster'));URL.revokeObjectURL(url)};img.src=url});
+      if(dimensions[0]!==1920||dimensions[1]!==1080)throw Error('Poster must be exactly 1920 × 1080 pixels.');
+      const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
+      const path='event-posters/'+crypto.randomUUID()+'.'+ext;
+      const uploaded=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type,upsert:false});
+      if(uploaded.error)throw uploaded.error;
+      posterUrl=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
+    }
+    const value={title:String(data.get('title')||'UCS FIGHT NIGHT').trim().slice(0,100),event_at:eventDate.toISOString(),poster_url:posterUrl,visible:data.has('visible')};
+    const {error}=await db.from('league_settings').upsert({key:'featured_event_poster',value,updated_at:new Date().toISOString()},{onConflict:'key'});
+    if(error)throw error;
+    toast('Event poster and countdown saved.');form.elements.poster.value='';await loadPublicData();
+  }catch(err){toast(err.message||'Could not save event poster',true)}finally{button.disabled=false}
+});
+$('#ucsEventHideBtn')?.addEventListener('click',async()=>{
+  if(!db||!state.isAdmin)return;
+  const value={...(ucsFeaturedEvent()||{}),visible:false};
+  const {error}=await db.from('league_settings').upsert({key:'featured_event_poster',value,updated_at:new Date().toISOString()},{onConflict:'key'});
+  if(error)return toast(error.message,true);
+  await loadPublicData();toast('Event poster hidden.');
+});
