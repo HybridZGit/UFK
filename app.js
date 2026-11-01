@@ -1125,7 +1125,7 @@ function renderEvents(){
   const ordered=[...(main?[main]:[]),...(coMain?[coMain]:[]),...scheduled.filter(b=>b.id!==main?.id&&b.id!==coMain?.id)];
   const portrait=f=>{
     const img=f?.avatar_url&&safeHttps(f.avatar_url)
-      ?`<img src="${esc(f.avatar_url)}" loading="lazy" alt="${esc(f.name)} profile picture" style="display:block;width:64px;height:64px;max-width:64px;max-height:64px;object-fit:cover;border-radius:50%;flex-shrink:0">`
+      ?`<img src="${esc(f.avatar_url)}" loading="lazy" alt="${esc(f.name)} profile picture" class="ucs-match-portrait-image">`
       :`<span class="ucs-match-avatar-fallback" aria-hidden="true">${esc(initials(f?.name||'UCS'))}</span>`;
     return `<span class="ucs-match-avatar">${img}</span>`;
   };
