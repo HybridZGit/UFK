@@ -160,7 +160,7 @@ async function loadPublicData(){
   state.news=results[9].data||[];
   state.photos=results[10].data||[];
   state.formerChampionships=results[11].data||[];
-  renderAll();renderChampionShowcase();ucsRenderHomeChampion();ucsFillBeltArtForm();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
+  renderAll();renderChampionShowcase();ucsRenderHomeChampion();ucsFillBeltArtForm();ucsPosterFill();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
 }
 
 // UCS Photography: public read-only gallery; approved users can upload.
@@ -686,7 +686,7 @@ $('#ucsRankingsTitleFights')?.addEventListener('click',e=>{
   const button=e.target.closest('[data-title-fighter]');
   if(button?.dataset.titleFighter)openFighterProfile(button.dataset.titleFighter);
 });
-function ucsBeltArt(division){const art=state.settings?.championship_belt_art||{};const url=division==='UCS World'?art.world:division==='UCS International'?art.international:null;return safeHttps(url)?url:null;}
+function ucsBeltArt(division){const art=state.settings?.championship_belt_art||{};const key=division==='UCS World'?'world':division==='UCS International'?'international':division==='UCS EU Division'?'eu':division==='UCS SIM World'?'sim_world':division.toLowerCase().replace(/^ucs\s*/,'').replace(/[^a-z0-9]+/g,'_');const url=art[key];return safeHttps(url)?url:null;}
 function renderRankingChampion(){
   const c=state.champions.find(x=>x.division===state.rankingDivision&&x.fighter_id);
   const f=c&&fighterById(c.fighter_id);
@@ -719,6 +719,9 @@ function ucsRenderHomeChampion(){
   const {division,champ,fighter}=slides[ucsHomeChampionIndex];
   const picture=[champ?.showcase_image_url,fighter?.avatar_url,fighter?.profile_image_url].find(url=>safeHttps(url));
   const flag=champ?.showcase_flag||'';
+  const belt=ucsBeltArt(division);
+  image.parentElement?.style.setProperty('--ucs-home-belt',belt?`url("${belt}")`:'none');
+  image.parentElement?.classList.toggle('ucs-home-has-belt',!!belt);
   const record=Number(fighter.wins||0)+'-'+Number(fighter.losses||0)+'-'+Number(fighter.draws||0);
   const defenses=Number(champ?.defenses||0);
   const total=Number(fighter.wins||0)+Number(fighter.losses||0)+Number(fighter.draws||0);
@@ -2110,6 +2113,7 @@ function ucsFillBeltArtForm(){
  const art=state.settings?.championship_belt_art||{};
  form.elements.world_url.value=safeHttps(art.world)?art.world:'';
  form.elements.international_url.value=safeHttps(art.international)?art.international:'';
+ for(const [key,field] of [['eu','eu_url'],['sim_world','sim_world_url']])if(form.elements[field])form.elements[field].value=safeHttps(art[key])?art[key]:'';
 }
 $('#ucsBeltArtForm')?.addEventListener('submit',async e=>{
  e.preventDefault();if(!db||!state.isAdmin)return toast('UCS admin required.',true);
@@ -2117,8 +2121,8 @@ $('#ucsBeltArtForm')?.addEventListener('submit',async e=>{
  button.disabled=true;
  try{
   const current=state.settings?.championship_belt_art||{};
-  const art={world:current.world||'',international:current.international||''};
-  for(const type of ['world','international']){
+  const art={...current};
+  for(const type of ['world','international','eu','sim_world']){
    let url=String(d.get(type+'_url')||'').trim();
    if(url&&!safeHttps(url))throw Error('Belt image URL must use HTTPS.');
    const file=d.get(type+'_file');
@@ -2135,7 +2139,83 @@ $('#ucsBeltArtForm')?.addEventListener('submit',async e=>{
   const {error}=await db.from('league_settings').upsert({key:'championship_belt_art',value:art,updated_at:new Date().toISOString()},{onConflict:'key'});
   if(error)throw error;
   state.settings.championship_belt_art=art;
-  renderRankingChampion();renderChampionShowcase();ucsFillBeltArtForm();
+  renderRankingChampion();renderChampionShowcase();ucsRenderHomeChampion();ucsFillBeltArtForm();
   toast('Official championship belt artwork saved.');
  }catch(err){toast(err.message||'Could not save belt artwork.',true);}finally{button.disabled=false;}
+});
+
+/* UCS poster generator: deterministic, editable client-side artwork, no AI service required. */
+function ucsPosterFill(){
+ const form=$('#ucsPosterForm');if(!form)return;
+ const fighters=[...state.fighters].sort((x,y)=>String(x.name).localeCompare(String(y.name)));
+ const choices='<option value="">SELECT FIGHTER</option>'+fighters.map(f=>'<option value="'+esc(f.id)+'">'+esc(f.name)+'</option>').join('');
+ for(const name of ['red','blue']){const sel=form.elements[name],prior=sel.value;sel.innerHTML=choices;if(fighters.some(f=>String(f.id)===prior))sel.value=prior;}
+ const divisions=ucsDivisions(),sel=form.elements.division,prior=sel.value;
+ sel.innerHTML=divisions.map(d=>'<option value="'+esc(d)+'">'+esc(d)+'</option>').join('');
+ if(divisions.includes(prior))sel.value=prior;
+ ucsPosterToggle();
+}
+function ucsPosterToggle(){const f=$('#ucsPosterForm');if(!f)return;f.elements.division.disabled=f.elements.bout_type.value!=='title';}
+$('#ucsPosterType')?.addEventListener('change',ucsPosterToggle);
+function ucsPosterImage(src){return new Promise(resolve=>{
+ if(!src)return resolve(null);
+ const im=new Image();im.crossOrigin='anonymous';im.onload=()=>resolve(im);im.onerror=()=>resolve(null);im.src=src;
+});}
+function ucsPosterFitText(ctx,text,x,y,maxWidth,size,minSize=28){
+ ctx.font='900 '+size+'px Impact, "Arial Narrow", sans-serif';
+ while(ctx.measureText(text).width>maxWidth&&size>minSize){size-=2;ctx.font='900 '+size+'px Impact, "Arial Narrow", sans-serif';}
+ ctx.fillText(text,x,y);
+}
+function ucsPosterDrawImage(ctx,im,x,y,w,h,contain=false){
+ if(!im)return;
+ const ratio=contain?Math.min(w/im.width,h/im.height):Math.max(w/im.width,h/im.height);
+ const dw=im.width*ratio,dh=im.height*ratio;
+ ctx.drawImage(im,x+(w-dw)/2,y+(h-dh)/2,dw,dh);
+}
+async function ucsPosterGenerate(e){
+ e?.preventDefault();
+ const f=$('#ucsPosterForm'),canvas=$('#ucsPosterCanvas'),status=$('#ucsPosterStatus');
+ const red=fighterById(f.elements.red.value),blue=fighterById(f.elements.blue.value);
+ if(!red||!blue||red.id===blue.id){status.textContent='Choose two different fighters.';return;}
+ const title=f.elements.bout_type.value==='title',division=f.elements.division.value;
+ const button=f.querySelector('[type="submit"]');button.disabled=true;status.textContent='Composing fight poster…';
+ try{
+  const pick=(file,fighter)=>file?.size?URL.createObjectURL(file):[fighter.showcase_image_url,fighter.profile_image_url,fighter.avatar_url].find(safeHttps);
+  const redFile=f.elements.red_file.files[0],blueFile=f.elements.blue_file.files[0];
+  if([redFile,blueFile].some(file=>file&&file.size>8*1024*1024))throw Error('Each fighter portrait must be under 8 MB.');
+  const redUrl=pick(redFile,red),blueUrl=pick(blueFile,blue);
+  const [redIm,blueIm,beltIm]=await Promise.all([ucsPosterImage(redUrl),ucsPosterImage(blueUrl),ucsPosterImage(title?ucsBeltArt(division):null)]);
+  if(redFile)URL.revokeObjectURL(redUrl);if(blueFile)URL.revokeObjectURL(blueUrl);
+  const ctx=canvas.getContext('2d');const W=1080,H=1350;ctx.clearRect(0,0,W,H);
+  const gold=f.elements.theme.value==='gold',accent=gold?'#e9be62':'#f02d55';
+  const bg=ctx.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#19171e');bg.addColorStop(.5,'#090a10');bg.addColorStop(1,gold?'#322416':'#310e1c');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  ctx.save();ctx.globalAlpha=.14;ctx.strokeStyle=accent;ctx.lineWidth=2;for(let x=-1300;x<1400;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+1350,H);ctx.stroke();}ctx.restore();
+  ctx.fillStyle=accent;ctx.fillRect(58,62,90,7);ctx.fillStyle='#fff';ctx.textAlign='center';
+  ctx.font='900 112px Impact, "Arial Narrow", sans-serif';ctx.fillText('UCS',540,170);
+  ctx.fillStyle=accent;ctx.font='bold 22px Arial,sans-serif';ctx.letterSpacing='7px';ctx.fillText('UNDISPUTED CHAMPIONSHIP SERIES',540,218);ctx.letterSpacing='0px';
+  ctx.fillStyle='#d4d2da';ctx.font='bold 25px Arial,sans-serif';ctx.fillText(String(f.elements.event.value||'UCS FIGHT NIGHT').toUpperCase().slice(0,65),540,285);
+  ctx.fillStyle=accent;ctx.fillRect(70,319,940,3);
+  const drawFighter=(im,x,side)=>{
+    ctx.save();ctx.beginPath();ctx.rect(x,350,460,650);ctx.clip();
+    const grad=ctx.createLinearGradient(x,350,x+460,1000);grad.addColorStop(0,side==='red'?'#4a1b2a':'#182946');grad.addColorStop(1,'#0a0b10');ctx.fillStyle=grad;ctx.fillRect(x,350,460,650);
+    if(im)ucsPosterDrawImage(ctx,im,x,350,460,650,true);
+    else{ctx.fillStyle='#ffffff22';ctx.font='bold 170px Impact';ctx.textAlign='center';ctx.fillText('?',x+230,690);}
+    const fade=ctx.createLinearGradient(0,740,0,1010);fade.addColorStop(0,'#090a1000');fade.addColorStop(1,'#090a10');ctx.fillStyle=fade;ctx.fillRect(x,740,460,270);
+    ctx.restore();
+  };
+  drawFighter(redIm,70,'red');drawFighter(blueIm,550,'blue');
+  ctx.textAlign='center';ctx.fillStyle=accent;ctx.font='900 32px Impact';ctx.fillText('VS',540,705);
+  if(title&&beltIm){ctx.save();ctx.shadowColor='#000';ctx.shadowBlur=24;ucsPosterDrawImage(ctx,beltIm,385,770,310,180,true);ctx.restore();}
+  ctx.fillStyle='#fff';ctx.shadowColor='#000';ctx.shadowBlur=18;ucsPosterFitText(ctx,String(red.name).toUpperCase(),300,1072,455,82);ucsPosterFitText(ctx,String(blue.name).toUpperCase(),780,1072,455,82);ctx.shadowBlur=0;
+  ctx.font='bold 23px Arial,sans-serif';ctx.fillStyle='#d5cbd0';ctx.fillText(record(red),300,1111);ctx.fillText(record(blue),780,1111);
+  ctx.fillStyle=accent;ctx.fillRect(75,1140,930,3);
+  ctx.fillStyle='#fff';ctx.font='900 42px Impact';ctx.fillText(title?division.toUpperCase()+' CHAMPIONSHIP':'OFFICIAL UCS BOUT',540,1202);
+  ctx.font='bold 25px Arial,sans-serif';ctx.fillStyle='#e5cda2';ctx.fillText(f.elements.rounds.value+' ROUNDS  •  '+(String(f.elements.event_details.value||'DATE TO BE ANNOUNCED').toUpperCase().slice(0,70)),540,1253);
+  ctx.font='bold 17px Arial,sans-serif';ctx.fillStyle='#b7a6ad';ctx.fillText('OFFICIAL UCS FIGHT PROMOTION',540,1310);
+  $('#ucsPosterDownload').disabled=false;status.textContent='Poster ready. Review the preview, then download your PNG.';
+ }catch(err){status.textContent='Could not generate poster: '+err.message;}finally{button.disabled=false;}
+}
+$('#ucsPosterForm')?.addEventListener('submit',ucsPosterGenerate);
+$('#ucsPosterDownload')?.addEventListener('click',()=>{
+ const canvas=$('#ucsPosterCanvas');try{const link=document.createElement('a');link.download='UCS-Fight-Poster.png';link.href=canvas.toDataURL('image/png');link.click();}catch{$('#ucsPosterStatus').textContent='Export blocked by an external image. Upload the portraits as local files and try again.';}
 });
