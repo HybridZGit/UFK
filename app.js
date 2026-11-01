@@ -1522,6 +1522,7 @@ function populateScheduledBoutSelect(){
   if(state.scheduledBouts.some(b=>b.id===current))select.value=current;
   else if(state.scheduledBouts.length)select.value=state.scheduledBouts[0].id;
   fillScheduledBoutEditor();
+  ucsFillBoutStudioSelect();
 }
 function fillScheduledBoutEditor(){
   const form=$('#editScheduledBoutForm');if(!form)return;
@@ -1529,9 +1530,6 @@ function fillScheduledBoutEditor(){
   for(const field of ['event_name','bout_date','belt','poster_url','contribution_url'])form.elements[field].value=b?.[field]||'';
   form.elements.is_title_eliminator.value=b?.is_title_eliminator?'true':'false';
   form.elements.is_co_main.value=b?.is_co_main?'true':'false';
-  form.elements.scheduled_rounds.value=b?.scheduled_rounds??'';
-  for(const field of ['fighter_a_bout_image','fighter_b_bout_image'])form.elements[field].value=b?.[field]||'';
-  for(const field of ['fighter_a_bout_file','fighter_b_bout_file'])form.elements[field].value='';
   if(form.elements.poster_file)form.elements.poster_file.value='';
   updateBoutPosterPreview();
 }
@@ -1927,10 +1925,6 @@ $('#editScheduledBoutForm')?.addEventListener('submit',async e=>{
   const posterFile=d.get('poster_file'),contribution=(d.get('contribution_url')||'').trim();
   let posterUrl=(d.get('poster_url')||'').trim();
   if(d.get('is_title_eliminator')==='true'&&!d.get('belt'))return toast('Choose which championship the eliminator is for.',true);
-  const roundsRaw=String(d.get('scheduled_rounds')||'').trim();
-  const scheduledRounds=roundsRaw?Number(roundsRaw):null;
-  if(roundsRaw&&(!Number.isInteger(scheduledRounds)||scheduledRounds<1||scheduledRounds>15))return toast('Rounds must be between 1 and 15.',true);
-  for(const field of ['fighter_a_bout_image','fighter_b_bout_image'])if(d.get(field)&&!safeHttps(String(d.get(field)).trim()))return toast('Bout photos require HTTPS URLs.',true);
   if(contribution&&!safeHttps(contribution))return toast('Use a valid HTTPS contribution link.',true);
   if(posterUrl&&!safeHttps(posterUrl))return toast('Use an HTTPS poster image URL.',true);
   const button=form.querySelector('[type="submit"]');button.disabled=true;
@@ -1944,21 +1938,7 @@ $('#editScheduledBoutForm')?.addEventListener('submit',async e=>{
       if(uploadError)throw uploadError;
       posterUrl=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
     }
-    const boutImages={};
-    for(const field of ['fighter_a_bout_image','fighter_b_bout_image']){
-      let url=String(d.get(field)||'').trim();
-      const file=d.get(field.replace('_image','_file'));
-      if(file instanceof File&&file.size){
-        const types={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'},ext=types[file.type];
-        if(!ext||file.size>5*1024*1024)throw Error('Bout fighter photos must be JPG, PNG or WebP under 5 MB.');
-        const path=`bout-fighters/${boutId}/${field}/${crypto.randomUUID()}.${ext}`;
-        const {error:uploadError}=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type,upsert:false});
-        if(uploadError)throw uploadError;
-        url=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
-      }
-      boutImages[field]=url||null;
-    }
-    const payload={...boutImages,scheduled_rounds:scheduledRounds,event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,is_title_eliminator:d.get('is_title_eliminator')==='true',poster_url:posterUrl||null,contribution_url:contribution||null,is_co_main:d.get('is_co_main')==='true',updated_at:new Date().toISOString()};
+    const payload={event_name:d.get('event_name').trim(),bout_date:d.get('bout_date')||null,belt:d.get('belt')||null,is_title_eliminator:d.get('is_title_eliminator')==='true',poster_url:posterUrl||null,contribution_url:contribution||null,is_co_main:d.get('is_co_main')==='true',updated_at:new Date().toISOString()};
     const {error}=await db.from('scheduled_bouts').update(payload).eq('id',boutId);
     if(error)throw error;
     await loadPublicData();updateBoutPosterPreview();toast('Scheduled bout updated. Poster banner refreshed.');
@@ -2067,3 +2047,50 @@ function ucsOpenBout(id){
 }
 document.addEventListener('click',e=>{const btn=e.target.closest('[data-see-bout]');if(btn){e.preventDefault();ucsOpenBout(btn.dataset.seeBout);}});
 $('#ucsBoutBack')?.addEventListener('click',()=>{showPage(ucsBoutReturnPage);history.replaceState(null,'','#'+ucsBoutReturnPage);});
+
+function ucsFillBoutStudioSelect(){
+ const el=$('#ucsBoutStudioSelect');if(!el)return;
+ const old=el.value;
+ el.innerHTML='<option value="">SELECT A BOUT</option>'+state.scheduledBouts.map(b=>'<option value="'+esc(b.id)+'">'+esc(fighterById(b.fighter_a_id)?.name||'TBA')+' VS '+esc(fighterById(b.fighter_b_id)?.name||'TBA')+'</option>').join('');
+ el.value=state.scheduledBouts.some(b=>b.id===old)?old:(state.scheduledBouts[0]?.id||'');
+ ucsFillBoutStudio();
+}
+function ucsFillBoutStudio(){
+ const form=$('#ucsBoutStudioForm');if(!form)return;
+ const b=state.scheduledBouts.find(x=>x.id===form.elements.bout_id.value);
+ form.elements.scheduled_rounds.value=b?.scheduled_rounds??'';
+ for(const field of ['fighter_a_bout_image','fighter_b_bout_image'])form.elements[field].value=b?.[field]||'';
+ for(const field of ['fighter_a_bout_file','fighter_b_bout_file'])form.elements[field].value='';
+ $('#ucsStudioRedName').textContent=fighterById(b?.fighter_a_id)?.name||'TBA';
+ $('#ucsStudioBlueName').textContent=fighterById(b?.fighter_b_id)?.name||'TBA';
+}
+$('#ucsBoutStudioSelect')?.addEventListener('change',ucsFillBoutStudio);
+$('#ucsStudioViewBout')?.addEventListener('click',()=>{const id=$('#ucsBoutStudioSelect')?.value;if(id)ucsOpenBout(id);});
+$('#ucsBoutStudioForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();if(!db||!state.isAdmin)return toast('UCS admin required.',true);
+ const form=e.currentTarget,d=new FormData(form),boutId=d.get('bout_id');
+ if(!state.scheduledBouts.some(b=>b.id===boutId))return toast('Select a scheduled bout.',true);
+ const raw=String(d.get('scheduled_rounds')||'').trim(),rounds=raw?Number(raw):null;
+ if(raw&&(!Number.isInteger(rounds)||rounds<1||rounds>15))return toast('Rounds must be between 1 and 15.',true);
+ const button=form.querySelector('[type="submit"]');button.disabled=true;
+ try{
+  const payload={scheduled_rounds:rounds,updated_at:new Date().toISOString()};
+  for(const field of ['fighter_a_bout_image','fighter_b_bout_image']){
+   let url=String(d.get(field)||'').trim();
+   if(url&&!safeHttps(url))throw Error('Image URL must use HTTPS.');
+   const file=d.get(field.replace('_image','_file'));
+   if(file instanceof File&&file.size){
+    const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
+    if(!ext||file.size>5*1024*1024)throw Error('Portraits must be JPG, PNG or WebP under 5 MB.');
+    const path=`bout-fighters/${boutId}/${field}/${crypto.randomUUID()}.${ext}`;
+    const {error}=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type,upsert:false});
+    if(error)throw error;
+    url=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
+   }
+   payload[field]=url||null;
+  }
+  const {error}=await db.from('scheduled_bouts').update(payload).eq('id',boutId);
+  if(error)throw error;
+  await loadPublicData();toast('Bout profile saved successfully.');
+ }catch(err){toast(err.message||'Could not save bout profile.',true);}finally{button.disabled=false;}
+});
