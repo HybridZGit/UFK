@@ -2117,3 +2117,35 @@ button,a,input,select,textarea{touch-action:manipulation}
 #fighterModal .ucs-dossier .contract-challenge-btn:hover{background:#361c28!important;border-color:#ed4b6c!important}
 @media(max-width:700px){#fighterModal .ucs-fighter-analysis{padding:24px 18px!important}#fighterModal .ucs-fighter-insights{grid-template-columns:repeat(2,minmax(0,1fr))!important}#fighterModal .ucs-fighter-insights>div{min-height:100px!important;padding:17px!important}#fighterModal .ucs-analysis-edition{font-size:9px!important}}
 @media(max-width:380px){#fighterModal .ucs-fighter-analysis-heading{align-items:start!important;flex-direction:column!important}#fighterModal .ucs-dossier .ucs-champion-spotlight{padding:12px!important;gap:9px!important}#fighterModal .ucs-dossier .ucs-champion-emblem{flex-basis:32px!important;width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;font-size:20px!important}}
+
+/* Fighter portrait: remove all decorative backing boxes and frames */
+#fighterModal .ucs-dossier-left,
+#fighterModal .ucs-dossier-photo-col,
+#fighterModal .ucs-dossier-left .profile-avatar,
+#fighterModal .ucs-dossier-photo-col .profile-avatar{
+ background:transparent!important;
+ background-image:none!important;
+ box-shadow:none!important;
+ outline:none!important;
+ border:0!important;
+}
+#fighterModal .ucs-dossier-left .profile-avatar,
+#fighterModal .ucs-dossier-photo-col .profile-avatar{
+ border-radius:0!important;
+ overflow:hidden!important;
+}
+#fighterModal .ucs-dossier-left .profile-avatar::before,
+#fighterModal .ucs-dossier-left .profile-avatar::after,
+#fighterModal .ucs-dossier-photo-col .profile-avatar::before,
+#fighterModal .ucs-dossier-photo-col .profile-avatar::after{
+ content:none!important;
+ display:none!important;
+}
+#fighterModal .ucs-dossier-left .profile-avatar img,
+#fighterModal .ucs-dossier-photo-col .profile-avatar img{
+ display:block!important;
+ border:0!important;
+ border-radius:0!important;
+ box-shadow:none!important;
+ background:transparent!important;
+}
