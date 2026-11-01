@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=ucs-red-carbon-fights-20261101" />
+  <link rel="stylesheet" href="styles.css?v=ucs-event-winners-clean-20261101" />
 </head>
 <body>
 
@@ -272,7 +272,7 @@
 
     <section class="page shell section-space ucs-events-page" id="events">
       <div class="section-kicker">OFFICIAL UCS EVENTS</div><div class="section-title-row"><h2>UCS <em>EVENTS</em></h2><span>Fight nights, posters and updated cards</span></div>
-      <div id="ucsEventsGrid" class="ucs-events-grid"><div class="data-empty">Loading UCS events…</div></div>
+      <div id="ucsEventsGrid" class="ucs-events-grid"><div class="data-empty">Loading UCS events…</div></div><section id="ucsEventResultsDetail" class="ucs-event-results-detail hidden" aria-live="polite"></section>
     </section>
 
     <section class="page shell section-space" id="fights">
@@ -400,6 +400,7 @@
         <div class="ucs-admin-tabs" role="tablist" aria-label="Admin tools">
           <button type="button" class="ucs-admin-tab active" id="adminOperationsTab" role="tab" aria-controls="adminOperationsPanel" aria-selected="true">LEAGUE OPERATIONS</button>
           <button type="button" class="ucs-admin-tab" id="adminEarningsTab" role="tab" aria-controls="adminEarningsPanel" aria-selected="false">FIGHTER EARNINGS</button>
+          <button type="button" class="ucs-admin-tab" id="adminEventResultsTab" role="tab" aria-controls="adminEventResultsPanel" aria-selected="false">EVENT WINNERS</button>
           <button type="button" class="ucs-admin-tab" id="adminEventHeroTab" role="tab" aria-controls="adminEventHeroPanel" aria-selected="false">EVENT POSTER & COUNTDOWN</button>
           <button type="button" class="ucs-admin-tab" id="adminNewsTab" role="tab" aria-controls="adminNewsPanel" aria-selected="false">NEWS EDITOR</button>
         </div>
@@ -613,6 +614,15 @@
         </section>
         </div>
 
+        <section id="adminEventResultsPanel" role="tabpanel" aria-labelledby="adminEventResultsTab" class="hidden" aria-hidden="true">
+          <div class="ucs-earnings-header"><div class="section-kicker">OFFICIAL EVENT RESULTS</div><h2>EVENT WINNERS</h2><p>Select an event and publish its winners. Visitors can click an event poster to see the results.</p></div>
+          <form id="ucsEventWinnersForm" class="admin-card">
+            <label>Event<select name="event_id" id="ucsEventWinnersSelect" required></select></label>
+            <label>Event winners / results (one fight per line)<textarea name="winners" id="ucsEventWinnersInput" rows="8" placeholder="RAFA defeated BBK — unanimous decision&#10;JUNEBUGZ defeated OPPONENT — KO"></textarea></label>
+            <label class="ucs-event-toggle"><input type="checkbox" name="completed" id="ucsEventCompletedInput"> Event completed — show official results</label>
+            <button type="submit" class="btn primary">PUBLISH EVENT WINNERS</button>
+          </form>
+        </section>
         <section id="adminEventHeroPanel" role="tabpanel" aria-labelledby="adminEventHeroTab" class="hidden" aria-hidden="true">
           <div class="ucs-earnings-header"><div class="section-kicker">UCS EVENT PROMOTION</div><h2>EVENT POSTER & COUNTDOWN</h2><p>Control the featured homepage event banner and its live countdown. Upload your own 1920 × 1080 event poster.</p></div>
           <form class="admin-card ucs-event-hero-form" id="ucsEventHeroForm">
@@ -796,6 +806,6 @@
   <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=ucs-poster-any-size-fix-20261101"></script>
+  <script src="app.js?v=ucs-event-winners-clean-20261101"></script>
 </body>
 </html>
