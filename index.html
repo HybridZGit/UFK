@@ -384,9 +384,9 @@
 
     <section class="page shell section-space" id="admin">
       <div class="section-kicker">LEAGUE CONTROL</div>
-      <div class="section-title-row"><h2>ADMIN DASHBOARD</h2><span id="connectionStatus">Supabase not configured</span></div>
+      <div class="section-title-row"><h2>ADMIN DASHBOARD</h2></div>
 
-      <div class="admin-note" id="setupNotice">Connect <strong>config.js</strong> to your Supabase project, run <strong>supabase-schema.sql</strong>, then sign in with an admin account. Never put a Supabase service-role/secret key in this website.</div>
+      
 
       <div class="admin-auth" id="adminAuth">
         <form id="loginForm" class="admin-login">
@@ -479,17 +479,13 @@
             <button class="btn primary" type="submit">SAVE FIGHTER PROFILE</button>
           </form>
 
-          <form class="admin-card" id="simDivisionForm">
-            <h3>UCS SIM World division</h3>
-            <p>Add or remove fighters from SIM World rankings without changing their records or platforms.</p>
-            <label>Fighter<select name="fighter_id" class="fighter-select" required></select></label>
-            <label>SIM division status<select name="sim_division" required><option value="true">Include in UCS SIM World</option><option value="false">Remove from UCS SIM World</option></select></label>
-            <button class="btn primary" type="submit">SAVE SIM DIVISION</button>
-          </form>
+          
 
           <div class="admin-card" id="ucsDivisionManager">
             <h3>MANAGE RANKING DIVISIONS</h3>
-            <p>ADD OR REMOVE DIVISION TABS. EXISTING FIGHTER RECORDS ARE NEVER DELETED.</p>
+            <p>Remove divisions here without deleting fighter records.</p>
+            <button class="btn" type="button" id="ucsRemoveSimDivision" style="margin-bottom:14px;border:1px solid #b53c55;color:#ffb6c5;background:#22141c">REMOVE UCS SIM WORLD DIVISION</button>
+            
             <form id="ucsAddDivisionForm">
               <label>NEW DIVISION NAME<input name="division_name" maxlength="60" placeholder="UCS HEAVYWEIGHT" required></label>
               <button class="btn primary" type="submit">ADD DIVISION</button>
