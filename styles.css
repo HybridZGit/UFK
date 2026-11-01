@@ -2220,3 +2220,98 @@ a,button{transition-property:color,background-color,border-color,transform,box-s
 @media(max-width:850px){#home>.hero{grid-template-columns:1fr!important;min-height:0!important;padding-top:55px!important;padding-bottom:40px!important}#home>.hero .hero-copy{z-index:2!important}#home>.hero .hero-art.ucs-cinema-hero-art{min-height:200px!important;max-height:280px!important;opacity:.78!important}#home>.hero .hero-art.ucs-cinema-hero-art img{max-height:280px!important}#home>.hero h1{font-size:clamp(51px,11vw,86px)!important}}
 @media(max-width:520px){#home>.hero{padding-top:40px!important;gap:0!important}#home>.hero h1{font-size:clamp(45px,12vw,66px)!important;letter-spacing:-1px!important}#home>.hero .hero-art.ucs-cinema-hero-art{min-height:150px!important;max-height:190px!important}#home>.hero .hero-art.ucs-cinema-hero-art img{max-height:190px!important}.ticker-inner{font-size:10px!important}.ticker b{padding:0 4px}}
 @media(prefers-reduced-motion:reduce){#home>.hero .hero-art.ucs-cinema-hero-art img,.ucs-live-pulse{animation:none!important}.ucs-cinema-navigating .page.active{animation:none!important}html{scroll-behavior:auto!important}}
+
+/* UCS / FULL CINEMA REFINEMENT — public site, account, and administration */
+:root{
+ --bg:#09090b!important;--surface:#151517!important;--panel:#171719!important;
+ --border:#29292c!important;--red:#e50914!important;--accent:#e50914!important;
+ --gold:#e3b86d;--muted:#a3a3aa;--text:#f5f5f5;
+ font-family:Inter,Arial,Helvetica,sans-serif!important
+}
+body,button,input,textarea,select{font-family:Inter,Arial,Helvetica,sans-serif!important}
+body{background:#080809!important;background-image:radial-gradient(ellipse at 50% -8%,rgba(200,8,25,.13),transparent 50%),repeating-linear-gradient(125deg,transparent 0,transparent 7px,rgba(255,255,255,.012) 7.5px,transparent 8.5px),linear-gradient(#09090b,#0b0b0d)!important}
+main{background:transparent!important}
+.page:not(#home){background:transparent!important;min-height:calc(100vh - 150px);padding-top:clamp(35px,5vw,68px)!important;padding-bottom:70px!important}
+.page:not(#home)::before{content:"";position:absolute;z-index:-1;inset:0 0 auto;height:330px;pointer-events:none;background:radial-gradient(ellipse at 72% 0,rgba(204,0,25,.14),transparent 68%)}
+.page{isolation:isolate}
+#home>.hero{background:radial-gradient(ellipse at 78% 45%,rgba(175,0,20,.12),transparent 48%),linear-gradient(105deg,#09090b 5%,#111114 62%,#09090b 100%)!important}
+#home>.hero .hero-art.ucs-cinema-hero-art::before{background:radial-gradient(circle,rgba(255,255,255,.075),transparent 65%)!important;filter:blur(30px)!important}
+#home>.hero .hero-art.ucs-cinema-hero-art img{width:min(100%,600px)!important;max-height:450px!important;transform:none!important;animation:ucsLogoReveal .75s ease-out both!important;filter:drop-shadow(0 14px 25px #0009)!important}
+@keyframes ucsLogoReveal{from{opacity:0;transform:translateY(15px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+#home>.hero h1{font-family:"Barlow Condensed",Impact,Arial,sans-serif!important;font-weight:900!important}
+#home>.hero .hero-copy>p{color:#b6b6bd!important}
+.topbar{border-bottom:1px solid #ffffff18!important}
+.topbar .brand strong{color:#fff!important}
+.topbar .brand span{color:#9b9ba3!important}
+.topbar nav{gap:clamp(3px,.5vw,11px)!important}
+.topbar nav a{font-family:Inter,Arial,sans-serif!important;font-size:12px!important;font-weight:650!important;letter-spacing:.12px!important;border-radius:5px!important}
+.topbar nav a.active{background:#e5091420!important;color:#fff!important}
+.topbar nav a:hover{background:#ffffff13!important}
+.page h1,.page h2,.page h3,.page h4,.profile-section-title,.section-title{color:#f8f8f9!important}
+.page h1,.page h2,.page h3{font-family:"Barlow Condensed",Impact,Arial,sans-serif!important;font-weight:850!important;line-height:1.03!important}
+.page h2{letter-spacing:.1px!important}
+.page p,.page label,.page small,.page .muted{line-height:1.55}
+.section-kicker,.eyebrow,.section-eyebrow{font-family:Inter,Arial,sans-serif!important;font-size:10px!important;font-weight:850!important;letter-spacing:1.7px!important;color:#ff3544!important}
+.page .panel,.page .admin-card,.page .account-card,.page .fight-card,.page .mega-card,.page .ucs-command-card,.page .ucs-ko-panel,.page .profile-history,.page .ucs-tott-card,.page .ucs-tott-stage,.page .ucs-home-champions-stage{
+ background:#161618!important;
+ background-image:linear-gradient(145deg,rgba(255,255,255,.025),transparent 48%)!important;
+ border:1px solid #2d2d31!important;
+ border-radius:10px!important;
+ box-shadow:0 10px 36px rgba(0,0,0,.2)!important
+}
+.page .panel:hover,.page .fight-card:hover,.page .mega-card:hover,.page .ucs-command-card:hover,.page .ucs-tott-card:hover{border-color:#62313a!important}
+.page .admin-card,.page .account-card{box-shadow:none!important}
+.page .panel h3,.page .admin-card h3{font-family:"Barlow Condensed",Impact,sans-serif!important;font-weight:800!important;letter-spacing:.3px!important}
+.page .fight-card,.page .ucs-tott-card,.page .ucs-event-hero,.page .ucs-home-champions-stage{overflow:hidden!important}
+.page .fight-card img,.page .ucs-tott-card img,.page .ucs-event-hero img,.page .ucs-home-champions-stage img{transition:transform .35s cubic-bezier(.2,.7,.2,1)!important}
+.page .fight-card:hover img,.page .ucs-tott-card:hover img,.page .ucs-event-hero:hover img,.page .ucs-home-champions-stage:hover img{transform:scale(1.035)!important}
+.page .btn,.page button.btn,.page input[type=submit],.page .ucs-action-btn{font-family:Inter,Arial,sans-serif!important;font-size:11px!important;font-weight:850!important;letter-spacing:.5px!important;border-radius:5px!important}
+.page .btn.primary,.page button.primary,.page .ucs-action-btn{background:#e50914!important;border-color:#e50914!important;color:#fff!important}
+.page .btn.primary:hover,.page button.primary:hover,.page .ucs-action-btn:hover{background:#ff2638!important;border-color:#ff2638!important}
+.page .btn.ghost,.page button.ghost{background:#ffffff10!important;border-color:#ffffff36!important;color:#fff!important}
+.page input:not([type=checkbox]):not([type=radio]),.page select,.page textarea{
+ background:#101013!important;color:#f3f3f5!important;border:1px solid #39393e!important;border-radius:5px!important;
+ box-shadow:none!important
+}
+.page input:focus,.page select:focus,.page textarea:focus{border-color:#e50914!important;outline:1px solid #e5091466!important}
+.page input::placeholder,.page textarea::placeholder{color:#85858d!important}
+.page table{border-color:#29292e!important}
+.page th{background:#1d1d20!important;color:#a9a9b0!important;font:800 10px/1.5 Inter,Arial,sans-serif!important;letter-spacing:1px!important;text-transform:uppercase!important}
+.page td{border-color:#2b2b30!important;color:#e5e5e8!important}
+.page tbody tr:hover{background:#ffffff09!important}
+#rankingTabs button,.ucs-tott-tabs button,.page [role=tab],.page .tabs button{font-family:Inter,Arial,sans-serif!important;font-weight:750!important;letter-spacing:.2px!important;transition:background .2s,color .2s,border-color .2s!important}
+#rankingTabs button.active,.ucs-tott-tabs button.active,.page [role=tab][aria-selected=true],.page .tabs button.active{background:#e50914!important;border-color:#e50914!important;color:white!important}
+#rankingTabs button:hover,.ucs-tott-tabs button:hover,.page [role=tab]:hover,.page .tabs button:hover{border-color:#e50914!important;color:#fff!important}
+#rankRows [data-fighter-profile],.page [data-fighter-profile]{transition:background .2s,transform .2s,border-color .2s!important}
+#rankRows [data-fighter-profile]:hover,.page [data-fighter-profile]:hover{background:#24161b!important;border-color:#9b2536!important}
+#fighterModal .fighter-profile-panel,#fighterModal .ucs-dossier{background:#111114!important;color:#f7f7f8!important}
+#fighterModal .ucs-fighter-analysis{background:#121215!important}
+#fighterModal .ucs-fighter-insights{border-color:#303036!important;background:#303036!important}
+#fighterModal .ucs-fighter-insights>div,#fighterModal .ucs-fighter-insights>div:nth-child(even){background:#19191c!important}
+#fighterModal .ucs-fighter-insights small{color:#a5a5ae!important}
+#fighterModal .ucs-fighter-insights strong{color:#fff!important}
+#fighterModal .ucs-dossier .ucs-champion-spotlight{background:linear-gradient(100deg,#241b1d,#161618)!important;border-color:#60353a!important;border-left-color:#e50914!important}
+#fighterModal .ucs-dossier .ucs-champion-emblem{background:#32171d!important;border-color:#8a2c3c!important;color:#ff4a57!important}
+#fighterModal .ucs-dossier .ucs-champion-eyebrow{color:#f05a68!important}
+#fighterModal .ucs-dossier .contract-challenge-btn{border-color:#e50914!important;color:#fff!important;background:#8d0711!important}
+#fighterModal .ucs-dossier .contract-challenge-btn:hover{background:#e50914!important}
+.ucs-home-countdown-strip{border-color:#3b242a!important;background:linear-gradient(90deg,#1c1116,#111114)!important}
+.ucs-home-countdown-label{color:#ff3546!important}
+.ucs-tott-vs{font-family:"Barlow Condensed",Impact,sans-serif!important;font-weight:900!important}
+.ucs-tott-card-heading{background:#211318!important}
+.ucs-tott-card-heading strong,.ucs-tott-card-heading span{color:#fff!important}
+.ucs-home-champions-heading h2,.ucs-tott-header h2{font-size:clamp(33px,4.4vw,58px)!important}
+.ucs-home-champions-controls button{border-color:#5d202b!important}
+.ucs-home-champions-controls button:hover{background:#e50914!important}
+#events .event-card,#news .news-card,#photography .photo-card{background:#171719!important;border:1px solid #2d2d32!important;border-radius:9px!important;overflow:hidden!important}
+#events .event-card:hover,#news .news-card:hover,#photography .photo-card:hover{border-color:#a62a3a!important}
+#admin .admin-card{border-left:1px solid #303036!important}
+#admin .admin-card h3{color:#f5f5f6!important}
+#admin button[type=submit],#account button[type=submit]{background:#e50914!important;color:#fff!important;border-color:#e50914!important}
+#admin button[type=submit]:hover,#account button[type=submit]:hover{background:#ff2638!important}
+.ucs-footer{background:#080809!important}
+.ucs-footer .ucs-footer-discord-copy strong{color:#fff!important}
+.ucs-footer .ucs-footer-discord-copy a{color:#ff3b4b!important}
+@media(max-width:800px){.page:not(#home){padding-top:30px!important}#home>.hero .hero-art.ucs-cinema-hero-art img{max-height:270px!important}}
+@media(max-width:550px){.page .panel,.page .admin-card{border-radius:8px!important}#home>.hero .hero-art.ucs-cinema-hero-art img{max-height:195px!important}}
+@media(prefers-reduced-motion:reduce){#home>.hero .hero-art.ucs-cinema-hero-art img{animation:none!important}.page .fight-card img,.page .ucs-tott-card img,.page .ucs-event-hero img{transition:none!important}}
