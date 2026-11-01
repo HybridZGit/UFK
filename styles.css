@@ -1094,3 +1094,23 @@ input,select,textarea{border-radius:7px}
 .hero-copy p{font-size:15px;line-height:1.75;color:#bfc0c8}
 .ticker-inner{font-size:11px}
 .ucs-matcherino-tick{font-family:"Inter",sans-serif}
+
+/* UCS SIGNATURE IDENTITY — independent championship promotion */
+#home .hero{min-height:560px;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:42px}
+#home .hero-copy{position:relative;z-index:2}
+#home .hero-copy:before{content:"UNDISPUTED CHAMPIONSHIP SERIES";display:block;color:#ff6477;font:700 10px "Inter",sans-serif;letter-spacing:.22em;margin-bottom:26px}
+#home .hero h1{font-family:"Barlow Condensed",sans-serif;font-weight:900;font-size:clamp(58px,7.1vw,104px);line-height:.9;letter-spacing:-.018em;text-transform:uppercase}
+#home .hero h1 em{display:inline-block;color:#f1f0f1;background:linear-gradient(110deg,#fff 15%,#e7e4e5 70%,#ef5469);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#home .hero-art{isolation:isolate}
+#home .hero-art:before{content:"";position:absolute;width:min(95%,480px);aspect-ratio:1;border:1px solid rgba(237,35,66,.28);transform:rotate(45deg) scale(.78);box-shadow:0 0 0 25px rgba(206,22,49,.025),0 0 0 52px rgba(206,22,49,.025)}
+#home .hero-art:after{content:"UCS";position:absolute;bottom:12%;right:4%;font:900 clamp(80px,12vw,190px) "Barlow Condensed",sans-serif;color:rgba(220,30,54,.06);z-index:0}
+#home .hero-art img{width:min(420px,88%);position:relative;z-index:1}
+#home .hero-actions .btn{padding:16px 22px}
+#home .hero-actions .btn.ghost{border-color:#6c3942;background:rgba(18,13,17,.8)}
+#home .ticker{border-top:2px solid #d3223f}
+#home .mega-card{border-left:3px solid #e52a46}
+#home .dashboard-grid .panel{transition:border-color .2s ease,transform .2s ease}
+#home .dashboard-grid .panel:hover{border-color:#ad3147;transform:translateY(-3px)}
+.section-title-row{border-bottom:1px solid rgba(210,45,66,.22);padding-bottom:15px}
+.section-title-row h2{font-weight:900;letter-spacing:.01em}
+@media(max-width:760px){#home .hero{grid-template-columns:1fr;gap:0;min-height:0}#home .hero-copy{padding:56px 0 18px}#home .hero-art{min-height:250px}#home .hero h1{font-size:clamp(56px,13vw,82px)}#home .hero-art img{max-height:250px}}
