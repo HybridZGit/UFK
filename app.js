@@ -730,6 +730,15 @@ let ucsChampionTouchStart=null;
 $('.ucs-home-champions-stage')?.addEventListener('touchstart',e=>{ucsChampionTouchStart=e.touches[0]?.clientX??null},{passive:true});
 $('.ucs-home-champions-stage')?.addEventListener('touchend',e=>{if(ucsChampionTouchStart===null)return;const delta=(e.changedTouches[0]?.clientX??ucsChampionTouchStart)-ucsChampionTouchStart;if(Math.abs(delta)>45)ucsMoveHomeChampion(delta<0?1:-1);ucsChampionTouchStart=null},{passive:true});
 
+function ucsChampionFlagHtml(flag){
+  const raw=String(flag||'').trim();
+  if(!raw)return '';
+  const names={UK:'gb',GB:'gb',ENGLAND:'gb',US:'us',USA:'us',MX:'mx',MEXICO:'mx',CA:'ca',CANADA:'ca',IE:'ie',IRELAND:'ie',AU:'au',AUSTRALIA:'au',FR:'fr',FRANCE:'fr',DE:'de',GERMANY:'de',ES:'es',SPAIN:'es',IT:'it',ITALY:'it',NL:'nl',NETHERLANDS:'nl',BR:'br',BRAZIL:'br',JP:'jp',JAPAN:'jp',PH:'ph',PHILIPPINES:'ph',NZ:'nz',NG:'ng',NIGERIA:'ng'};
+  const chars=[...raw];
+  const emojiCode=chars.length===2&&chars.every(c=>c.codePointAt(0)>=0x1f1e6&&c.codePointAt(0)<=0x1f1ff)?chars.map(c=>String.fromCharCode(c.codePointAt(0)-0x1f1e6+65)).join('').toLowerCase():null;
+  const code=emojiCode||names[raw.toUpperCase()]||( /^[a-z]{2}$/i.test(raw)?raw.toLowerCase():null);
+  return code?`<img class="ucs-flag-image" src="https://flagcdn.com/w80/${code}.png" alt="${esc(raw)} flag" loading="lazy">`:`<span>${esc(raw)}</span>`;
+}
 function renderChampionShowcase(){
   const root=$('#ucsChampionShowcase');if(!root)return;
   const ordered=['UCS World','UCS International',...ucsDivisions().filter(d=>!['UCS World','UCS International'].includes(d))];
@@ -739,7 +748,7 @@ function renderChampionShowcase(){
     const photo=champ&&safeHttps(champ.showcase_image_url)?champ.showcase_image_url:null;
     const flag=champ?.showcase_flag||'';
     const portraitY=Number.isFinite(+champ?.portrait_y)?Math.min(100,Math.max(0,+champ.portrait_y)):50;
-    const headOffset=(portraitY-50)*1.5+(division==='UCS World'?-36:0);
+    const headOffset=(portraitY-50)*1.5+18;
     const recentForm=fighter?fighterForm(fighter):'—';
     const letters=recentForm==='—'?('W'.repeat(Math.min(5,Math.max(0,Number(fighter?.wins)||0)))+'L'.repeat(Math.min(5,Math.max(0,Number(fighter?.losses)||0)))).slice(0,5):recentForm;
     const boxes=letters.split('').map(letter=>`<span class="ucs-champ-form-box ucs-champ-form-${letter==='W'?'win':letter==='L'?'loss':'draw'}">${esc(letter)}</span>`).join('');
@@ -753,7 +762,7 @@ function renderChampionShowcase(){
       <span class="ucs-champ-showcase-division">${esc(division.toUpperCase())}</span>
       <span class="ucs-champ-vertical" aria-hidden="true">${esc(division.replace(/^UCS\s*/,'').toUpperCase())}</span>
       ${photo?`<img src="${esc(photo)}" alt="${esc(fighter.name)} boxer portrait" loading="lazy" style="transform:translateY(${headOffset}px)!important">`:`<div class="ucs-champ-silhouette" aria-hidden="true"><span>♟</span></div>`}
-      <div class="ucs-champ-showcase-info">${fighter?'<small>♛ CHAMPION</small>':''}<div class="ucs-champ-name-line"><strong>${fighter?esc(fighter.name):'VACANT'}</strong>${flag&&fighter?`<span class="ucs-champ-flag" aria-label="Champion country flag">${esc(flag)}</span>`:''}${fighter&&boxes?`<div class="ucs-champ-form" aria-label="Fight form: ${esc(letters)}">${boxes}</div>`:''}</div></div>
+      <div class="ucs-champ-showcase-info">${fighter?'<small>♛ CHAMPION</small>':''}<div class="ucs-champ-name-line"><strong>${fighter?esc(fighter.name):'VACANT'}</strong>${flag&&fighter?`<span class="ucs-champ-flag" aria-label="Champion country flag">${ucsChampionFlagHtml(flag)}</span>`:''}${fighter&&boxes?`<div class="ucs-champ-form" aria-label="Fight form: ${esc(letters)}">${boxes}</div>`:''}</div></div>
     </article>`;
   }).join('');
 }
