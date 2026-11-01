@@ -618,12 +618,12 @@
           <form class="admin-card ucs-event-hero-form" id="ucsEventHeroForm">
             <label>Event title<input name="title" id="ucsEventTitleInput" maxlength="100" placeholder="UCS FIGHT NIGHT"></label>
             <label>Event date and time (your local time)<input name="event_at" id="ucsEventDateInput" type="datetime-local" required></label>
-            <label>1920 × 1080 event poster (JPG, PNG or WEBP, max 8 MB)<input name="poster" id="ucsEventPosterInput" type="file" accept="image/jpeg,image/png,image/webp"></label>
+            <label>Event poster — any dimensions (JPG, PNG or WEBP, max 8 MB)<input name="poster" id="ucsEventPosterInput" type="file" accept="image/jpeg,image/png,image/webp"></label>
             <div id="ucsEventPosterPreview" class="ucs-event-admin-preview" aria-live="polite">No poster selected</div>
             <label class="ucs-event-toggle"><input name="visible" id="ucsEventVisibleInput" type="checkbox" checked> Show poster on homepage</label>
             <button class="btn primary" type="submit">SAVE EVENT POSTER & COUNTDOWN</button>
             <button class="btn ghost" id="ucsEventHideBtn" type="button">HIDE POSTER</button>
-            <p class="ucs-admin-help">Upload a 16:9 poster to display it full-width. The countdown uses the date you set and updates for all visitors.</p>
+            <p class="ucs-admin-help">16:9 is recommended, but any poster dimensions can be published. The countdown uses the date you set and updates for all visitors.</p>
           </form>
         </section>
         <section id="adminNewsPanel" role="tabpanel" aria-labelledby="adminNewsTab" class="hidden" aria-hidden="true">
@@ -796,6 +796,6 @@
   <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=ucs-champ-carousel-20261101"></script>
+  <script src="app.js?v=ucs-poster-any-size-fix-20261101"></script>
 </body>
 </html>
