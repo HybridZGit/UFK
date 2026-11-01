@@ -560,6 +560,15 @@
             <label>Or existing poster URL<input name="poster_url" type="url" placeholder="https://..."></label>
             <label>Bout stakes<select name="is_title_eliminator"><option value="false">CHAMPIONSHIP FIGHT / REGULAR BOUT</option><option value="true">INTERNATIONAL TITLE ELIMINATOR — WINNER EARNS A TITLE SHOT</option></select></label>
             <label>Fight card placement<select name="is_co_main"><option value="false">Regular bout</option><option value="true">★ CO-MAIN EVENT</option></select></label>
+            <label>Scheduled rounds<input name="scheduled_rounds" type="number" min="1" max="15" placeholder="TBA"></label>
+            <p class="ucs-admin-help">Use the exact agreed round count, or leave blank until confirmed. Title fights can have their own number of rounds.</p>
+            <div class="split-2">
+              <label>Red corner fight portrait<input name="fighter_a_bout_file" type="file" accept="image/jpeg,image/png,image/webp"></label>
+              <label>Blue corner fight portrait<input name="fighter_b_bout_file" type="file" accept="image/jpeg,image/png,image/webp"></label>
+            </div>
+            <p class="ucs-admin-help">Upload the actual fighter images used for this matchup. JPG, PNG, WebP, max 5 MB each. Leave empty to keep existing bout pictures, or use the fighter's regular photo as fallback.</p>
+            <label>Red corner image URL (optional)<input name="fighter_a_bout_image" type="url" placeholder="https://..."></label>
+            <label>Blue corner image URL (optional)<input name="fighter_b_bout_image" type="url" placeholder="https://..."></label>
             <label>Contribute link (optional)<input name="contribution_url" type="url"></label>
             <div class="button-row"><button class="btn primary" type="submit">SAVE BOUT</button><button class="btn danger-btn" type="button" id="cancelScheduledBout">CANCEL BOUT</button></div>
           </form>
@@ -713,6 +722,12 @@
     </div>
   </div>
 
+  <section class="page ucs-bout-page" id="bout" aria-label="Scheduled bout details">
+    <div class="ucs-bout-shell">
+      <button type="button" class="ucs-bout-back" id="ucsBoutBack">← BACK TO FIGHTER</button>
+      <div id="ucsBoutDetail" aria-live="polite"></div>
+    </div>
+  </section>
   <div class="fighter-modal" id="fighterModal" aria-hidden="true">
     <div class="fighter-modal-backdrop" data-close-profile></div>
     <article class="fighter-profile-panel" role="dialog" aria-modal="true" aria-labelledby="profileName">
