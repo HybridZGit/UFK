@@ -1,0 +1,1 @@
+{"name":"ucs-discord-bot","version":"1.0.0","private":true,"type":"module","scripts":{"start":"node bot.js","register":"node register.js"},"engines":{"node":">=20"},"dependencies":{"discord.js":"^14.22.1","@supabase/supabase-js":"^2.57.0","dotenv":"^16.4.5"}}
