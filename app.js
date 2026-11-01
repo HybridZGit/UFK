@@ -160,7 +160,7 @@ async function loadPublicData(){
   state.news=results[9].data||[];
   state.photos=results[10].data||[];
   state.formerChampionships=results[11].data||[];
-  renderAll();renderChampionShowcase();ucsRenderHomeChampion();ucsFillBeltArtForm();ucsPosterFill();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
+  renderAll();ucsRenderOfflineAdminList();renderChampionShowcase();ucsRenderHomeChampion();ucsFillBeltArtForm();ucsPosterFill();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
 }
 
 // UCS Photography: public read-only gallery; approved users can upload.
@@ -826,6 +826,8 @@ function openFighterProfile(id){
   $('#ucsDossierWins').textContent=String(f.wins||0);
   $('#ucsDossierLosses').textContent=String(f.losses||0);
   $('#ucsDossierDraws').textContent=String(f.draws||0);
+  state.ucsCurrentProfile=f.id;state.ucsRecordTab='pro';
+  ucsRenderDossierRecords(f);
   $('#profileRecord').textContent=`${f.wins||0}-${f.losses||0}-${f.draws||0}`;
   $('#profileScore').textContent=Number(f.score||0).toFixed(1);
   $('#profileStreak').textContent=fighterForm(f);
@@ -848,6 +850,7 @@ function openFighterProfile(id){
     const won=r.winner_id===f.id,opp=fighterById(won?r.loser_id:r.winner_id);
     return `<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small>${esc(r.method)} · ${esc(fmtDate(r.event_date))}</small>${won&&(r.is_good_win||r.is_big_win)?'<div class="ucs-good-win-tag">★ GOOD WIN · RANKINGS BOOST</div>':''}${r.fight_title?`<div class="ucs-result-title">🏆 ${esc(r.fight_title.toUpperCase())} CHAMPIONSHIP</div>`:''}${r.fight_description?`<div class="ucs-result-description">${esc(r.fight_description)}</div>`:''}</div></div>`;
   }).join(''):empty('No official fight history yet.');
+  ucsRenderDossierRecords(f);
   // Reference-inspired previous fights table, using official UCS result rows.
   const fightHistoryEl=$('#profileFightHistory');
   if(fightHistoryEl){
@@ -2221,4 +2224,45 @@ async function ucsPosterGenerate(e){
 $('#ucsPosterForm')?.addEventListener('submit',ucsPosterGenerate);
 $('#ucsPosterDownload')?.addEventListener('click',()=>{
  const canvas=$('#ucsPosterCanvas');try{const link=document.createElement('a');link.download='UCS-Fight-Poster.png';link.href=canvas.toDataURL('image/png');link.click();}catch{$('#ucsPosterStatus').textContent='Export blocked by an external image. Upload the portraits as local files and try again.';}
+});
+
+/* Offline bouts: separate from official PRO result and ranking calculations. */
+function ucsOfflineBouts(){return Array.isArray(state.settings?.ucs_offline_bouts)?state.settings.ucs_offline_bouts:[];}
+function ucsOfflineFor(f){return ucsOfflineBouts().filter(r=>r.fighter_id===f.id||r.opponent_id===f.id);}
+function ucsRenderDossierRecords(f){
+ const mode=state.ucsRecordTab||'pro',offline=ucsOfflineFor(f),pro=fighterResults(f);
+ const ow=offline.filter(r=>(r.fighter_id===f.id?r.result:r.result==='W'?'L':r.result==='L'?'W':'D')==='W').length;
+ const ol=offline.filter(r=>(r.fighter_id===f.id?r.result:r.result==='W'?'L':r.result==='L'?'W':'D')==='L').length;
+ const od=offline.length-ow-ol;
+ const pw=Number(f.wins)||0,pl=Number(f.losses)||0,pd=Number(f.draws)||0;
+ const w=mode==='pro'?pw:mode==='offline'?ow:pw+ow,l=mode==='pro'?pl:mode==='offline'?ol:pl+ol,d=mode==='pro'?pd:mode==='offline'?od:pd+od;
+ [['#ucsDossierWins',w],['#ucsDossierLosses',l],['#ucsDossierDraws',d],['#profileRecord',w+'-'+l+'-'+d],['#profileFights',w+l+d]].forEach(([sel,val])=>{const el=$(sel);if(el)el.textContent=val;});
+ const heading=$('#ucsDossierRecordHeading');if(heading)heading.textContent=mode==='pro'?'UCS PRO RECORD':mode==='offline'?'UCS OFFLINE RECORD':'ALL UCS BOUTS';
+ $$('#ucsDossierTabs [data-ucs-record-tab]').forEach(b=>{const active=b.dataset.ucsRecordTab===mode;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
+ const entries=[];
+ if(mode!=='offline')for(const r of pro){const won=r.winner_id===f.id,opp=fighterById(won?r.loser_id:r.winner_id);entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind">PRO</b> ${esc(r.method||'Result')} · ${esc(fmtDate(r.event_date))}</small></div></div>`});}
+ if(mode!=='pro')for(const r of offline){const own=r.fighter_id===f.id,code=own?r.result:r.result==='W'?'L':r.result==='L'?'W':'D',opp=fighterById(own?r.opponent_id:r.fighter_id);entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${code==='W'?'win':code==='L'?'loss':''}">${code}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind offline">OFFLINE</b> ${esc(r.method)} · ${esc(fmtDate(r.event_date))}</small><small>${esc(r.event_name||'Offline bout')}</small></div></div>`});}
+ entries.sort((x,y)=>String(y.date||'').localeCompare(String(x.date||'')));
+ const root=$('#profileFightHistory');if(root)root.innerHTML=entries.length?entries.slice(0,50).map(x=>x.html).join(''):empty('No '+(mode==='offline'?'offline':'recorded')+' bouts yet.');
+}
+$('#ucsDossierTabs')?.addEventListener('click',e=>{const b=e.target.closest('[data-ucs-record-tab]');if(!b||!state.ucsCurrentProfile)return;state.ucsRecordTab=b.dataset.ucsRecordTab;const f=fighterById(state.ucsCurrentProfile);if(f)ucsRenderDossierRecords(f);});
+function ucsRenderOfflineAdminList(){
+ const root=$('#ucsOfflineAdminList');if(!root)return;
+ root.innerHTML=ucsOfflineBouts().slice().reverse().map(r=>`<div class="ucs-offline-admin-row"><span>${esc(fighterById(r.fighter_id)?.name||'Unknown')} vs ${esc(fighterById(r.opponent_id)?.name||'Unknown')} · ${esc(r.result)} · ${esc(r.event_date)}</span><button type="button" data-delete-offline="${esc(r.id)}">REMOVE</button></div>`).join('');
+}
+$('#ucsOfflineResultForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();if(!db||!state.isAdmin)return toast('Admin permission required.',true);
+ const d=new FormData(e.currentTarget),fighter_id=String(d.get('fighter_id')),opponent_id=String(d.get('opponent_id'));
+ if(!fighter_id||!opponent_id||fighter_id===opponent_id)return toast('Choose two different fighters.',true);
+ const rows=[...ucsOfflineBouts(),{id:crypto.randomUUID(),fighter_id,opponent_id,result:String(d.get('result')),method:String(d.get('method')).trim().slice(0,80),event_date:String(d.get('event_date')),event_name:String(d.get('event_name')||'').slice(0,120)}];
+ const {error}=await db.from('league_settings').upsert({key:'ucs_offline_bouts',value:rows,updated_at:new Date().toISOString()},{onConflict:'key'});
+ if(error)return toast('Could not save offline result: '+error.message,true);
+ e.currentTarget.reset();toast('Offline result saved.');await loadPublicData();ucsRenderOfflineAdminList();
+});
+$('#ucsOfflineAdminList')?.addEventListener('click',async e=>{
+ const b=e.target.closest('[data-delete-offline]');if(!b||!state.isAdmin||!db)return;
+ if(!confirm('Remove this offline result?'))return;
+ const rows=ucsOfflineBouts().filter(r=>r.id!==b.dataset.deleteOffline);
+ const {error}=await db.from('league_settings').upsert({key:'ucs_offline_bouts',value:rows,updated_at:new Date().toISOString()},{onConflict:'key'});
+ if(error)return toast(error.message,true);await loadPublicData();ucsRenderOfflineAdminList();toast('Offline result removed.');
 });
