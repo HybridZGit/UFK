@@ -1175,3 +1175,24 @@ h1,h2,h3,.section-title-row h2{font-style:normal!important}
 #home .ucs-flat-logo-stage img{display:block!important;width:min(100%,440px)!important;height:auto!important;max-height:340px;object-fit:contain;filter:none!important}
 #home .ucs-flat-logo-stage:before,#home .ucs-flat-logo-stage:after{display:none!important}
 @media(max-width:760px){#home .hero{grid-template-columns:1fr!important;gap:4px!important}#home .ucs-flat-logo-stage{min-height:150px!important;padding:0 0 22px}#home .ucs-flat-logo-stage img{max-width:280px!important;max-height:180px!important}}
+
+/* UCS fight schedule: flat televised fight-card rows */
+#fightList .ucs-match-card{position:relative;min-height:0!important;margin:0 0 9px!important;background:#111217!important;background-image:none!important;border:1px solid #303039!important;border-radius:2px!important;overflow:hidden;box-shadow:none!important}
+#fightList .ucs-match-card.ucs-match-title-bout{border-left:4px solid #d6a83a!important}
+#fightList .ucs-match-card:not(.ucs-match-title-bout){border-left:4px solid #d52a45!important}
+#fightList .ucs-match-top{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:12px!important;background:#17181d!important;border:0!important;padding:10px 18px!important;min-height:37px!important;font:800 11px Inter,sans-serif!important;letter-spacing:.06em!important;color:#d8d9df!important}
+#fightList .ucs-match-title-bout .ucs-match-top{color:#e4c16c!important}
+#fightList .ucs-match-contest{display:grid!important;grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;min-height:100px!important;padding:13px 18px!important;background:#101116!important}
+#fightList .ucs-match-person{display:flex!important;align-items:center!important;gap:12px!important;min-width:0!important}
+#fightList .ucs-match-person-right{flex-direction:row-reverse!important;text-align:right!important}
+#fightList .ucs-match-person-info{min-width:0!important}
+#fightList .ucs-match-person-info strong{display:block!important;font:900 clamp(20px,2.3vw,33px)/1 "Barlow Condensed",sans-serif!important;color:#fff!important;overflow-wrap:anywhere!important}
+#fightList .ucs-match-person-info small{display:block!important;color:#a7a8b0!important;font:600 10px Inter,sans-serif!important;margin-top:6px!important}
+#fightList .ucs-match-avatar{width:54px!important;height:54px!important;min-width:54px!important;flex:0 0 54px!important;border:1px solid #55545a!important;border-radius:50%!important;overflow:hidden!important}
+#fightList .ucs-match-avatar img{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;border-radius:50%!important;object-fit:cover!important}
+#fightList .ucs-match-versus{display:grid!important;place-items:center!important;width:54px!important;height:45px!important;background:#dc2542!important;color:#fff!important;border-radius:2px!important;font:900 25px "Barlow Condensed",sans-serif!important;box-shadow:none!important;transform:none!important}
+#fightList .ucs-match-title-bout .ucs-match-versus{background:#d8b044!important;color:#111!important}
+#fightList .ucs-match-bottom{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;padding:9px 18px!important;border-top:1px solid #2a2b31!important;color:#aaaab3!important;font:600 10px Inter,sans-serif!important}
+#fightList .ucs-match-poster-banner{max-height:105px!important;overflow:hidden!important}
+#fightList .ucs-match-poster-banner img{max-height:105px!important;object-fit:cover!important}
+@media(max-width:620px){#fightList .ucs-match-contest{grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr)!important;gap:5px!important;padding:12px 9px!important}#fightList .ucs-match-person{gap:6px!important}#fightList .ucs-match-avatar{width:37px!important;height:37px!important;min-width:37px!important;flex-basis:37px!important}#fightList .ucs-match-person-info strong{font-size:21px!important}#fightList .ucs-match-versus{width:39px!important;height:36px!important;font-size:20px!important}#fightList .ucs-match-top,#fightList .ucs-match-bottom{padding-left:10px!important;padding-right:10px!important}}
