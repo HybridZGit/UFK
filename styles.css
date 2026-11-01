@@ -1329,3 +1329,50 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
 footer{background:#090a0d!important;border-top:1px solid #414048!important;color:#c6c5cc!important}
 @media(max-width:780px){.section-title-row{gap:12px}.page .admin-card{padding:16px!important}.topbar nav{background:#101015!important;border:1px solid #393941!important}.page h2{line-height:1.05!important}}
 @media(prefers-reduced-motion:reduce){.btn,.ucs-watch-button{transition:none!important}}
+
+/* Official UCS red-and-white broadcast identity; gold reserved for championship belts */
+:root{--ucs-gold:#e42b49!important}
+#home .hero,#home .ucs-tott-card,#home .ucs-event-hero,#home .ucs-home-champions{--gold:#e42b49;--accent-gold:#e42b49}
+#home .hero-copy em,#home .section-title-row em,#home .ucs-tott-section em,#home .ucs-home-champions em{color:#fff!important;font-style:normal}
+#home .hero .eyebrow,#home .section-kicker,#home .ucs-home-countdown-label{color:#ef3755!important}
+#home .ucs-home-countdown-strip .ucs-home-countdown-label{color:#fff!important}
+#home .ucs-home-countdown-strip{background:#cb1734!important}
+#home .ucs-home-countdown-strip a{background:#17171d!important;color:#fff!important}
+#home .ucs-tott-tabs button.active,#home .ucs-tott-tabs button[aria-selected="true"]{border-color:#e52b48!important;color:#fff!important}
+#home .ucs-tott-card-heading span,#home .ucs-tott-card-heading strong{color:#f3f3f5!important}
+#home .ucs-tott-fighter-score,#home .ucs-tott-stat-table strong{color:#f5f5f6!important}
+#home .ucs-tott-rank,#home .ucs-tott-corner{color:#ee3c58!important}
+#home .ucs-sponsor-banner{border-color:#38383e!important}
+.topbar .brand{display:flex!important;align-items:center!important;gap:10px!important}
+.topbar .ucs-header-white-logo{display:block!important;width:49px!important;height:49px!important;max-width:49px!important;object-fit:contain!important;flex:0 0 49px!important;filter:none!important}
+.topbar .brand strong{color:#fff!important}
+.topbar .brand span{color:#a9a9b1!important}
+#home .ucs-home-champions{margin-top:48px;margin-bottom:50px}
+#home .ucs-home-champions-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding-bottom:17px;margin-bottom:18px;border-bottom:1px solid #3b3b43}
+#home .ucs-home-champions-heading h2{margin:5px 0 0;font:900 clamp(36px,5vw,66px)/.92 "Barlow Condensed",sans-serif!important;letter-spacing:.01em}
+#home .ucs-home-champions-eyebrow{font:800 11px "Barlow Condensed",sans-serif;letter-spacing:.14em;color:#a3a3ae}
+#home .ucs-home-champions-stage{display:grid;grid-template-columns:minmax(240px,.95fr) minmax(0,1.05fr);min-height:390px;background:radial-gradient(ellipse at 20% 70%,rgba(113,29,43,.26),transparent 55%),linear-gradient(120deg,#161217,#0b0c10 65%);border:1px solid #414049;overflow:hidden}
+#home .ucs-home-champion-image{position:relative;min-height:390px;overflow:hidden;background:radial-gradient(ellipse at 50% 48%,#32151d,#111116 68%)}
+#home .ucs-home-champion-image:after{content:"";position:absolute;inset:auto 0 0;height:110px;background:linear-gradient(transparent,#0e0e13)}
+#home .ucs-home-champion-image img{display:block;width:100%;height:100%;max-height:460px;object-fit:contain;object-position:center bottom;position:absolute;inset:0}
+#home .ucs-home-champion-silhouette{display:grid;place-items:center;height:100%;font-size:150px;color:#50202b}
+#home .ucs-home-champion-details{display:flex;flex-direction:column;justify-content:center;padding:clamp(24px,4.5vw,68px);min-width:0}
+#home .ucs-home-champion-division{font:900 12px "Barlow Condensed",sans-serif;letter-spacing:.18em;color:#f04460}
+#home .ucs-home-champion-details h3{margin:17px 0 0;font:900 clamp(55px,7.5vw,118px)/.82 "Barlow Condensed",sans-serif!important;letter-spacing:-.02em;text-transform:uppercase;overflow-wrap:anywhere;color:#fff}
+#home .ucs-home-champion-record{font:800 15px "Barlow Condensed",sans-serif;letter-spacing:.11em;color:#dedee4;margin-top:18px}
+#home .ucs-home-champion-record span{margin-left:8px}
+#home .ucs-home-champion-stats{display:flex;gap:clamp(18px,3vw,42px);flex-wrap:wrap;border-top:1px solid #393940;margin-top:30px;padding-top:23px}
+#home .ucs-home-champion-stats>div{display:flex;flex-direction:column;gap:7px}
+#home .ucs-home-champion-stats small{font:900 11px "Barlow Condensed",sans-serif;letter-spacing:.13em;color:#aaaab5}
+#home .ucs-home-champion-stats strong{font:900 31px "Barlow Condensed",sans-serif;color:#fff}
+#home .ucs-home-champion-profile{align-self:flex-start;margin-top:26px;padding:10px 0;border:0;border-bottom:2px solid #e52b48;background:none;color:#fff;font:900 13px "Barlow Condensed",sans-serif;letter-spacing:.09em;cursor:pointer}
+#home .ucs-home-champions-controls{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-top:15px}
+#home .ucs-home-champions-controls>div:first-child{display:flex;gap:8px}
+#home .ucs-home-champions-controls button{cursor:pointer}
+#home .ucs-home-champions-controls>div:first-child button{width:45px;height:43px;background:#131318;border:1px solid #414149;color:#fff;font-size:25px}
+#home .ucs-home-champions-controls>div:first-child button:hover{border-color:#e52b48}
+#home .ucs-home-champion-dots{display:flex;align-items:center;gap:8px}
+#home .ucs-home-champion-dots button{height:6px;width:20px;border:0;border-radius:10px;background:#55555e;padding:0}
+#home .ucs-home-champion-dots button.active{background:#e52b48;width:34px}
+#home .ucs-home-champions-controls>a{color:#dddde3;text-decoration:none;font:900 12px "Barlow Condensed",sans-serif;letter-spacing:.07em}
+@media(max-width:700px){.topbar .ucs-header-white-logo{width:38px!important;height:38px!important;flex-basis:38px!important}#home .ucs-home-champions-stage{grid-template-columns:1fr}#home .ucs-home-champion-image{min-height:300px}#home .ucs-home-champion-details{padding:26px}#home .ucs-home-champion-details h3{font-size:65px}#home .ucs-home-champions-eyebrow{display:none}}
