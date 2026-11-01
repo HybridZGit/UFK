@@ -1973,3 +1973,12 @@ button,a,input,select,textarea{touch-action:manipulation}
  #rankings .ucs-champion-showcase .ucs-champ-showcase-card:hover{animation-play-state:paused!important;box-shadow:0 16px 38px #0008,0 0 22px #e7b45b1b!important;border-color:#bc9252!important}
 }
 @media(prefers-reduced-motion:reduce){#rankings .ucs-champion-showcase .ucs-champ-showcase-card{animation:none!important}}
+
+/* Official championship belt art: understated, editorial treatment */
+#rankings #worldChampionBanner.ucs-banner-with-belt:after{content:"";position:absolute;right:14px;top:6px;bottom:6px;width:clamp(90px,16%,200px);height:auto;transform:none;background-image:var(--ucs-belt-image);background-position:center;background-repeat:no-repeat;background-size:contain;opacity:.72;filter:drop-shadow(0 8px 14px #0008);pointer-events:none}
+#rankings #worldChampionBanner.ucs-banner-with-belt .champion-inline{padding-right:clamp(95px,17%,215px)}
+#rankings .ucs-champ-showcase .ucs-champ-with-belt:before{content:"";position:absolute;right:-10%;top:17%;width:68%;height:48%;background:var(--ucs-belt-image) center/contain no-repeat;opacity:.16;filter:grayscale(.15);pointer-events:none;z-index:0}
+#rankings .ucs-champ-showcase .ucs-champ-with-belt .ucs-champ-showcase-info{z-index:3}
+#rankings .ucs-rank-title-versus .ucs-title-belt-art{display:block;width:clamp(45px,6vw,90px);height:clamp(50px,8vw,100px);object-fit:contain;margin:0 auto 7px;filter:drop-shadow(0 6px 13px #0008)}
+.ucs-belt-art-admin{border:1px solid #9f7b3b!important;background:linear-gradient(120deg,#201b14,#111119)!important}
+@media(max-width:650px){#rankings #worldChampionBanner.ucs-banner-with-belt:after{width:70px;right:5px;opacity:.6}#rankings #worldChampionBanner.ucs-banner-with-belt .champion-inline{padding-right:55px}#rankings .ucs-rank-title-versus .ucs-title-belt-art{width:42px;height:50px}}
