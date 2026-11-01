@@ -166,7 +166,7 @@ function renderPhotoGallery(){
   const root=$('#ucsPhotoGallery');if(!root)return;
   const published=state.photos.filter(p=>p.published);
   root.innerHTML=published.length?published.map(p=>{
-    const image=safeHttps(p.image_url)?`<img src="${esc(p.image_url)}" alt="${esc(p.caption||p.event_name||'UCS event photo')}" loading="lazy" style="object-position:center ${portraitY}%">`:'';
+    const image=safeHttps(p.image_url)?`<img src="${esc(p.image_url)}" alt="${esc(p.caption||p.event_name||'UCS event photo')}" loading="lazy" style="object-position:center center">`:'';
     return `<figure class="ucs-photo-card">${image}<figcaption><strong>${esc(p.event_name||'UCS Photography')}</strong><span>${esc(p.caption||'Official UCS event photo')}</span></figcaption></figure>`;
   }).join(''):'<p class="data-empty">No photography has been published yet.</p>';
   const mine=$('#ucsMyPhotoList');if(!mine)return;
@@ -1963,7 +1963,7 @@ if(db){
 $('#ucsEventPosterInput')?.addEventListener('change',e=>{
   const file=e.target.files?.[0],preview=$('#ucsEventPosterPreview');if(!preview)return;
   if(!file){preview.textContent='No poster selected';return;}
-  const url=URL.createObjectURL(file);const img=new Image();img.onload=()=>{preview.replaceChildren(img);if(img.naturalWidth!==1920||img.naturalHeight!==1080)toast('Recommended image size is exactly 1920 × 1080.',true);URL.revokeObjectURL(url);};img.onerror=()=>{preview.textContent='Could not preview image';URL.revokeObjectURL(url);};img.src=url;
+  const url=URL.createObjectURL(file);const img=new Image();img.onload=()=>{preview.replaceChildren(img);if(img.naturalWidth!==1920||img.naturalHeight!==1080)toast('1920 × 1080 is recommended, but other dimensions are allowed.');URL.revokeObjectURL(url);};img.onerror=()=>{preview.textContent='Could not preview image';URL.revokeObjectURL(url);};img.src=url;
 });
 $('#ucsEventHeroForm')?.addEventListener('submit',async e=>{
   e.preventDefault();if(!db||!state.isAdmin)return toast('Admin access required.',true);
@@ -1976,7 +1976,7 @@ $('#ucsEventHeroForm')?.addEventListener('submit',async e=>{
       if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('Use JPG, PNG or WEBP.');
       if(file.size>8*1024*1024)throw Error('Poster must be 8 MB or smaller.');
       const dimensions=await new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{resolve([img.naturalWidth,img.naturalHeight]);URL.revokeObjectURL(url)};img.onerror=()=>{reject(Error('Could not read poster'));URL.revokeObjectURL(url)};img.src=url});
-      if(dimensions[0]!==1920||dimensions[1]!==1080)throw Error('Poster must be exactly 1920 × 1080 pixels.');
+      if(dimensions[0]!==1920||dimensions[1]!==1080)toast('Non-standard poster size accepted. It will be fitted to the banner.');
       const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
       const path='event-posters/'+crypto.randomUUID()+'.'+ext;
       const uploaded=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type,upsert:false});
