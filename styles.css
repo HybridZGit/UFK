@@ -1412,3 +1412,30 @@ body:before{z-index:-1!important;background:repeating-linear-gradient(135deg,rgb
 #rankings .tabs button.active,#betting .tabs button.active,#events .tabs button.active{background:#35141e!important;border-color:#e92d4d!important;color:#fff!important}
 #fights .section-kicker,#home .section-kicker{color:#f23c5a!important}
 @media(prefers-reduced-motion:reduce){#home .ucs-home-champions-stage{scroll-behavior:auto}}
+
+/* Official event gallery — poster imagery unobstructed, captions below */
+#events .ucs-events-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:22px!important;align-items:start}
+#events .ucs-event-card{display:block!important;background:#101116!important;border:1px solid #34353d!important;border-radius:2px!important;overflow:hidden!important;box-shadow:none!important;transition:border-color .2s,transform .2s}
+#events .ucs-event-card:hover{border-color:#e22b49!important;transform:translateY(-3px)}
+#events .ucs-event-open{display:block!important;width:100%!important;padding:0!important;background:transparent!important;border:0!important;color:#fff!important;text-align:left!important;cursor:pointer}
+#events .ucs-event-poster{position:relative!important;display:block!important;aspect-ratio:16/9!important;min-height:0!important;max-height:none!important;height:auto!important;overflow:hidden!important;background:#18131a!important}
+#events .ucs-event-bg{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important;opacity:1!important;filter:none!important;transform:none!important}
+#events .ucs-event-poster:after,#events .ucs-event-poster:before{display:none!important;content:none!important}
+#events .ucs-event-overlay-title,#events .ucs-event-overlay-detail,#events .ucs-event-overlay-date{display:none!important}
+#events .ucs-event-content{display:block!important;position:static!important;padding:18px 20px 20px!important;min-height:145px!important;background:linear-gradient(135deg,#1b151b,#101116)!important}
+#events .ucs-event-content h3{margin:8px 0!important;font:900 clamp(22px,2.3vw,32px)/1 "Barlow Condensed",sans-serif!important;color:#fff!important;text-transform:uppercase!important;letter-spacing:.025em!important;text-shadow:none!important}
+#events .ucs-event-content p{margin:6px 0 14px!important;color:#bcbcc5!important;font:500 13px/1.45 Inter,sans-serif!important}
+#events .ucs-event-meta{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;font:800 11px "Barlow Condensed",sans-serif!important;letter-spacing:.1em!important;color:#ee405c!important}
+#events .ucs-event-status{position:static!important;background:#26141c!important;border:1px solid #753042!important;color:#fff!important;padding:4px 7px!important;font:800 10px "Barlow Condensed",sans-serif!important;text-transform:uppercase!important}
+#events .ucs-event-view{display:inline-block!important;margin-top:3px!important;color:#f04460!important;font:900 12px "Barlow Condensed",sans-serif!important;letter-spacing:.08em!important}
+#events .ucs-event-poster-fallback{display:grid;place-items:center;height:100%;font:900 90px "Barlow Condensed",sans-serif;color:#542031}
+#events .ucs-event-results-detail{margin-top:24px;background:#111116;border:1px solid #414049;padding:clamp(18px,3vw,34px)}
+#events .ucs-event-results-back{background:none;color:#f04460;border:0;padding:0 0 20px;font:900 13px "Barlow Condensed",sans-serif;cursor:pointer}
+#events .ucs-event-results-layout{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:28px}
+#events .ucs-event-results-layout>img{width:100%;height:auto;object-fit:contain;align-self:start;border:1px solid #393940}
+#events .ucs-event-results-layout h2{font-size:clamp(32px,4vw,55px)!important;margin:12px 0}
+#events .ucs-event-results-layout h3{color:#ef3d5b;margin-top:24px}
+#events .ucs-event-results-layout ul{list-style:none;margin:16px 0;padding:0}
+#events .ucs-event-results-layout li{padding:13px 10px;border-bottom:1px solid #3c3b43;border-left:3px solid #d92c49;margin-bottom:6px;background:#19171d}
+#events .ucs-event-results-pending{color:#b9b8c0}
+@media(max-width:740px){#events .ucs-events-grid{grid-template-columns:1fr!important}#events .ucs-event-results-layout{grid-template-columns:1fr}}
