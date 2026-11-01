@@ -953,19 +953,38 @@ function renderUpcomingSpotlight(){
   root.querySelectorAll('[data-open-undercard]').forEach(btn=>btn.addEventListener('click',()=>openUndercardForm(b.id)));
 }
 
+function ucsEventWinnerData(id){return state.settings?.event_winners?.[id]||{};}
 function ucsRenderEventCards(){
   const grid=$('#ucsEventsGrid'),list=$('#ucsAdminEventsList');
   const events=[...state.events].sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),undefined,{numeric:true}));
   if(grid)grid.innerHTML=events.length?events.map(event=>{
-    const bouts=(state.scheduledBouts||[]).filter(b=>b.event_id===event.id);
-    const poster=safeHttps(event.poster_url)?'<img class="ucs-event-bg" loading="lazy" src="'+esc(event.poster_url)+'" alt="">':'';
-    const names=(event.name||'').match(/—\\s*(.+?)\\s+VS\\s+(.+)$/i);
-    const title=names?'<span>'+esc(names[1])+'</span><small>VS</small><span>'+esc(names[2])+'</span>':'<span>'+esc(event.name)+'</span>';
-    const date=event.event_date?new Date(event.event_date+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short'}).toUpperCase():'DATE TBA';
-    return '<article class="ucs-event-card"><div class="ucs-event-poster">'+poster+'<span class="ucs-event-overlay-date">'+esc(date)+'</span><div class="ucs-event-overlay-title">'+title+'</div><span class="ucs-event-overlay-detail">'+esc(event.details||'UCS OFFICIAL FIGHT NIGHT')+'</span></div><div class="ucs-event-content"><span class="ucs-event-status">'+esc(event.status||'upcoming')+'</span><h3>'+esc(event.name)+'</h3>'+(bouts.length?'<p>'+bouts.map(b=>{const a=fighterById(b.fighter_a_id),c=fighterById(b.fighter_b_id);return esc((a?.name||'TBA')+' vs '+(c?.name||'TBA'));}).join(' · ')+'</p>':'')+(safeHttps(event.poster_url)?'<a class="ucs-event-view" href="'+esc(event.poster_url)+'" target="_blank" rel="noopener noreferrer">VIEW FULL POSTER ↗</a>':'')+'</div></article>';
+    const poster=safeHttps(event.poster_url)?'<img class="ucs-event-bg" loading="lazy" src="'+esc(event.poster_url)+'" alt="'+esc(event.name)+' event poster">':'<div class="ucs-event-poster-fallback">UCS</div>';
+    const date=event.event_date?new Date(event.event_date+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase():'DATE TBA';
+    const results=ucsEventWinnerData(event.id);
+    return '<article class="ucs-event-card"><button type="button" class="ucs-event-open" data-open-ucs-event="'+esc(event.id)+'" aria-label="View '+esc(event.name)+' event details"><div class="ucs-event-poster">'+poster+'</div><div class="ucs-event-content"><div class="ucs-event-meta"><span>'+esc(date)+'</span><span class="ucs-event-status">'+(results.completed?'RESULTS AVAILABLE':esc(event.status||'UPCOMING'))+'</span></div><h3>'+esc(event.name)+'</h3><p>'+esc(event.details||'UCS OFFICIAL FIGHT NIGHT')+'</p><span class="ucs-event-view">VIEW EVENT & RESULTS →</span></div></button></article>';
   }).join(''):'<div class="data-empty">No events announced yet.</div>';
   if(list)list.innerHTML=events.map(event=>'<div class="ucs-admin-event-row"><strong>'+esc(event.name)+'</strong><span>'+esc(fmtDate(event.event_date))+'</span><button type="button" class="mini-action" data-ucs-edit-event="'+esc(event.id)+'">EDIT / REPLACE POSTER</button><button type="button" class="mini-action ucs-delete-event" data-ucs-delete-event="'+esc(event.id)+'">DELETE EVENT</button></div>').join('');
+  const select=$('#ucsEventWinnersSelect');
+  if(select){const current=select.value;select.innerHTML='<option value="">Select an event</option>'+events.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+'</option>').join('');if(events.some(e=>String(e.id)===current))select.value=current;}
 }
+function ucsOpenEventResults(id){
+  const event=state.events.find(e=>String(e.id)===String(id)),root=$('#ucsEventResultsDetail');if(!event||!root)return;
+  const data=ucsEventWinnerData(event.id);
+  const lines=String(data.winners||'').split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean);
+  root.innerHTML='<button class="ucs-event-results-back" type="button">← BACK TO EVENTS</button><div class="ucs-event-results-layout">'+(safeHttps(event.poster_url)?'<img src="'+esc(event.poster_url)+'" alt="'+esc(event.name)+' poster">':'')+'<div><span class="section-kicker">OFFICIAL UCS EVENT</span><h2>'+esc(event.name)+'</h2><p>'+esc(event.details||'')+'</p><h3>'+(data.completed?'OFFICIAL WINNERS':'EVENT RESULTS')+'</h3>'+(lines.length?'<ul>'+lines.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul>':'<p class="ucs-event-results-pending">Official results have not been published yet.</p>')+'</div></div>';
+  root.classList.remove('hidden');$('#ucsEventsGrid')?.classList.add('hidden');root.scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('#ucsEventsGrid')?.addEventListener('click',e=>{const b=e.target.closest('[data-open-ucs-event]');if(b)ucsOpenEventResults(b.dataset.openUcsEvent);});
+$('#ucsEventResultsDetail')?.addEventListener('click',e=>{if(!e.target.closest('.ucs-event-results-back'))return;$('#ucsEventResultsDetail').classList.add('hidden');$('#ucsEventsGrid')?.classList.remove('hidden');});
+function ucsPopulateEventWinners(){const id=$('#ucsEventWinnersSelect')?.value,record=ucsEventWinnerData(id);if($('#ucsEventWinnersInput'))$('#ucsEventWinnersInput').value=record.winners||'';if($('#ucsEventCompletedInput'))$('#ucsEventCompletedInput').checked=!!record.completed;}
+$('#ucsEventWinnersSelect')?.addEventListener('change',ucsPopulateEventWinners);
+$('#ucsEventWinnersForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();if(!db||!state.isAdmin)return toast('Admin permission required.',true);
+  const d=new FormData(e.currentTarget),id=String(d.get('event_id')||'');if(!state.events.some(x=>String(x.id)===id))return toast('Select an event.',true);
+  const value={...(state.settings.event_winners||{}),[id]:{winners:String(d.get('winners')||'').trim(),completed:d.has('completed')}};
+  const {error}=await db.from('league_settings').upsert({key:'event_winners',value,updated_at:new Date().toISOString()},{onConflict:'key'});
+  if(error)return toast(error.message,true);toast('Event winners published.');await loadPublicData();
+});
 const ucsEventTags=new Set();
 function ucsRenderEventTags(){
   const search=$('#ucsEventFighterSearch'),suggestions=$('#ucsEventFighterSuggestions'),selected=$('#ucsEventSelectedFighters');
@@ -1711,19 +1730,20 @@ $('#adminFighterAvatarForm')?.addEventListener('submit',async e=>{
 
 const ucsEarningsState={records:new Map(),loaded:false};
 function ucsShowAdminTab(tab){
-  const earnings=tab==='earnings'&&state.isAdmin,news=tab==='news'&&state.isAdmin,event=tab==='event'&&state.isAdmin;
-  $('#adminOperationsPanel')?.classList.toggle('hidden',earnings||news||event);
-  for(const [id,active] of [['adminEarningsPanel',earnings],['adminNewsPanel',news],['adminEventHeroPanel',event]]){
+  const earnings=tab==='earnings'&&state.isAdmin,news=tab==='news'&&state.isAdmin,event=tab==='event'&&state.isAdmin,results=tab==='results'&&state.isAdmin;
+  $('#adminOperationsPanel')?.classList.toggle('hidden',earnings||news||event||results);
+  for(const [id,active] of [['adminEarningsPanel',earnings],['adminNewsPanel',news],['adminEventHeroPanel',event],['adminEventResultsPanel',results]]){
     $('#'+id)?.classList.toggle('hidden',!active);
     $('#'+id)?.setAttribute('aria-hidden',String(!active));
   }
-  for(const [id,active] of [['adminOperationsTab',!earnings&&!news&&!event],['adminEarningsTab',earnings],['adminNewsTab',news],['adminEventHeroTab',event]]){
+  for(const [id,active] of [['adminOperationsTab',!earnings&&!news&&!event&&!results],['adminEarningsTab',earnings],['adminNewsTab',news],['adminEventHeroTab',event],['adminEventResultsTab',results]]){
     $('#'+id)?.classList.toggle('active',active);
     $('#'+id)?.setAttribute('aria-selected',String(active));
   }
   if(earnings)ucsLoadEarnings();
   if(news)renderNews();
   if(event)ucsRenderEventHero();
+  if(results){ucsRenderEventCards();ucsPopulateEventWinners();}
 }
 function ucsFormatEarnings(value){
   return String.fromCharCode(36)+Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -1760,6 +1780,7 @@ $('#adminOperationsTab')?.addEventListener('click',()=>ucsShowAdminTab('operatio
 $('#adminEarningsTab')?.addEventListener('click',()=>ucsShowAdminTab('earnings'));
 $('#adminNewsTab')?.addEventListener('click',()=>ucsShowAdminTab('news'));
 $('#adminEventHeroTab')?.addEventListener('click',()=>ucsShowAdminTab('event'));
+$('#adminEventResultsTab')?.addEventListener('click',()=>ucsShowAdminTab('results'));
 $('#earningsFighterSelect')?.addEventListener('change',e=>ucsPopulateEarningsInput(e.target.value));
 $('#adminEarningsRows')?.addEventListener('click',e=>{
   const button=e.target.closest('[data-earnings-fighter]');
