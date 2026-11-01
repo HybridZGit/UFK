@@ -823,6 +823,9 @@ function openFighterProfile(id){
   $('#profileNextFight').textContent=opp?'vs '+opp.name:'Not booked';
 
   $('#profileRank').textContent=rank?`#${rank}`:'#—';
+  $('#ucsDossierWins').textContent=String(f.wins||0);
+  $('#ucsDossierLosses').textContent=String(f.losses||0);
+  $('#ucsDossierDraws').textContent=String(f.draws||0);
   $('#profileRecord').textContent=`${f.wins||0}-${f.losses||0}-${f.draws||0}`;
   $('#profileScore').textContent=Number(f.score||0).toFixed(1);
   $('#profileStreak').textContent=fighterForm(f);
