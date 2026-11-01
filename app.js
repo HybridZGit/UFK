@@ -698,6 +698,9 @@ function renderChampionShowcase(){
     const flag=champ?.showcase_flag||'';
     const portraitY=Number.isFinite(+champ?.portrait_y)?Math.min(100,Math.max(0,+champ.portrait_y)):50;
     const headOffset=(portraitY-50)*1.5+(division==='UCS World'?-36:0);
+    const recentForm=fighter?fighterForm(fighter):'—';
+    const letters=recentForm==='—'?('W'.repeat(Math.min(5,Math.max(0,Number(fighter?.wins)||0)))+'L'.repeat(Math.min(5,Math.max(0,Number(fighter?.losses)||0)))).slice(0,5):recentForm;
+    const boxes=letters.split('').map(letter=>`<span class="ucs-champ-form-box ucs-champ-form-${letter==='W'?'win':letter==='L'?'loss':'draw'}">${esc(letter)}</span>`).join('');
     const wins=Math.max(0,Math.min(40,Number(fighter?.wins)||0));
     const losses=Math.max(0,Math.min(40,Number(fighter?.losses)||0));
     const draws=Math.max(0,Math.min(40,Number(fighter?.draws)||0));
@@ -708,7 +711,7 @@ function renderChampionShowcase(){
       <span class="ucs-champ-showcase-division">${esc(division.toUpperCase())}</span>
       <span class="ucs-champ-vertical" aria-hidden="true">${esc(division.replace(/^UCS\s*/,'').toUpperCase())}</span>
       ${photo?`<img src="${esc(photo)}" alt="${esc(fighter.name)} boxer portrait" loading="lazy" style="transform:translateY(${headOffset}px)!important">`:`<div class="ucs-champ-silhouette" aria-hidden="true"><span>♟</span></div>`}
-      ${recordStrip}<div class="ucs-champ-showcase-info">${fighter?'<small>♛ CHAMPION</small>':''}<div class="ucs-champ-name-line"><strong>${fighter?esc(fighter.name):'VACANT'}</strong>${flag&&fighter?`<span class="ucs-champ-flag" aria-label="Champion country flag">${esc(flag)}</span>`:''}</div></div>
+      ${recordStrip}<div class="ucs-champ-showcase-info">${fighter?'<small>♛ CHAMPION</small>':''}<div class="ucs-champ-name-line"><strong>${fighter?esc(fighter.name):'VACANT'}</strong>${flag&&fighter?`<span class="ucs-champ-flag" aria-label="Champion country flag">${esc(flag)}</span>`:''}${fighter&&boxes?`<div class="ucs-champ-form" aria-label="Fight form: ${esc(letters)}">${boxes}</div>`:''}</div></div>
     </article>`;
   }).join('');
 }
