@@ -1275,3 +1275,57 @@ h1,h2,h3,.section-title-row h2{font-style:normal!important}
 .ucs-event-toggle{display:flex!important;align-items:center;gap:12px}
 .ucs-event-toggle input{width:20px;height:20px}
 @media(max-width:650px){#home .ucs-event-hero-caption{padding:12px;gap:6px}#home .ucs-event-hero-caption a{font-size:10px;padding:8px 10px}}
+
+/* UCS PREMIUM DESIGN SYSTEM — consistent official broadcast styling across pages */
+:root{--ucs-ink:#08090c;--ucs-panel:#111116;--ucs-panel-2:#17171d;--ucs-stroke:#37373e;--ucs-muted:#a3a3ae;--ucs-white:#f8f8fa;--ucs-crimson:#e52b48;--ucs-gold:#d2ab59}
+html{scroll-behavior:smooth}
+body{background:#08090c!important;color:var(--ucs-white)!important;font-family:Inter,Arial,sans-serif}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(ellipse at 85% 0%,rgba(109,25,39,.13),transparent 46%),linear-gradient(180deg,#0b0b10,#08090c 48%);opacity:.85}
+.topbar{background:rgba(8,9,12,.97)!important;border-bottom:1px solid #33333b!important;box-shadow:0 8px 28px rgba(0,0,0,.35)!important;backdrop-filter:blur(18px)}
+.topbar .brand strong{font-family:"Barlow Condensed",sans-serif!important;font-weight:900!important;letter-spacing:.04em!important}
+.topbar nav a{font-family:"Barlow Condensed",sans-serif!important;font-size:15px!important;font-weight:800!important;letter-spacing:.055em!important;text-transform:uppercase!important;transition:color .2s,background .2s}
+.topbar nav a:hover,.topbar nav a.active{color:#fff!important}
+.page{color:#f5f5f7}
+.page>.shell{max-width:1320px}
+.section-kicker,.eyebrow{font-family:"Barlow Condensed",sans-serif!important;font-weight:900!important;letter-spacing:.17em!important;color:var(--ucs-crimson)!important;text-transform:uppercase}
+.section-title-row{padding-bottom:18px!important;margin-bottom:26px!important;border-bottom:1px solid #35353c!important}
+.section-title-row h2,.page h2,.ucs-earnings-header h2{font-family:"Barlow Condensed",sans-serif!important;font-weight:900!important;letter-spacing:.015em!important;text-transform:uppercase!important;line-height:1!important}
+.page h3,.admin-card h3{font-family:"Barlow Condensed",sans-serif!important;font-weight:900!important;letter-spacing:.035em!important;text-transform:uppercase!important}
+.page p{line-height:1.6}
+.btn,.ucs-watch-button,.ucs-home-countdown-link{font-family:"Barlow Condensed",sans-serif!important;font-weight:900!important;letter-spacing:.055em!important;text-transform:uppercase!important;border-radius:2px!important;transition:transform .18s,border-color .18s,background .18s,box-shadow .18s!important}
+.btn:hover,.ucs-watch-button:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.btn.primary{background:#dc2542!important;border-color:#dc2542!important;color:white!important}
+.btn.primary:hover{background:#f13b58!important}
+.btn.ghost,.btn.outline{background:#141419!important;border:1px solid #55545c!important;color:#f5f5f7!important}
+.btn.ghost:hover,.btn.outline:hover{border-color:#e52b48!important}
+.hero{background:radial-gradient(ellipse at 75% 48%,rgba(106,25,41,.19),transparent 55%),linear-gradient(115deg,#0c0c12,#171016 75%,#090a0e)!important;border:1px solid #34333a!important;overflow:hidden}
+.hero-copy h1{font-family:"Barlow Condensed",sans-serif!important;font-weight:900!important;line-height:.88!important;letter-spacing:-.025em!important}
+.hero-copy p{color:#c6c5ca!important}
+.ticker{background:#15151b!important;border-top:1px solid #38373f!important;border-bottom:1px solid #38373f!important}
+.ticker strong{color:#ff3a56!important}
+.page .panel,.page .admin-card,.page .account-card,.page .fight-card,.page .mega-card,.page .ucs-tott-card,.page .fighter-profile-panel,.page .contract-card,.page .event-card,.page .news-card,.page .ucs-photo-card{background:linear-gradient(150deg,#1b151a 0%,#111116 54%,#0c0d11 100%)!important;border:1px solid #414048!important;border-radius:3px!important;box-shadow:0 12px 34px rgba(0,0,0,.15)!important}
+.page .panel:hover,.page .fight-card:hover,.page .event-card:hover,.page .news-card:hover{border-color:#66606a!important}
+.page .rank-table-wrap{background:#111116!important;border:1px solid #414048!important;border-radius:2px!important;overflow-x:auto}
+.page .rank-table{border-collapse:collapse!important;width:100%}
+.page .rank-table thead,.page .rank-table th{background:#1d1b21!important;color:#f3f3f5!important;font-family:"Barlow Condensed",sans-serif!important;font-weight:900!important;letter-spacing:.065em!important;text-transform:uppercase}
+.page .rank-table td{border-bottom:1px solid #303038!important}
+.page .rank-table tbody tr:hover{background:rgba(226,42,70,.075)!important}
+.page .tabs,.page .ucs-admin-tabs,.page .contract-tabs{border-bottom:1px solid #414048!important;gap:5px!important}
+.page .tabs button,.page .ucs-admin-tab,.page .contract-tabs button{font-family:"Barlow Condensed",sans-serif!important;font-weight:900!important;letter-spacing:.055em!important;text-transform:uppercase!important;border-radius:2px 2px 0 0!important}
+.page .tabs button.active,.page .ucs-admin-tab.active,.page .contract-tabs button.active{border-bottom:3px solid #e52b48!important;color:#fff!important}
+.page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),.page textarea,.page select{background:#0c0d12!important;border:1px solid #4a4851!important;border-radius:2px!important;color:#f7f7f9!important;box-shadow:none!important}
+.page input:focus,.page textarea:focus,.page select:focus{outline:2px solid rgba(229,43,72,.5)!important;outline-offset:1px}
+.page label{color:#d4d3d8}
+.page .admin-card{padding:clamp(18px,2vw,28px)!important}
+.page .admin-card h3{border-left:3px solid #e52b48;padding-left:11px}
+#rankings .ucs-champ-showcase-card{box-shadow:none!important;border-color:#45434c!important}
+#rankings .ucs-champ-showcase-card:hover{border-color:#b54c5f!important}
+#rankings .ucs-champ-showcase-card .ucs-champ-form{margin-top:0!important;min-height:0!important;flex:0 0 auto}
+#rankings .ucs-champ-showcase-card .ucs-champ-form-box{width:19px;height:20px}
+#rankings .ucs-champ-record-strip{display:none!important}
+#home .ucs-home-countdown-strip{box-shadow:0 6px 22px rgba(0,0,0,.25)!important}
+#home .ucs-tott-card,#fights .fight-card{overflow:hidden}
+#admin .admin-toolbar{background:#131318!important;border:1px solid #414048!important;padding:15px!important;border-radius:2px}
+footer{background:#090a0d!important;border-top:1px solid #414048!important;color:#c6c5cc!important}
+@media(max-width:780px){.section-title-row{gap:12px}.page .admin-card{padding:16px!important}.topbar nav{background:#101015!important;border:1px solid #393941!important}.page h2{line-height:1.05!important}}
+@media(prefers-reduced-motion:reduce){.btn,.ucs-watch-button{transition:none!important}}
