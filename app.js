@@ -363,10 +363,10 @@ $('#ucsTottStage')?.addEventListener('click',event=>{
   if(btn?.dataset.tottFighter)openFighterProfile(btn.dataset.tottFighter);
 });
 
-const ucsDefaultDivisions=['UCS World','UCS International','UCS SIM World','UCS EU Division','UCS PS5','UCS PC','UCS XBOX'];
+const ucsDefaultDivisions=['UCS World','UCS International','UCS EU Division','UCS PS5','UCS PC','UCS XBOX'];
 function ucsDivisions(){
   const saved=state.settings.ranking_divisions;
-  return Array.isArray(saved)?saved.filter(x=>typeof x==='string'&&x.trim()).slice(0,40):ucsDefaultDivisions;
+  return Array.isArray(saved)?saved.filter(x=>typeof x==='string'&&x.trim()&&x!=='UCS SIM World').slice(0,40):ucsDefaultDivisions;
 }
 function ucsDivisionRegion(name){
   if(name==='UCS World'||name==='UCS International')return 'ALL';
@@ -394,6 +394,7 @@ function ucsRenderDivisions(){
     el.innerHTML=(selector.includes('belt')?'<option value="">NON-TITLE FIGHT / TBA</option>':'')+divisions.map(name=>'<option value="'+esc(name)+'">'+esc(name.toUpperCase())+'</option>').join('');
     if(divisions.includes(current)||(!current&&selector.includes('belt')))el.value=current;
   }
+  const simRemove=$('#ucsRemoveSimDivision');if(simRemove)simRemove.classList.toggle('hidden',!(Array.isArray(state.settings.ranking_divisions)&&state.settings.ranking_divisions.includes('UCS SIM World')));
   const list=$('#ucsDivisionAdminList');
   if(list)list.innerHTML=divisions.length?divisions.map(name=>{
     const fixed=name==='UCS World'||name==='UCS International';
@@ -1661,8 +1662,7 @@ async function refreshSession(){
   updateAdminUI();updateAccountUI();updatePhotographerUI();
 }
 function updateAdminUI(){
-  $('#connectionStatus').textContent=configured?'Supabase connected':'Supabase not configured';
-  $('#setupNotice').classList.toggle('hidden',configured&&state.isAdmin);$('#loginForm').classList.toggle('hidden',Boolean(state.user));$('#adminSession').classList.toggle('hidden',!state.user);$('#adminIdentity').textContent=state.user?`${state.user.email}${state.isAdmin?' · ADMIN':' · NOT ADMIN'}`:'';$('#adminControls').classList.toggle('hidden',!state.isAdmin);if(!state.isAdmin){ucsEarningsState.records=new Map();ucsEarningsState.loaded=false;ucsShowAdminTab('operations');}$('#adminLocked').classList.toggle('hidden',state.isAdmin);
+  $('#loginForm').classList.toggle('hidden',Boolean(state.user));$('#adminSession').classList.toggle('hidden',!state.user);$('#adminIdentity').textContent=state.user?`${state.user.email}${state.isAdmin?' · ADMIN':' · NOT ADMIN'}`:'';$('#adminControls').classList.toggle('hidden',!state.isAdmin);if(!state.isAdmin){ucsEarningsState.records=new Map();ucsEarningsState.loaded=false;ucsShowAdminTab('operations');}$('#adminLocked').classList.toggle('hidden',state.isAdmin);
   if(state.user&&!state.isAdmin)$('#adminLocked').textContent='This account is signed in but is not marked as a UCS admin in public.profiles.';else if(!configured)$('#adminLocked').textContent='Add your Supabase URL and anon/publishable key to config.js, then run supabase-schema.sql.';else $('#adminLocked').textContent='Sign in with an account marked as an admin in Supabase to unlock league controls.';
 }
 function updateAccountUI(){
@@ -2265,4 +2265,13 @@ $('#ucsOfflineAdminList')?.addEventListener('click',async e=>{
  const rows=ucsOfflineBouts().filter(r=>r.id!==b.dataset.deleteOffline);
  const {error}=await db.from('league_settings').upsert({key:'ucs_offline_bouts',value:rows,updated_at:new Date().toISOString()},{onConflict:'key'});
  if(error)return toast(error.message,true);await loadPublicData();ucsRenderOfflineAdminList();toast('Offline result removed.');
+});
+
+/* Retire the old SIM division from saved league settings on admin request. */
+$('#ucsRemoveSimDivision')?.addEventListener('click',async()=>{
+ if(!state.isAdmin||!db)return toast('Admin permission required.',true);
+ const saved=state.settings.ranking_divisions;
+ const next=(Array.isArray(saved)?saved:ucsDefaultDivisions).filter(x=>x!=='UCS SIM World');
+ if(!confirm('Remove UCS SIM World from saved ranking divisions? Fighter records are preserved.'))return;
+ await ucsSaveDivisions(next);
 });
