@@ -2315,3 +2315,35 @@ main{background:transparent!important}
 @media(max-width:800px){.page:not(#home){padding-top:30px!important}#home>.hero .hero-art.ucs-cinema-hero-art img{max-height:270px!important}}
 @media(max-width:550px){.page .panel,.page .admin-card{border-radius:8px!important}#home>.hero .hero-art.ucs-cinema-hero-art img{max-height:195px!important}}
 @media(prefers-reduced-motion:reduce){#home>.hero .hero-art.ucs-cinema-hero-art img{animation:none!important}.page .fight-card img,.page .ucs-tott-card img,.page .ucs-event-hero img{transition:none!important}}
+
+/* UCS official red lightning VS mark — every graphical fight matchup */
+:where(.ucs-tott-vs,.ucs-featured-vs strong,.ucs-marquee-middle strong,.ucs-rank-title-versus strong,.ucs-match-versus,.ucs-bout-center strong,.market-vs strong,.ucs-studio-vs,.ucs-marquee-versus .ucs-marquee-middle strong){
+  font-size:0!important;
+  color:transparent!important;
+  text-shadow:none!important;
+  letter-spacing:0!important;
+  background-image:url("assets/ucs-vs-mark.svg")!important;
+  background-repeat:no-repeat!important;
+  background-position:center!important;
+  background-size:contain!important;
+  display:block!important;
+  width:clamp(46px,6vw,92px)!important;
+  height:clamp(48px,7vw,104px)!important;
+  min-width:0!important;
+  margin-inline:auto!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  padding:0!important;
+  transform:none!important;
+}
+.ucs-featured-vs strong{width:clamp(62px,9vw,115px)!important;height:clamp(70px,10vw,128px)!important}
+.ucs-tott-vs{width:clamp(70px,10vw,145px)!important;height:clamp(76px,11vw,156px)!important}
+.ucs-marquee-middle strong{width:clamp(44px,7vw,90px)!important;height:clamp(50px,8vw,100px)!important}
+#fightList .ucs-match-versus,#fights .ucs-match-versus{width:clamp(48px,6vw,78px)!important;height:clamp(52px,7vw,90px)!important;align-self:center!important}
+#rankings .ucs-rank-title-versus strong{width:clamp(54px,8vw,108px)!important;height:clamp(62px,9vw,122px)!important}
+.ucs-bout-center strong,.market-vs strong,.ucs-studio-vs{width:60px!important;height:68px!important}
+@media(max-width:650px){
+ .ucs-featured-vs strong,.ucs-tott-vs,#rankings .ucs-rank-title-versus strong{width:60px!important;height:68px!important}
+ #fightList .ucs-match-versus,#fights .ucs-match-versus,.ucs-marquee-middle strong{width:44px!important;height:52px!important}
+}
