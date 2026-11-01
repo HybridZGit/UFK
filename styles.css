@@ -1114,3 +1114,15 @@ input,select,textarea{border-radius:7px}
 .section-title-row{border-bottom:1px solid rgba(210,45,66,.22);padding-bottom:15px}
 .section-title-row h2{font-weight:900;letter-spacing:.01em}
 @media(max-width:760px){#home .hero{grid-template-columns:1fr;gap:0;min-height:0}#home .hero-copy{padding:56px 0 18px}#home .hero-art{min-height:250px}#home .hero h1{font-size:clamp(56px,13vw,82px)}#home .hero-art img{max-height:250px}}
+
+/* UCS color discipline: red for interface, gold reserved for championships */
+:root{--gold:#ef334f;--red:#ed1635;--red2:#a30c29}
+body .btn.primary,body button.btn.primary{background:linear-gradient(135deg,#f3324e,#ae0c2b)!important;color:#fff!important}
+body .btn.ghost{border-color:#5a3540}
+body .ticker b,body .season-pill{color:#f25a70;border-color:#813042}
+body .section-kicker,body .eyebrow{color:#f14b63}
+body .ucs-result-title,body .champion-badge,body [class*="belt"],body [class*="championship"],body .title-badge{--gold:#e6b94c}
+body .ucs-result-title{color:#e6b94c}
+body .ucs-tott-section .ucs-tott-engine-label{color:#e9e9ec}
+body .admin-card{border-color:rgba(180,44,66,.3)}
+body .btn.primary:hover{filter:brightness(1.12)}
