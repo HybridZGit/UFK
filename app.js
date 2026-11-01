@@ -821,11 +821,31 @@ function openFighterProfile(id){
   $('#profileEarnings').textContent=ucsFormatEarnings(state.fighterEarnings.get(f.id)||0);
   $('#profileAvatar').innerHTML=f.avatar_url?`<img src="${esc(f.avatar_url)}" alt="${esc(f.name)}">`:`<span>${esc(initials(f.name))}</span>`;
   const metrics=[['Resume',f.resume],['Momentum',f.momentum],['Finishing',f.finishing],['Activity',f.activity],['Big fight',f.big_fight]];
-  $('#profileRatingBars').innerHTML=metrics.map(([label,val])=>`<div class="profile-meter"><div><span>${label}</span><b>${Number(val||0).toFixed(1)}</b></div><i><em style="width:${Math.max(0,Math.min(100,Number(val||0)*10))}%"></em></i></div>`).join('');
+  $('#profileRatingBars').innerHTML=metrics.filter(([label])=>label!=='Activity').map(([label,val])=>`<div class="ucs-reference-meter"><span class="ucs-meter-name">${esc(label)}</span><span class="ucs-meter-track"><span style="width:${Math.max(0,Math.min(100,Number(val||0)*10))}%"></span></span><strong>${Number(val||0).toFixed(1)}</strong></div>`).join('');
   $('#profileFightHistory').innerHTML=history.length?history.slice(0,10).map(r=>{
     const won=r.winner_id===f.id,opp=fighterById(won?r.loser_id:r.winner_id);
     return `<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small>${esc(r.method)} · ${esc(fmtDate(r.event_date))}</small>${won&&(r.is_good_win||r.is_big_win)?'<div class="ucs-good-win-tag">★ GOOD WIN · RANKINGS BOOST</div>':''}${r.fight_title?`<div class="ucs-result-title">🏆 ${esc(r.fight_title.toUpperCase())} CHAMPIONSHIP</div>`:''}${r.fight_description?`<div class="ucs-result-description">${esc(r.fight_description)}</div>`:''}</div></div>`;
   }).join(''):empty('No official fight history yet.');
+  // Reference-inspired previous fights table, using official UCS result rows.
+  const fightHistoryEl=$('#profileFightHistory');
+  if(fightHistoryEl){
+    fightHistoryEl.innerHTML=history.length?history.slice(0,10).map(r=>{
+      const won=r.winner_id===f.id;
+      const opponent=fighterById(won?r.loser_id:r.winner_id);
+      const method=String(r.method||'—');
+      const date=r.event_date?fmtDate(r.event_date):'—';
+      const extra=[r.fight_title?'🏆 '+r.fight_title+' CHAMPIONSHIP':'',r.fight_description||'',won&&(r.is_good_win||r.is_big_win)?'★ GOOD WIN · RANKINGS BOOST':''].filter(Boolean);
+      return `<div class="ucs-ref-fight-row"><div class="ucs-ref-opponent"><strong>${esc(opponent?.name||'Unknown opponent')}</strong>${r.fight_title?'<span class="ucs-ref-title-tag">TC</span>':''}${extra.length?`<small>${esc(extra.join(' · '))}</small>`:''}</div><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><span class="ucs-ref-method">${esc(method)}</span><time class="ucs-ref-date">${esc(date)}</time></div>`;
+    }).join(''):empty('No official fight history yet.');
+  }
+  const koPressure=$('#profileKnockoutPressure');
+  const koFill=$('#profileKnockoutFill');
+  if(koPressure&&koFill){
+    const percentage=winsRecorded.length?Math.round(kos/winsRecorded.length*100):null;
+    koPressure.textContent=percentage===null?'—':percentage+'%';
+    koFill.style.width=(percentage??0)+'%';
+    $('#profileKnockoutDescription').textContent=percentage===null?'No official wins recorded in the available results.':'Knockouts per win across the selected official fight sample.';
+  }
   const upcoming=state.scheduledBouts.filter(b=>b.fighter_a_id===f.id||b.fighter_b_id===f.id);
   $('#profileUpcomingFights').innerHTML=upcoming.length?upcoming.map(b=>{
     const other=fighterById(b.fighter_a_id===f.id?b.fighter_b_id:b.fighter_a_id);
