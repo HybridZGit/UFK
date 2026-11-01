@@ -1991,22 +1991,3 @@ button,a,input,select,textarea{touch-action:manipulation}
 .ucs-home-has-belt{position:relative}
 .ucs-home-has-belt:after{content:"";position:absolute;right:2%;bottom:5%;width:30%;height:30%;background:var(--ucs-home-belt) center/contain no-repeat;filter:drop-shadow(0 9px 14px #000a);pointer-events:none;opacity:.75}
 @media(max-width:650px){.ucs-home-has-belt:after{width:27%;height:20%;right:1%;bottom:2%;opacity:.6}}
-
-/* Championship belt badges at the foot of each rankings champion poster */
-#rankings .ucs-champion-showcase .ucs-champ-showcase-card{overflow:hidden!important}
-#rankings .ucs-champion-showcase .ucs-champ-showcase-card .ucs-champ-belt-icon{
- position:absolute!important;z-index:5!important;bottom:55px!important;left:50%!important;
- width:76%!important;height:66px!important;max-width:200px!important;
- object-fit:contain!important;object-position:center!important;
- transform:translateX(-50%)!important;filter:drop-shadow(0 5px 9px #000b)!important;
- pointer-events:none!important;border:0!important;border-radius:0!important;
-}
-#rankings .ucs-champion-showcase .ucs-champ-showcase-card:has(.ucs-champ-belt-icon) .ucs-champ-showcase-info{
- padding-bottom:8px!important;z-index:6!important;
-}
-#rankings .ucs-champion-showcase .ucs-champ-showcase-card:has(.ucs-champ-belt-icon) .ucs-champ-showcase-info:before{
- content:"";position:absolute;inset:-14px 0 0;z-index:-1;background:linear-gradient(transparent,#0a080c 32%,#0a080cee);
-}
-@media(max-width:600px){
- #rankings .ucs-champion-showcase .ucs-champ-showcase-card .ucs-champ-belt-icon{height:48px!important;bottom:51px!important;width:82%!important}
-}
