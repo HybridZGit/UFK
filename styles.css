@@ -1953,3 +1953,12 @@ button,a,input,select,textarea{touch-action:manipulation}
 #rankings .ucs-rank-title-match .ucs-title-contender:has(.ucs-title-portrait) strong{font-size:clamp(32px,4vw,60px)!important;text-shadow:0 3px 10px #000}
 .ucs-portrait-remove{display:flex!important;align-items:center;gap:10px;font-size:12px!important;color:#e1c9cc}.ucs-portrait-remove input{width:18px!important;height:18px!important;flex:none}
 @media(max-width:650px){#rankings .ucs-rank-title-match .ucs-title-contender:has(.ucs-title-portrait){min-height:220px!important;padding:10px!important}#rankings .ucs-rank-title-match .ucs-title-contender:has(.ucs-title-portrait) strong{font-size:26px!important}}
+
+/* Home Tale of the Tape: admin-managed fight portraits instead of PFPs */
+.ucs-tott-fighter.ucs-tott-has-portrait{position:relative!important;isolation:isolate!important;overflow:hidden!important;justify-content:flex-end!important;min-height:510px!important;padding:22px!important;background:linear-gradient(145deg,#27151d,#100f17)!important}
+.ucs-tott-fighter.ucs-tott-has-portrait:before{content:"";position:absolute;z-index:0;inset:38% 0 0;background:linear-gradient(transparent,#0c0a12f5);pointer-events:none}
+.ucs-tott-fighter.ucs-tott-has-portrait .ucs-tott-custom-portrait{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-width:0!important;max-width:none!important;max-height:none!important;border:0!important;border-radius:0!important;object-fit:contain!important;object-position:center bottom!important;box-shadow:none!important}
+.ucs-tott-fighter.ucs-tott-has-portrait>*:not(.ucs-tott-custom-portrait){position:relative!important;z-index:1!important}
+.ucs-tott-fighter.ucs-tott-has-portrait h3{font-size:clamp(38px,4.3vw,68px)!important;text-shadow:0 3px 15px #000!important}
+.ucs-tott-fighter.ucs-tott-has-portrait .ucs-tott-corner{margin-bottom:auto!important}
+@media(max-width:760px){.ucs-tott-fighter.ucs-tott-has-portrait{min-height:370px!important;padding:12px!important}.ucs-tott-fighter.ucs-tott-has-portrait h3{font-size:clamp(25px,7vw,40px)!important}}
