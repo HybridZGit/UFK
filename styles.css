@@ -1595,3 +1595,40 @@ body:before{z-index:-1!important;background:repeating-linear-gradient(135deg,rgb
 #watch .ucs-watch-disclaimer{color:#888896;margin-top:15px}
 @media(max-width:900px){#watch .ucs-twitch-layout{grid-template-columns:minmax(0,1fr)}#watch .ucs-twitch-chat-wrap{min-height:380px}#watch .ucs-watch-heading{align-items:flex-start;flex-direction:column}#watch .ucs-watch-countdown-wrap{padding:20px!important}}
 @media(max-width:600px){#watch .ucs-watch-heading h1{font-size:clamp(50px,13vw,75px)!important}#watch .ucs-watch-event-overline{font-size:9px}#watch .ucs-countdown-crown{margin-top:22px!important}#watch .ucs-watch-countdown-wrap h2{font-size:clamp(42px,12vw,66px)!important}#watch .ucs-watch-stream-label{align-items:flex-start;flex-direction:column}#watch .ucs-twitch-player{min-height:220px}}
+
+/* UCS Face Off — completely redesigned ranking-driven matchup showcase */
+#home .ucs-marquee-section{padding-top:56px;padding-bottom:44px}
+#home .ucs-marquee-header{align-items:end;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid #3a3039}
+#home .ucs-marquee-header .section-kicker{color:#ef3656!important;letter-spacing:.2em;font-size:11px}
+#home .ucs-marquee-header h2{font:900 clamp(44px,6vw,82px)/.88 'Barlow Condensed',Impact,sans-serif!important;letter-spacing:-.015em!important;color:#fff!important;margin:12px 0 0}
+#home .ucs-marquee-header h2 em{font-style:normal;color:#ef2d50}
+#home .ucs-marquee-subtitle{font:800 10px Inter,sans-serif;letter-spacing:.12em;color:#b6aab1}
+#home .ucs-faceoff-symbol{color:#f02d51;font-size:19px;margin-left:9px}
+#home .ucs-marquee-stage{position:relative;min-height:440px;background:linear-gradient(90deg,rgba(121,22,42,.23),transparent 38%,transparent 62%,rgba(26,42,72,.25)),radial-gradient(ellipse at 50% 50%,#24202b,#101117 70%)!important;border:1px solid #45404a!important;border-top:3px solid #f02d51!important;border-radius:5px!important;box-shadow:0 24px 55px #0008!important}
+#home .ucs-marquee-stage:before{content:"UCS";position:absolute;left:50%;top:51%;right:auto;width:auto;height:auto;background:none;transform:translate(-50%,-50%);font:900 clamp(140px,25vw,330px)/1 'Barlow Condensed',Impact,sans-serif;color:#ffffff06;letter-spacing:-.06em;pointer-events:none}
+#home .ucs-marquee-slide{position:relative;z-index:1;padding:25px clamp(14px,4vw,54px) 22px;animation:ucsMarqueeSlideIn .4s ease both}
+#home .ucs-marquee-tag{display:table;margin:0 auto 24px;padding:9px 17px;border:1px solid #7e3346;border-radius:2px;background:#291720;color:#f5c7d1!important;font:900 11px Inter,sans-serif;letter-spacing:.1em;text-align:center}
+#home .ucs-marquee-pulse{background:#f22c50!important;box-shadow:0 0 12px #f22c50}
+#home .ucs-marquee-versus{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(110px,.55fr) minmax(0,1fr)!important;gap:clamp(8px,3vw,42px)!important;align-items:center!important}
+#home .ucs-marquee-fighter{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0;padding:16px 10px 18px;background:linear-gradient(180deg,#ffffff09,#ffffff02);border:1px solid #ffffff18;border-radius:4px}
+#home .ucs-marquee-fighter:first-child{border-top:3px solid #ee3151}
+#home .ucs-marquee-fighter:last-child{border-top:3px solid #5581d5}
+#home .ucs-marquee-avatar{width:clamp(95px,12vw,155px)!important;height:clamp(95px,12vw,155px)!important;border:3px solid #6d4651!important;border-radius:50%;background:#0c0e15;box-shadow:0 0 0 5px #ffffff08,0 12px 30px #0008!important;overflow:hidden}
+#home .ucs-marquee-fighter:last-child .ucs-marquee-avatar{border-color:#526c9e!important}
+#home .ucs-marquee-profile-pic{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%}
+#home .ucs-marquee-corner{margin-top:15px!important;color:#a5a6b4!important;font:900 10px Inter,sans-serif;letter-spacing:.16em}
+#home .ucs-marquee-fighter h3{font:900 clamp(32px,4vw,55px)/.94 'Barlow Condensed',Impact,sans-serif!important;color:#fff!important;margin:9px 0!important;overflow-wrap:anywhere}
+#home .ucs-marquee-record{color:#f2d4dc!important;font:900 23px 'Barlow Condensed',Impact,sans-serif!important}
+#home .ucs-marquee-meta,#home .ucs-marquee-score{color:#a6a5b1!important;font-size:12px!important;margin-top:8px}
+#home .ucs-marquee-middle{align-self:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+#home .ucs-marquee-middle small{color:#a7a3ad!important;letter-spacing:.25em;font-weight:900}
+#home .ucs-marquee-middle strong{font:900 clamp(76px,11vw,155px)/.8 'Barlow Condensed',Impact,sans-serif!important;letter-spacing:-.05em;color:#fff!important;text-shadow:5px 5px 0 #bd2441,0 12px 35px #000!important}
+#home .ucs-marquee-middle span{color:#f0a9b9!important;font:900 10px Inter,sans-serif!important;letter-spacing:.1em;text-align:center}
+#home .ucs-marquee-bottom{margin-top:22px!important;padding-top:17px;border-top:1px solid #ffffff1c;color:#aaa6b1!important;text-align:center;font-size:12px!important}
+#home .ucs-marquee-controls{margin-top:17px;gap:15px}
+#home .ucs-marquee-controls>button{border:1px solid #664151!important;background:#231820!important;color:#fff!important;border-radius:3px!important;min-width:43px;min-height:43px}
+#home .ucs-marquee-controls>button:hover{background:#922c48!important}
+#home .ucs-marquee-dots button.active{background:#f02d50!important}
+#home .ucs-marquee-disclaimer{margin-top:14px;color:#8e8d9b!important;font-size:12px;text-align:center}
+@media(max-width:700px){#home .ucs-marquee-header{align-items:flex-start;flex-direction:column;gap:10px}#home .ucs-marquee-stage{min-height:0}#home .ucs-marquee-slide{padding:16px 10px}#home .ucs-marquee-versus{grid-template-columns:minmax(0,1fr) 65px minmax(0,1fr)!important;gap:5px!important}#home .ucs-marquee-fighter{padding:12px 3px}#home .ucs-marquee-avatar{width:76px!important;height:76px!important}#home .ucs-marquee-fighter h3{font-size:27px!important}#home .ucs-marquee-record{font-size:18px!important}#home .ucs-marquee-middle strong{font-size:58px!important}#home .ucs-marquee-middle span{font-size:8px!important}#home .ucs-marquee-tag{font-size:9px;padding:8px}#home .ucs-marquee-meta,#home .ucs-marquee-score{font-size:10px!important}}
+@media(prefers-reduced-motion:reduce){#home .ucs-marquee-slide{animation:none}}
