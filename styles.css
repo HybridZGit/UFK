@@ -2501,3 +2501,29 @@ main{background:transparent!important}
  .topbar nav a{padding:10px 6px;font-size:11px}
  .topbar .ucs-watch-button{padding:11px 10px}
 }
+
+
+/* UCS NEWS — editorial magazine layout, scoped to the news page only */
+#news.ucs-news-page{max-width:1450px;margin-inline:auto}
+#news .ucs-news-heading{margin-bottom:30px}
+#news .ucs-news-grid{display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;gap:20px!important;align-items:stretch}
+#news .ucs-news-card,
+#news .ucs-news-card:first-child{grid-column:span 4!important;display:flex!important;flex-direction:column!important;min-width:0!important;min-height:0!important;overflow:hidden!important;border:1px solid #34343c!important;border-radius:12px!important;background:#14151b!important;box-shadow:0 12px 35px #0005!important;position:relative;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease!important}
+#news .ucs-news-card:first-child{grid-column:span 8!important;grid-row:span 2!important;background:#19151a!important}
+#news .ucs-news-card:hover{transform:translateY(-4px)!important;border-color:#d3a843!important;box-shadow:0 18px 45px #0008!important}
+#news .ucs-news-image,#news .ucs-news-card:first-child .ucs-news-image{display:block!important;position:relative!important;width:100%!important;height:auto!important;aspect-ratio:16/10!important;min-height:0!important;overflow:hidden!important;background:#191a20!important}
+#news .ucs-news-card:first-child .ucs-news-image{aspect-ratio:16/9!important}
+#news .ucs-news-image img{width:100%!important;height:100%!important;max-height:none!important;position:absolute!important;inset:0!important;object-fit:cover!important;object-position:center 32%!important;transition:transform .35s ease!important}
+#news .ucs-news-card:hover .ucs-news-image img{transform:scale(1.045)!important}
+#news .ucs-news-card-copy{display:flex!important;flex-direction:column!important;flex:1!important;padding:20px 22px 22px!important;gap:10px!important;min-width:0}
+#news .ucs-news-card:first-child .ucs-news-card-copy{padding:26px 30px 30px!important}
+#news .ucs-news-card-copy small{font-size:10px!important;letter-spacing:.12em!important;text-transform:uppercase!important;font-weight:800!important;color:#e8ba53!important}
+#news .ucs-news-card-copy strong{font-family:'Barlow Condensed',Impact,sans-serif!important;font-size:clamp(23px,2vw,34px)!important;line-height:1.06!important;font-weight:900!important;letter-spacing:.01em!important;text-wrap:balance}
+#news .ucs-news-card:first-child .ucs-news-card-copy strong{font-size:clamp(30px,3vw,49px)!important}
+#news .ucs-news-card-copy>span{font-size:13px!important;line-height:1.6!important;color:#b9bac3!important;display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:3!important;overflow:hidden!important}
+#news .ucs-news-card-copy b{margin-top:auto!important;padding-top:12px!important;font-size:11px!important;letter-spacing:.08em!important;color:#f3c456!important}
+#news .ucs-news-card:focus-visible{outline:2px solid #f3c456!important;outline-offset:3px}
+#news .ucs-news-reader{max-width:980px;margin-inline:auto}
+#news .ucs-news-reader .ucs-news-feature-image{width:100%;max-height:540px;object-fit:cover;border-radius:12px}
+@media(max-width:1050px){#news .ucs-news-card,#news .ucs-news-card:first-child{grid-column:span 6!important;grid-row:auto!important}#news .ucs-news-card:first-child .ucs-news-image{aspect-ratio:16/10!important}}
+@media(max-width:650px){#news .ucs-news-grid{gap:16px!important}#news .ucs-news-card,#news .ucs-news-card:first-child{grid-column:1/-1!important}#news .ucs-news-card-copy,#news .ucs-news-card:first-child .ucs-news-card-copy{padding:18px!important}#news .ucs-news-card:first-child .ucs-news-card-copy strong{font-size:32px!important}}
