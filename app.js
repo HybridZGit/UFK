@@ -168,8 +168,41 @@ async function loadPublicData(){
   state.news=results[9].data||[];
   state.photos=results[10].data||[];
   state.formerChampionships=results[11].data||[];
+  ucsApplyRafaAvatar();
   renderAll();ucsRenderOfflineAdminList();renderChampionShowcase();ucsRenderHomeChampion();ucsFillBeltArtForm();ucsPosterFill();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
 }
+
+// Optional live Discord avatar for RAFA. Lanyard only returns profiles for users
+// enrolled in its public presence service; keep the stored UCS image as fallback.
+const UCS_RAFA_DISCORD_ID='767233344634486804';
+let ucsRafaDiscordAvatar=null;
+function ucsApplyRafaAvatar(){
+  const rafa=state.fighters.find(f=>String(f.name||'').trim().toUpperCase()==='RAFA');
+  if(!rafa)return false;
+  if(!rafa.ucsOriginalAvatar)rafa.ucsOriginalAvatar=rafa.avatar_url||'';
+  const next=ucsRafaDiscordAvatar||rafa.ucsOriginalAvatar;
+  if(rafa.avatar_url===next)return false;
+  rafa.avatar_url=next;
+  return true;
+}
+async function ucsRefreshRafaDiscordAvatar(){
+  try{
+    const response=await fetch('https://api.lanyard.rest/v1/users/'+UCS_RAFA_DISCORD_ID,{cache:'no-store'});
+    if(!response.ok)return;
+    const payload=await response.json();
+    const user=payload?.data?.discord_user;
+    if(!payload.success||String(user?.id)!==UCS_RAFA_DISCORD_ID)return;
+    const hash=user.avatar;
+    if(!hash||!/^[a-zA-Z0-9_]+$/.test(hash))return;
+    const extension=hash.startsWith('a_')?'gif':'png';
+    const next='https://cdn.discordapp.com/avatars/'+UCS_RAFA_DISCORD_ID+'/'+hash+'.'+extension+'?size=256';
+    if(next===ucsRafaDiscordAvatar)return;
+    ucsRafaDiscordAvatar=next;
+    if(ucsApplyRafaAvatar())renderAll();
+  }catch(error){console.info('RAFA Discord avatar unavailable; using UCS image.');}
+}
+setInterval(ucsRefreshRafaDiscordAvatar,300000);
+ucsRefreshRafaDiscordAvatar();
 
 // UCS Photography: public read-only gallery; approved users can upload.
 function renderPhotoGallery(){
