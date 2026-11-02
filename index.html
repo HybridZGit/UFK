@@ -410,6 +410,10 @@
       <div id="adminLocked" class="admin-locked">Sign in with an account marked as an admin in Supabase to unlock league controls.</div>
 
       <div id="adminControls" class="hidden">
+        <form id="ucsOfflineChampionForm" style="padding:20px;margin:14px 0;border:1px solid #4a3038;border-radius:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:end">
+          <label style="display:grid;gap:8px">UCS OFFLINE CHAMPION<select id="ucsOfflineChampionSelect" style="min-width:220px;padding:10px"><option value="">VACANT</option></select></label>
+          <button class="btn primary" type="submit">SAVE OFFLINE CHAMPION</button>
+        </form>
         <div class="ucs-admin-tabs" role="tablist" aria-label="Admin tools">
           <button type="button" class="ucs-admin-tab active" id="adminOperationsTab" role="tab" aria-controls="adminOperationsPanel" aria-selected="true">LEAGUE OPERATIONS</button>
           <button type="button" class="ucs-admin-tab" id="adminEarningsTab" role="tab" aria-controls="adminEarningsPanel" aria-selected="false">FIGHTER EARNINGS</button>
@@ -844,7 +848,7 @@
   <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=ucs-offline-record-sync-20261102"></script>
+  <script src="app.js?v=ucs-offline-champion-20261102"></script>
 <section id="ucsDiscordContractsBoard" class="shell" style="padding:32px 0 50px"><h2 style="margin-bottom:12px">🥊 DISCORD FIGHT CONTRACTS</h2><p style="opacity:.75">Challenges sent using /challenge in the UCS Discord server. Accepted contracts are not official scheduled fights until approved by staff.</p><div id="ucsDiscordContractRows" style="display:grid;gap:12px"><p>Loading contracts…</p></div></section>
 <script>
 (function(){
