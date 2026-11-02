@@ -537,7 +537,17 @@ $('#ucsGoodWinForm')?.addEventListener('submit',async e=>{
   if(rank.error)return toast('Win saved but ranking update failed: '+rank.error.message,true);
   await loadPublicData();toast('GOOD WIN AND RANKINGS UPDATED.');
 });
-function renderAll(){ ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+function renderTitleHistory(){
+ const box=$('#ucsTitleHistory');if(!box)return;
+ const entries=[];
+ for(const r of state.results||[]){const title=r.belt||r.fight_title;if(!title||/^(none|regular|no title)$/i.test(String(title)))continue;
+ entries.push({date:r.event_date||r.created_at,type:'TITLE CONTESTED · WON',title,detail:(fighterById(r.winner_id)?.name||'Winner')+' defeated '+(fighterById(r.loser_id)?.name||'Opponent')});}
+ for(const c of state.champions||[]){if(c.fighter_id&&c.granted_at)entries.push({date:c.granted_at,type:'TITLE AWARDED',title:c.division,detail:(fighterById(c.fighter_id)?.name||'Champion')+' awarded title'});}
+ for(const b of state.scheduledBouts||[]){if(b.belt&&!b.is_title_eliminator&&['scheduled','confirmed','upcoming'].includes(String(b.status||'').toLowerCase()))entries.push({date:b.bout_date||b.created_at,type:'TITLE CONTEST SCHEDULED',title:b.belt,detail:(fighterById(b.fighter_a_id)?.name||'TBA')+' vs '+(fighterById(b.fighter_b_id)?.name||'TBA')});}
+ entries.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+ box.innerHTML=entries.length?entries.map(e=>'<article style="padding:18px 4px;border-bottom:1px solid #333"><small style="color:#e0b341">'+esc(e.type)+'</small><h3>'+esc(e.title)+'</h3><p>'+esc(e.detail)+'</p><small>'+esc(String(e.date||'Date unavailable').slice(0,10))+'</small></article>').join(''):empty('No title events recorded yet.');
+}
+function renderAll(){ renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
