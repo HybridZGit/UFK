@@ -1770,6 +1770,8 @@ $('#ucsDiscordSignIn')?.addEventListener('click',async()=>{
 
 async function refreshSession(){
   if(!db){updateAdminUI();updateAccountUI();updatePhotographerUI();return;}
+  const code=new URLSearchParams(location.search).get('code');
+  if(code){const {error}=await db.auth.exchangeCodeForSession(code);if(error)console.error('Discord callback',error);else history.replaceState(null,'',location.pathname+'?ucs_discord_login=1');}
   const {data:{session}}=await db.auth.getSession();state.user=session?.user||null;state.isAdmin=false;state.profile=null;state.myFighter=null;state.wallet=null;state.userBets=[];state.fighterContracts=[];state.canPhotograph=false;
   if(state.user){
     const [{data:profile,error:profileError},{data:myFighter}]=await Promise.all([
