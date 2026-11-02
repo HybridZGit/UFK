@@ -913,7 +913,7 @@ function openFighterProfile(id){
       const method=String(r.method||'—');
       const date=r.event_date?fmtDate(r.event_date):'—';
       const extra=[r.fight_title?'🏆 '+r.fight_title+' CHAMPIONSHIP':'',r.fight_description||'',won&&(r.is_good_win||r.is_big_win)?'★ GOOD WIN · RANKINGS BOOST':''].filter(Boolean);
-      return `<div class="ucs-ref-fight-row"><div class="ucs-ref-opponent"><strong>${esc(opponent?.name||'Unknown opponent')}</strong>${r.fight_title?'<span class="ucs-ref-title-tag">TC</span>':''}${extra.length?`<small>${esc(extra.join(' · '))}</small>`:''}</div><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><span class="ucs-ref-method">${esc(method)}</span><time class="ucs-ref-date">${esc(date)}</time></div>`;
+      return `<div class="ucs-ref-fight-row"><div class="ucs-ref-opponent"><strong>${esc(opponent?.name||'Unknown opponent')}</strong>${r.fight_title?'<span class="ucs-ref-title-tag">TC</span>':''}${extra.length?`<small>${esc(extra.join(' · '))}</small>`:''}</div><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><span class="ucs-ref-method">${esc(method)}</span><time class="ucs-ref-date">${esc(date)}<small style="display:block;margin-top:5px;white-space:nowrap">🇬🇧 London, The O2 Arena</small></time></div>`;
     }).join(''):empty('No official fight history yet.');
   }
   const koPressure=$('#profileKnockoutPressure');
@@ -2292,7 +2292,7 @@ function ucsRenderDossierRecords(f){
  const heading=$('#ucsDossierRecordHeading');if(heading)heading.textContent=mode==='pro'?'UCS PRO RECORD':mode==='offline'?'UCS OFFLINE RECORD':'ALL UCS BOUTS';
  $$('#ucsDossierTabs [data-ucs-record-tab]').forEach(b=>{const active=b.dataset.ucsRecordTab===mode;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
  const entries=[];
- if(mode!=='offline')for(const r of pro){const won=r.winner_id===f.id,opp=fighterById(won?r.loser_id:r.winner_id);entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind">PRO</b> ${esc(r.method||'Result')} · ${esc(fmtDate(r.event_date))}</small></div></div>`});}
+ if(mode!=='offline')for(const r of pro){const won=r.winner_id===f.id,opp=fighterById(won?r.loser_id:r.winner_id);entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind">PRO</b> ${esc(r.method||'Result')} · ${esc(fmtDate(r.event_date))}</small><small style="display:block">🇬🇧 London, The O2 Arena</small></div></div>`});}
  if(mode!=='pro')for(const r of offline){const own=r.fighter_id===f.id,code=own?r.result:r.result==='W'?'L':r.result==='L'?'W':'D',opp=fighterById(own?r.opponent_id:r.fighter_id);entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${code==='W'?'win':code==='L'?'loss':''}">${code}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind offline">OFFLINE</b> ${esc(r.method)} · ${esc(fmtDate(r.event_date))}</small><small>${esc(r.event_name||'Offline bout')}</small></div></div>`});}
  entries.sort((x,y)=>String(y.date||'').localeCompare(String(x.date||'')));
  const root=$('#profileFightHistory');if(root)root.innerHTML=entries.length?entries.slice(0,50).map(x=>x.html).join(''):empty('No '+(mode==='offline'?'offline':'recorded')+' bouts yet.');
