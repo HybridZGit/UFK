@@ -1768,24 +1768,38 @@ $('#ucsDiscordSignIn')?.addEventListener('click',async()=>{
  if(error)toast(error.message,true);
 });
 
+let ucsSessionRefreshInFlight=null;
 async function refreshSession(){
+  if(ucsSessionRefreshInFlight)return ucsSessionRefreshInFlight;
+  ucsSessionRefreshInFlight=refreshSessionInner().finally(()=>{ucsSessionRefreshInFlight=null;});
+  return ucsSessionRefreshInFlight;
+}
+async function refreshSessionInner(){
   if(!db){updateAdminUI();updateAccountUI();updatePhotographerUI();return;}
-  const code=new URLSearchParams(location.search).get('code');
-  if(code){const {error}=await db.auth.exchangeCodeForSession(code);if(error)console.error('Discord callback',error);else history.replaceState(null,'',location.pathname+'?ucs_discord_login=1');}
-  const {data:{session}}=await db.auth.getSession();state.user=session?.user||null;state.isAdmin=false;state.profile=null;state.myFighter=null;state.wallet=null;state.userBets=[];state.fighterContracts=[];state.canPhotograph=false;
+  const params=new URLSearchParams(location.search);
+  const code=params.get('code');
+  if(code){
+    const {error}=await db.auth.exchangeCodeForSession(code);
+    if(error)console.error('Discord callback:',error.message);
+    else {params.delete('code');params.set('ucs_discord_login','1');history.replaceState(null,'',location.pathname+'?'+params.toString());}
+  }
+  const {data:{session},error:sessionError}=await db.auth.getSession();
+  if(sessionError)console.error('UCS login session:',sessionError.message);
+  state.user=session?.user||null;state.isAdmin=false;state.profile=null;state.myFighter=null;state.wallet=null;state.userBets=[];state.fighterContracts=[];state.canPhotograph=false;
   if(state.user){
     const [{data:profile,error:profileError},{data:myFighter}]=await Promise.all([
       db.from('profiles').select('id,is_admin,display_name,region,platform,avatar_url').eq('id',state.user.id).single(),
       db.from('fighters').select('*').eq('user_id',state.user.id).maybeSingle()
     ]);
     if(!profileError&&profile){state.profile=profile;state.isAdmin=Boolean(profile.is_admin);}state.myFighter=myFighter||null;
-    const {data:photoPermission}=await db.rpc('is_ucs_photographer');state.canPhotograph=Boolean(photoPermission);
+    try{const {data:photoPermission}=await db.rpc('is_ucs_photographer');state.canPhotograph=Boolean(photoPermission);}catch(error){console.warn('Photographer role:',error.message);}
     if(state.user.identities?.some(identity=>identity.provider==='discord')){
       const {data:claimedId,error:claimError}=await db.rpc('ucs_claim_discord_fighter');
       if(claimError)console.warn('Discord fighter link:',claimError.message);
       if(claimedId){const {data:linked}=await db.from('fighters').select('*').eq('id',claimedId).maybeSingle();if(linked)state.myFighter=linked;}
     }
-    await refreshWallet();await refreshContracts();
+    try{await refreshWallet();}catch(error){console.warn('Wallet:',error.message);}
+    try{await refreshContracts();}catch(error){console.warn('Contracts:',error.message);}
   } else {renderBets();renderContractCenter();}
   updateAdminUI();updateAccountUI();updatePhotographerUI();
   if(state.myFighter&&state.user?.identities?.some(identity=>identity.provider==='discord')&&(location.hash==='#account'||new URLSearchParams(location.search).has('ucs_discord_login'))){
