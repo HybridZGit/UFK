@@ -169,7 +169,7 @@ async function loadPublicData(){
   state.photos=results[10].data||[];
   state.formerChampionships=results[11].data||[];
   ucsApplyRafaAvatar();
-  renderAll();ucsRenderOfflineAdminList();renderChampionShowcase();ucsRenderHomeChampion();ucsFillBeltArtForm();ucsPosterFill();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
+  renderAll();ucsRenderOfflineAdminList();renderChampionShowcase();ucsPopulateOfflineChampionSelect();ucsRenderHomeChampion();ucsFillBeltArtForm();ucsPosterFill();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
 }
 
 // Optional live Discord avatar for RAFA. Lanyard only returns profiles for users
@@ -846,6 +846,14 @@ function ucsChampionFlagHtml(flag){
 function renderChampionShowcase(){
   const root=$('#ucsChampionShowcase');if(!root)return;
   const ordered=['UCS World','UCS International',...ucsDivisions().filter(d=>!['UCS World','UCS International'].includes(d))];
+  const offlineId=String(state.settings?.ucs_offline_champion||'');
+  const offlineFighter=fighterById(offlineId);
+  const offlinePhoto=offlineFighter?[offlineFighter.showcase_image_url,offlineFighter.avatar_url,offlineFighter.profile_image_url].find(safeHttps):null;
+  const offlineCard=`<article class="ucs-champ-showcase-card ${offlineFighter?'':'ucs-champ-vacant'} ucs-offline-champion-card" ${offlineFighter?`role="button" tabindex="0" data-champ-profile="${esc(offlineFighter.id)}" aria-label="View ${esc(offlineFighter.name)} profile"`:''}>
+    <span class="ucs-champ-showcase-division">UCS OFFLINE</span><span class="ucs-champ-vertical" aria-hidden="true">OFFLINE</span>
+    ${offlinePhoto?`<img src="${esc(offlinePhoto)}" alt="${esc(offlineFighter.name)} portrait" loading="lazy">`:'<div class="ucs-champ-silhouette" aria-hidden="true"><span>♛</span></div>'}
+    <div class="ucs-champ-showcase-info">${offlineFighter?'<small>♛ OFFLINE CHAMPION</small>':'<small>OFFLINE TITLE AVAILABLE</small>'}<div class="ucs-champ-name-line"><strong>${offlineFighter?esc(offlineFighter.name):'VACANT'}</strong></div></div>
+  </article>`;
   root.innerHTML=ordered.map(division=>{
     const champ=state.champions.find(c=>c.division===division&&c.fighter_id);
     const fighter=champ&&fighterById(champ.fighter_id);
@@ -869,7 +877,7 @@ function renderChampionShowcase(){
       ${photo?`<img src="${esc(photo)}" alt="${esc(fighter.name)} boxer portrait" loading="lazy" style="transform:translateY(${headOffset}px)!important">`:`<div class="ucs-champ-silhouette" aria-hidden="true"><span>♟</span></div>`}
       <div class="ucs-champ-showcase-info">${fighter?'<small>♛ CHAMPION</small>':''}<div class="ucs-champ-name-line"><strong>${fighter?esc(fighter.name):'VACANT'}</strong>${flag&&fighter?`<span class="ucs-champ-flag" aria-label="Champion country flag">${ucsChampionFlagHtml(flag)}</span>`:''}${fighter&&boxes?`<div class="ucs-champ-form" aria-label="Fight form: ${esc(letters)}">${boxes}</div>`:''}</div></div>
     </article>`;
-  }).join('');
+  }).join('')+offlineCard;
 }
 $('#ucsChampionShowcase')?.addEventListener('click',e=>{const card=e.target.closest('[data-champ-profile]');if(card)openFighterProfile(card.dataset.champProfile);});
 $('#ucsChampionShowcase')?.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.closest('[data-champ-profile]')){e.preventDefault();openFighterProfile(e.target.closest('[data-champ-profile]').dataset.champProfile);}});
@@ -2467,3 +2475,17 @@ async function refreshUcsDiscordPresence(fighterId){
  node.className='ucs-discord-presence '+status;
 }
 setInterval(()=>{const n=$('#ucsProfileDiscordPresence');if(n?.dataset.fighterId)refreshUcsDiscordPresence(n.dataset.fighterId);},30000);
+
+function ucsPopulateOfflineChampionSelect(){
+ const select=$('#ucsOfflineChampionSelect');if(!select)return;
+ const current=String(state.settings?.ucs_offline_champion||'');
+ select.innerHTML='<option value="">VACANT — NO CHAMPION</option>'+state.fighters.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(f=>'<option value="'+esc(f.id)+'">'+esc(f.name)+'</option>').join('');
+ select.value=current;
+}
+$('#ucsOfflineChampionForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();if(!state.isAdmin||!db)return toast('Admin access required.',true);
+ const id=$('#ucsOfflineChampionSelect')?.value||'';
+ const {error}=await db.from('league_settings').upsert({key:'ucs_offline_champion',value:id,updated_at:new Date().toISOString()},{onConflict:'key'});
+ if(error)return toast('Could not update offline champion: '+error.message,true);
+ state.settings.ucs_offline_champion=id;renderChampionShowcase();toast('Offline champion updated.');
+});
