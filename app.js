@@ -1780,6 +1780,7 @@ async function refreshSessionInner(){
   // Supabase JS handles the OAuth callback during client initialization.
   // Avoid exchanging the same authorization code a second time.
   const {data:{session},error:sessionError}=await db.auth.getSession();
+  if(session&&params.has('code')){params.delete('code');params.set('ucs_discord_login','1');history.replaceState(null,'',location.pathname+'?'+params.toString());}
   if(sessionError)console.error('UCS login session:',sessionError.message);
   state.user=session?.user||null;state.isAdmin=false;state.profile=null;state.myFighter=null;state.wallet=null;state.userBets=[];state.fighterContracts=[];state.canPhotograph=false;
   if(state.user){
@@ -1789,7 +1790,7 @@ async function refreshSessionInner(){
     ]);
     if(!profileError&&profile){state.profile=profile;state.isAdmin=Boolean(profile.is_admin);}state.myFighter=myFighter||null;
     try{const {data:photoPermission}=await db.rpc('is_ucs_photographer');state.canPhotograph=Boolean(photoPermission);}catch(error){console.warn('Photographer role:',error.message);}
-    if(state.user.identities?.some(identity=>identity.provider==='discord')){
+    if(state.user.app_metadata?.provider==='discord'||state.user.identities?.some(identity=>identity.provider==='discord')){
       const {data:claimedId,error:claimError}=await db.rpc('ucs_claim_discord_fighter');
       if(claimError)console.warn('Discord fighter link:',claimError.message);
       if(claimedId){const {data:linked}=await db.from('fighters').select('*').eq('id',claimedId).maybeSingle();if(linked)state.myFighter=linked;}
@@ -1798,7 +1799,7 @@ async function refreshSessionInner(){
     try{await refreshContracts();}catch(error){console.warn('Contracts:',error.message);}
   } else {renderBets();renderContractCenter();}
   updateAdminUI();updateAccountUI();updatePhotographerUI();
-  if(state.myFighter&&state.user?.identities?.some(identity=>identity.provider==='discord')&&(location.hash==='#account'||new URLSearchParams(location.search).has('ucs_discord_login'))){
+  if(state.myFighter&&(state.user?.app_metadata?.provider==='discord'||state.user?.identities?.some(identity=>identity.provider==='discord'))&&(location.hash==='#account'||new URLSearchParams(location.search).has('ucs_discord_login'))){
     showPage('rankings');history.replaceState(null,'','#fighter/'+encodeURIComponent(state.myFighter.id));openFighterProfile(state.myFighter.id);
   }
 }
