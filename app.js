@@ -815,8 +815,23 @@ $('#rankingTabs')?.addEventListener('click',e=>{if(e.target.tagName==='BUTTON'){
 $('#rankRows')?.addEventListener('click',e=>{const row=e.target.closest('[data-fighter-profile]');if(row)openFighterProfile(row.dataset.fighterProfile);});
 $('#rankRows')?.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-fighter-profile]')){e.preventDefault();openFighterProfile(e.target.dataset.fighterProfile);}});
 
+$('#ucsFollowFighter')?.addEventListener('click',async e=>{
+ const button=e.currentTarget,id=button.dataset.fighterId;
+ if(!id||!db||button.disabled)return;
+ button.disabled=true;
+ const {data,error}=await db.rpc('ucs_click_follow',{p_fighter_id:id});
+ if(error){button.disabled=false;toast('Could not record follow: '+error.message,true);return;}
+ const count=$('#ucsFollowCount');if(count)count.textContent=Number(data||0).toLocaleString()+' followers';
+ button.textContent='✓ FOLLOWED';
+});
 function openFighterProfile(id){
   const f=fighterById(id); if(!f)return;
+  const followBtn=$('#ucsFollowFighter'),followCount=$('#ucsFollowCount');
+  if(followBtn){followBtn.dataset.fighterId=f.id;followBtn.disabled=false;followBtn.textContent='◎ FOLLOW';}
+  if(followCount)followCount.textContent='Loading followers…';
+  if(db)db.from('ucs_fighter_follows').select('follow_clicks').eq('fighter_id',f.id).maybeSingle().then(({data,error})=>{
+    if(!error&&followCount&&followBtn?.dataset.fighterId===String(f.id))followCount.textContent=Number(data?.follow_clicks||0).toLocaleString()+' followers';
+  });
   const modal=$('#fighterModal');
   const rank=currentRank(f),titles=state.champions.filter(c=>c.fighter_id===f.id),history=fighterResults(f);
   $('#profileName').textContent=f.name;
