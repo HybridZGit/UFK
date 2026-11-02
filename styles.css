@@ -2554,3 +2554,6 @@ main{background:transparent!important}
 .ucs-home-twitch-footer>span:first-child{color:#e5bc70!important;font-weight:900!important;letter-spacing:.08em!important;white-space:nowrap}
 .ucs-home-twitch-footer small{font-weight:500;color:#92909a;letter-spacing:0}
 @media(max-width:650px){.ucs-home-twitch-section{margin:24px auto 40px!important}.ucs-home-twitch-summary{padding:18px!important}.ucs-home-twitch-symbol{width:42px!important;height:42px!important;flex-basis:42px!important}.ucs-home-twitch-identity{gap:12px!important}.ucs-cinema-quality{display:none}.ucs-home-twitch-footer{flex-direction:column!important;align-items:flex-start!important;gap:8px!important}.ucs-home-twitch-identity strong{font-size:28px!important}}
+
+/* UCS fighter support: separate contributions from virtual betting */
+.ucs-support-notice{padding:26px;margin:0 0 22px;background:linear-gradient(135deg,#1b1115,#101117 72%);border:1px solid #65402b;border-radius:14px}.ucs-support-notice .section-kicker{color:#e8ba2b;font-size:11px;letter-spacing:.16em}.ucs-support-notice h3{font-family:'Barlow Condensed',sans-serif;font-size:29px;letter-spacing:.035em;margin:9px 0}.ucs-support-notice p{font-size:13px;line-height:1.7;color:#b9bac4;max-width:540px}.ucs-support-notice .btn{display:inline-flex;margin-top:8px;text-decoration:none}
