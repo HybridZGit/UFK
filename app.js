@@ -889,8 +889,8 @@ function openFighterProfile(id){
   championSpotlight?.classList.toggle('hidden',titles.length===0);
   modal.classList.toggle('ucs-is-champion',titles.length>0);
   if(titles.length){
-    $('#profileChampionHeading').textContent=titles.length===1?titles[0].division.toUpperCase()+' CHAMPION':'MULTI-DIVISION UCS CHAMPION';
-    $('#profileChampionBelts').innerHTML=titles.map(t=>`<div style="display:flex;align-items:center;gap:9px;padding:5px 0;font-size:13px"><span aria-hidden="true">🏆</span><span>${esc(t.division)}</span></div>`).join('');
+    $('#profileChampionHeading').textContent='titles';
+    $('#profileChampionBelts').innerHTML=titles.map(t=>`<div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;line-height:1.5"><span aria-hidden="true" style="font-size:14px">🏆</span><span>${esc(t.division)} Championship</span></div>`).join('');
   }else{
     $('#profileChampionBelts').textContent='';
   }
