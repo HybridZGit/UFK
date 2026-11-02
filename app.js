@@ -1028,16 +1028,20 @@ function openFighterProfile(id){
       }).join('');
       upcomingTarget.querySelectorAll('[data-ucs-discord-bout]').forEach(el=>el.remove());
       if(cards){if(upcomingTarget.textContent.includes('No upcoming bouts scheduled.'))upcomingTarget.innerHTML=cards;else upcomingTarget.insertAdjacentHTML('beforeend',cards);}
-      if(historyTarget){
-        historyTarget.querySelectorAll('[data-ucs-discord-history]').forEach(el=>el.remove());
-        const doneSeen=new Set();
-        const rows=(data||[]).filter(b=>{const k=key(b);if(b.status!=='completed'||doneSeen.has(k))return false;doneSeen.add(k);return true;}).map(b=>{
-          const won=String(b.winner_fighter_id)===fighterId;
-          const opp=fighterById(b.red_fighter_id===fighterId?b.blue_fighter_id:b.red_fighter_id);
-          return '<div data-ucs-discord-history="'+esc(b.id)+'" class="ucs-ref-fight-row"><div class="ucs-ref-opponent"><strong>'+esc(opp?.name||'Opponent')+'</strong><small>UCS '+(b.kind==='offline'?'OFFLINE':'LIVE')+' BOUT</small></div><span class="result-pill '+(won?'win':'loss')+'">'+(won?'W':'L')+'</span><span class="ucs-ref-method">'+esc(b.result_method||'—')+'</span><time class="ucs-ref-date">'+esc(b.completed_at?fmtDate(b.completed_at):'—')+'</time></div>';
-        }).join('');
-        if(rows){if(historyTarget.textContent.includes('No official fight history yet.'))historyTarget.innerHTML=rows;else historyTarget.insertAdjacentHTML('afterbegin',rows);}
-      }
+      // Reuse the site's existing UCS OFFLINE / ALL BOUTS record renderer.
+      const offlineRows=(data||[]).filter(b=>b.kind==='offline'&&b.status==='completed'&&b.winner_fighter_id).map(b=>({
+        id:'discord-'+b.id,
+        fighter_id:b.winner_fighter_id,
+        opponent_id:b.winner_fighter_id===b.red_fighter_id?b.blue_fighter_id:b.red_fighter_id,
+        result:'W',
+        method:b.result_method||'Result',
+        event_date:String(b.completed_at||b.created_at||'').slice(0,10),
+        event_name:'UCS Discord Offline Bout'
+      }));
+      state.ucsDiscordOfflineByFighter=state.ucsDiscordOfflineByFighter||{};
+      state.ucsDiscordOfflineByFighter[fighterId]=offlineRows;
+      ucsRenderDossierRecords(f);
+
     });
   }
   const contractBtn=$('#profileContractBtn');
@@ -2403,7 +2407,7 @@ $('#ucsPosterDownload')?.addEventListener('click',()=>{
 
 /* Offline bouts: separate from official PRO result and ranking calculations. */
 function ucsOfflineBouts(){return Array.isArray(state.settings?.ucs_offline_bouts)?state.settings.ucs_offline_bouts:[];}
-function ucsOfflineFor(f){return ucsOfflineBouts().filter(r=>r.fighter_id===f.id||r.opponent_id===f.id);}
+function ucsOfflineFor(f){return [...ucsOfflineBouts().filter(r=>r.fighter_id===f.id||r.opponent_id===f.id),...(state.ucsDiscordOfflineByFighter?.[f.id]||[])];}
 function ucsRenderDossierRecords(f){
  const mode=state.ucsRecordTab||'pro',offline=ucsOfflineFor(f),pro=fighterResults(f);
  const ow=offline.filter(r=>(r.fighter_id===f.id?r.result:r.result==='W'?'L':r.result==='L'?'W':'D')==='W').length;
