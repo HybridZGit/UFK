@@ -784,12 +784,13 @@ $('#ucsRankingsTitleFights')?.addEventListener('click',e=>{
 function ucsBeltArt(division){const art=state.settings?.championship_belt_art||{};const key=division==='UCS World'?'world':division==='UCS International'?'international':division==='UCS EU Division'?'eu':division==='UCS SIM World'?'sim_world':division.toLowerCase().replace(/^ucs\s*/,'').replace(/[^a-z0-9]+/g,'_');const url=art[key];return safeHttps(url)?url:null;}
 function renderRankingChampion(){
   const c=state.champions.find(x=>x.division===state.rankingDivision&&x.fighter_id);
-  const f=c&&fighterById(c.fighter_id);
+  const offlineChampion=state.rankingDivision==='UCS Offline'?fighterById(String(state.settings?.ucs_offline_champion||'2082db51-ad83-48fd-baef-9d980475c1f9')):null;
+  const f=offlineChampion||(c&&fighterById(c.fighter_id));
   if(!$('#worldChampionBanner')) return;
   $('#worldChampionBanner').classList.toggle('ucs-banner-with-belt',Boolean(ucsBeltArt(state.rankingDivision)));
   $('#worldChampionBanner').style.setProperty('--ucs-belt-image',ucsBeltArt(state.rankingDivision)?`url("${ucsBeltArt(state.rankingDivision)}")`:'none');
   $('#worldChampionBanner').innerHTML=f
-    ? `<small>#C · ${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><div class="champion-inline">${avatarHtml(f,'champion-avatar')}<div><strong>${esc(f.name)}</strong><span>${esc(record(f))} · ${c.defenses||0} title defenses</span></div></div>`
+    ? `<small>#C · ${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><div class="champion-inline">${avatarHtml(f,'champion-avatar')}<div><strong>${esc(f.name)}</strong><span>${esc(record(f))} · ${offlineChampion?0:(c?.defenses||0)} title defenses</span></div></div>`
     : `<small>${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><strong>VACANT</strong><span>No champion assigned</span>`;
   renderRankingTitleFights();
 }
@@ -846,7 +847,7 @@ function ucsChampionFlagHtml(flag){
 function renderChampionShowcase(){
   const root=$('#ucsChampionShowcase');if(!root)return;
   const ordered=['UCS World','UCS International',...ucsDivisions().filter(d=>!['UCS World','UCS International'].includes(d))];
-  const offlineId=String(state.settings?.ucs_offline_champion||'');
+  const offlineId=String(state.settings?.ucs_offline_champion||'2082db51-ad83-48fd-baef-9d980475c1f9');
   const offlineFighter=fighterById(offlineId);
   const offlinePhoto=offlineFighter?[state.settings?.ucs_offline_champion_image,offlineFighter.showcase_image_url,offlineFighter.avatar_url,offlineFighter.profile_image_url].find(safeHttps):null;
   const offlineCard=`<article class="ucs-champ-showcase-card ${offlineFighter?'':'ucs-champ-vacant'} ucs-offline-champion-card" ${offlineFighter?`role="button" tabindex="0" data-champ-profile="${esc(offlineFighter.id)}" aria-label="View ${esc(offlineFighter.name)} profile"`:''}>
