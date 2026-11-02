@@ -147,7 +147,7 @@ async function loadPublicData(){
   const queries = await Promise.allSettled([
     db.from('fighters').select('*').eq('active',true).order('score',{ascending:false}),
     db.from('champions').select('*'),
-    db.from('results').select('*').order('event_date',{ascending:false}).limit(100),
+    db.from('results').select('*').order('event_date',{ascending:false}).limit(5000),
     db.from('events').select('*').order('event_date',{ascending:true}),
     db.from('contract_activity').select('*').order('created_at',{ascending:false}).limit(20),
     db.from('betting_markets').select('*').eq('is_open',true).order('created_at',{ascending:false}),
@@ -833,6 +833,9 @@ function openFighterProfile(id){
     if(!error&&followCount&&followBtn?.dataset.fighterId===String(f.id))followCount.textContent=Number(data?.follow_clicks||0).toLocaleString()+' followers';
   });
   const modal=$('#fighterModal');
+  const debutDates=(state.results||[]).filter(r=>r.winner_id===f.id||r.loser_id===f.id).map(r=>r.event_date).filter(Boolean).sort();
+  const debutEl=$('#ucsProfileDebut');
+  if(debutEl)debutEl.innerHTML='<strong style="margin-right:12px">DEBUT</strong>'+esc(debutDates[0]||'No recorded fights');
   const rank=currentRank(f),titles=state.champions.filter(c=>c.fighter_id===f.id),history=fighterResults(f);
   $('#profileName').textContent=f.name;
   $('#ucsChampionCrownProfile')?.classList.toggle('hidden',!titles.length);
@@ -887,7 +890,7 @@ function openFighterProfile(id){
   modal.classList.toggle('ucs-is-champion',titles.length>0);
   if(titles.length){
     $('#profileChampionHeading').textContent=titles.length===1?titles[0].division.toUpperCase()+' CHAMPION':'MULTI-DIVISION UCS CHAMPION';
-    $('#profileChampionBelts').innerHTML=titles.map(t=>`<span class="ucs-champion-belt">🏆 ${esc(t.division)} <small>${Number(t.defenses||0)} defenses</small></span>`).join('');
+    $('#profileChampionBelts').innerHTML=titles.map(t=>`<div style="display:flex;align-items:center;gap:9px;padding:5px 0;font-size:13px"><span aria-hidden="true">🏆</span><span>${esc(t.division)}</span></div>`).join('');
   }else{
     $('#profileChampionBelts').textContent='';
   }
@@ -1210,7 +1213,7 @@ function renderEvents(){
         <div class="ucs-match-versus ucs-red-vs-logo" role="img" aria-label="VS"></div>
         <div class="ucs-match-person ucs-match-person-right">${portrait(c)}<div class="ucs-match-person-info"><strong>${esc(c?.name||'TBA')}</strong><small>${c?esc(record(c)):'Fighter TBA'}</small></div></div>
       </div>
-      <div class="ucs-match-bottom"><span>${esc(b.belt?b.belt+' TITLE FIGHT':b.event_name||'Non-title bout')} · UPCOMING</span><button type="button" class="ucs-see-bout" data-see-bout="${esc(b.id)}">SEE BOUT ↗</button>${boutLink(b)}</div>
+      <div style="padding:4px 16px 12px;font-size:12px">🇬🇧 London, Greenwich, The O2 Arena</div><div class="ucs-match-bottom"><span>${esc(b.belt?b.belt+' TITLE FIGHT':b.event_name||'Non-title bout')} · UPCOMING</span><button type="button" class="ucs-see-bout" data-see-bout="${esc(b.id)}">SEE BOUT ↗</button>${boutLink(b)}</div>
     </article>`;
   };
   // Don't repeat scheduled pairings from legacy event rows; leave stored records untouched.
@@ -1222,7 +1225,7 @@ function renderEvents(){
       normalize(e.name)===normalize(c.name+' vs '+a.name));
   });
   const legacy=state.events.filter(e=>!duplicate(e)).map(e=>
-    `<article class="event-row"><time>${esc(fmtDate(e.event_date))}</time><strong>${esc(e.name)}</strong><span>${esc(e.details||e.status)}</span></article>`
+    `<article class="event-row"><time>${esc(fmtDate(e.event_date))}</time><strong>${esc(e.name)}</strong><span>${esc(e.details||e.status)}</span><small>🇬🇧 London, Greenwich, The O2 Arena</small></article>`
   ).join('');
   root.innerHTML=ordered.map(boutCard).join('')+legacy||empty('No fight cards or results have been added yet.');
 }
