@@ -191,7 +191,13 @@
       </section>
     </section>
 
-    <section class="page shell section-space" id="titles"><div class="section-kicker">UCS CHAMPIONSHIP ARCHIVE</div><h2>TITLE HISTORY</h2><p>Championships won, contested and awarded.</p><div class="panel" style="padding:24px;margin-top:24px" id="ucsTitleHistory">Loading title history…</div></section><section class="page shell section-space rankings-page" id="rankings">
+    <section class="page shell section-space" id="titles"><div class="section-kicker">UCS CHAMPIONSHIP ARCHIVE</div><h2>TITLE HISTORY</h2><p>Championships won, contested and awarded.</p><form id="ucsTitleFilters" style="display:flex;flex-wrap:wrap;gap:12px;margin:20px 0;align-items:center">
+<select name="division" aria-label="Select title" style="padding:12px;min-width:190px"><option value="">All titles</option></select>
+<select name="status" aria-label="Title event type" style="padding:12px"><option value="">All events</option><option value="TITLE CONTEST SCHEDULED">Scheduled</option><option value="TITLE CONTESTED · WON">Contested / won</option><option value="TITLE AWARDED">Awarded</option></select>
+<input name="fighter" aria-label="Search fighter" placeholder="Search fighter" style="padding:12px;min-width:160px">
+<select name="year" aria-label="Year" style="padding:12px"><option value="">All years</option></select>
+<button class="btn primary" type="submit">FILTER</button><button class="btn ghost" type="reset">RESET</button>
+</form><div id="ucsTitleCount" style="margin-bottom:12px;opacity:.75"></div><div class="panel" style="padding:24px;margin-top:24px" id="ucsTitleHistory">Loading title history…</div></section><section class="page shell section-space rankings-page" id="rankings">
       <div class="ranking-sponsor-bg" aria-hidden="true"><div class="sponsor-float one"></div><div class="sponsor-float two"></div><div class="sponsor-float three"></div></div>
       <div class="ranking-head">
         <div><div class="section-kicker">OFFICIAL UCS RATINGS</div><div class="section-title-row"><h2>FIGHTER RANKINGS</h2></div></div>
