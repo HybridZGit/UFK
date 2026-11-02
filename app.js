@@ -558,7 +558,22 @@ function renderTitleHistory(){
 }
 $('#ucsTitleFilters')?.addEventListener('submit',e=>{e.preventDefault();renderTitleHistory();});
 $('#ucsTitleFilters')?.addEventListener('reset',()=>setTimeout(renderTitleHistory,0));
-function renderAll(){ renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+function ucsP4pGuestId(){let id=localStorage.getItem('ucs_p4p_guest_id');if(!id){id=crypto.randomUUID();localStorage.setItem('ucs_p4p_guest_id',id);}return id;}
+function ucsP4pChoices(){try{return JSON.parse(localStorage.getItem('ucs_p4p_choices')||'[]')}catch{return []}}
+function ucsP4pSave(ids){localStorage.setItem('ucs_p4p_choices',JSON.stringify(ids));}
+function ucsRenderP4p(){
+ const root=$('#ucsP4pChoices');if(!root)return;
+ const ids=ucsP4pChoices().filter(id=>fighterById(id)).slice(0,10);
+ const options=[...state.fighters].filter(f=>f.active!==false&&!ids.includes(f.id)).sort((a,b)=>a.name.localeCompare(b.name));
+ root.innerHTML=ids.map((id,i)=>{const f=fighterById(id);return '<div style="display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #34343a"><strong>#'+(i+1)+'</strong>'+avatarHtml(f)+'<strong>'+esc(f.name)+'</strong><span style="margin-left:auto"><button type="button" data-p4p-up="'+i+'">↑</button> <button type="button" data-p4p-down="'+i+'">↓</button> <button type="button" data-p4p-remove="'+i+'">×</button></span></div>'}).join('')+
+ (ids.length<10?'<label style="display:block;margin:15px 0">Add fighter <select id="ucsP4pAdd"><option value="">Select fighter</option>'+options.map(f=>'<option value="'+esc(f.id)+'">'+esc(f.name)+'</option>').join('')+'</select></label>':'');
+}
+$('#ucsP4pChoices')?.addEventListener('change',e=>{if(e.target.id!=='ucsP4pAdd'||!e.target.value)return;ucsP4pSave([...ucsP4pChoices(),e.target.value].slice(0,10));ucsRenderP4p();});
+$('#ucsP4pChoices')?.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const ids=ucsP4pChoices();let i=Number(b.dataset.p4pUp??b.dataset.p4pDown??b.dataset.p4pRemove);if(b.hasAttribute('data-p4p-remove'))ids.splice(i,1);else{const n=b.hasAttribute('data-p4p-up')?i-1:i+1;if(n<0||n>=ids.length)return;[ids[i],ids[n]]=[ids[n],ids[i]];}ucsP4pSave(ids);ucsRenderP4p();});
+$('#ucsSubmitP4p')?.addEventListener('click',async()=>{const ids=ucsP4pChoices();if(!ids.length)return;const {error}=await db.rpc('ucs_submit_p4p',{p_voter_id:ucsP4pGuestId(),p_fighter_ids:ids});$('#ucsP4pMessage').textContent=error?'Could not submit: '+error.message:'Your P4P vote has been counted!';});
+$('#ucsP4pVoteTab')?.addEventListener('click',()=>{$('#ucsP4pVoting').classList.remove('hidden');$('#ucsP4pResults').classList.add('hidden');});
+$('#ucsP4pResultsTab')?.addEventListener('click',async()=>{$('#ucsP4pVoting').classList.add('hidden');$('#ucsP4pResults').classList.remove('hidden');const {data,error}=await db.rpc('ucs_p4p_standings');$('#ucsP4pResults').innerHTML=error?'Unable to load results':(data||[]).map((x,i)=>'<div style="padding:12px;border-bottom:1px solid #333">#'+(i+1)+' '+esc(fighterById(x.fighter_id)?.name||'Fighter')+' · '+Number(x.points)+' points · '+Number(x.votes)+' votes</div>').join('')||'No votes yet.';});
+function renderAll(){ ucsRenderP4p(); renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
