@@ -2486,3 +2486,18 @@ main{background:transparent!important}
  .topbar .ucs-account-icon{order:3;margin-left:0;flex:0 0 34px;width:34px;height:34px}
  .topbar nav{max-height:calc(100vh - 64px)}
 }
+
+
+/* Center the complete desktop header within the viewport, keeping the UCS logo visible. */
+@media(min-width:1451px){
+ .topbar{justify-content:center;padding-left:24px;padding-right:24px;gap:clamp(10px,1.1vw,20px)}
+ .topbar .brand{flex:0 0 auto;margin-right:clamp(12px,2vw,32px)}
+ .topbar nav{flex:0 1 auto}
+ .topbar .ucs-watch-button,.topbar .ucs-account-icon{flex-shrink:0}
+}
+@media(min-width:1451px) and (max-width:1700px){
+ .topbar{gap:10px}
+ .topbar .brand{margin-right:8px}
+ .topbar nav a{padding:10px 6px;font-size:11px}
+ .topbar .ucs-watch-button{padding:11px 10px}
+}
