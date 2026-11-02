@@ -2460,3 +2460,29 @@ main{background:transparent!important}
 .topbar .ucs-account-icon{display:inline-flex;flex:0 0 40px;width:40px;height:40px;align-items:center;justify-content:center;border-radius:50%;background:#c80014;color:#fff;text-decoration:none;transition:background .2s,transform .2s}
 .topbar .ucs-account-icon:hover,.topbar .ucs-account-icon:focus-visible{background:#f01832;transform:translateY(-1px);outline-offset:3px}
 @media(max-width:760px){.topbar .ucs-account-icon{flex-basis:36px;width:36px;height:36px;margin-left:auto}.topbar .ucs-account-icon svg{width:21px;height:21px}}
+
+
+/* Header: keep account icon and watch button inside viewport at every width. */
+.topbar{width:100%;max-width:100%;min-width:0;box-sizing:border-box;padding-left:clamp(12px,2vw,32px);padding-right:clamp(12px,2vw,32px);gap:clamp(8px,1vw,18px)}
+.topbar .brand{min-width:0;flex:0 1 auto;margin-right:auto}
+.topbar nav{min-width:0;flex:0 1 auto;gap:2px}
+.topbar nav a{white-space:nowrap;padding:10px clamp(5px,.6vw,11px);font-size:clamp(10px,.67vw,12px)}
+.topbar .ucs-watch-button{flex-shrink:0;padding:12px 14px}
+.topbar .ucs-account-icon{flex-shrink:0}
+@media(max-width:1450px){
+ .topbar{height:74px;padding:0 18px;gap:14px}
+ .topbar .menu-btn{display:inline-flex;align-items:center;gap:7px;order:2;flex-shrink:0}
+ .topbar nav{display:none;position:absolute;top:100%;left:0;right:0;max-height:calc(100vh - 74px);overflow-y:auto;background:#0e0f15;border-bottom:1px solid #333642;padding:12px 18px;flex-direction:column;gap:4px;box-shadow:0 16px 30px #0009}
+ .topbar nav.open{display:flex}
+ .topbar nav a{font-size:13px;padding:12px 14px}
+ .topbar .ucs-watch-button{margin-left:auto;order:1}
+ .topbar .ucs-account-icon{order:3;margin-left:0}
+}
+@media(max-width:700px){
+ .topbar{height:64px;padding:0 12px;gap:8px}
+ .topbar .brand{margin-right:auto}
+ .topbar .ucs-watch-button{margin-left:0;order:1}
+ .topbar .menu-btn{order:2}
+ .topbar .ucs-account-icon{order:3;margin-left:0;flex:0 0 34px;width:34px;height:34px}
+ .topbar nav{max-height:calc(100vh - 64px)}
+}
