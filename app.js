@@ -78,7 +78,7 @@ function showPage(id){
   if(id==='home')ucsMountHomeTwitch();else ucsUnmountHomeTwitch();
   window.scrollTo({top:0,behavior:'smooth'});
 }
-$('[data-page]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();showPage(a.dataset.page);history.replaceState(null,'','#'+a.dataset.page)}));
+$$('[data-page]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();showPage(a.dataset.page);history.replaceState(null,'','#'+a.dataset.page)}));
 $$('[data-jump]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.jump)));
 $('#menuBtn').onclick=()=>{const open=$('#nav').classList.toggle('open');$('#menuBtn').setAttribute('aria-expanded',String(open));};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#nav')?.classList.contains('open')){$('#nav').classList.remove('open');$('#menuBtn').setAttribute('aria-expanded','false');$('#menuBtn').focus();}});
