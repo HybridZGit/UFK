@@ -1777,12 +1777,8 @@ async function refreshSession(){
 async function refreshSessionInner(){
   if(!db){updateAdminUI();updateAccountUI();updatePhotographerUI();return;}
   const params=new URLSearchParams(location.search);
-  const code=params.get('code');
-  if(code){
-    const {error}=await db.auth.exchangeCodeForSession(code);
-    if(error)console.error('Discord callback:',error.message);
-    else {params.delete('code');params.set('ucs_discord_login','1');history.replaceState(null,'',location.pathname+'?'+params.toString());}
-  }
+  // Supabase JS handles the OAuth callback during client initialization.
+  // Avoid exchanging the same authorization code a second time.
   const {data:{session},error:sessionError}=await db.auth.getSession();
   if(sessionError)console.error('UCS login session:',sessionError.message);
   state.user=session?.user||null;state.isAdmin=false;state.profile=null;state.myFighter=null;state.wallet=null;state.userBets=[];state.fighterContracts=[];state.canPhotograph=false;
