@@ -432,7 +432,7 @@ function ucsRenderDivisions(){
   for(const selector of ['#championForm [name="division"]','#scheduleBoutForm [name="belt"]','#editScheduledBoutForm [name="belt"]']){
     const el=$(selector);if(!el)continue;
     const current=el.value;
-    el.innerHTML=(selector.includes('belt')?'<option value="">NON-TITLE FIGHT / TBA</option>':'')+divisions.map(name=>'<option value="'+esc(name)+'">'+esc(name.toUpperCase())+'</option>').join('');
+    el.innerHTML=(selector.includes('belt')?'<option value="">NON-TITLE FIGHT / TBA</option>':'')+(selector==='#championForm [name="division"]'?['UCS Offline',...divisions]:divisions).map(name=>'<option value="'+esc(name)+'">'+esc(name.toUpperCase())+'</option>').join('');
     if(divisions.includes(current)||(!current&&selector.includes('belt')))el.value=current;
   }
   const simRemove=$('#ucsRemoveSimDivision');if(simRemove)simRemove.classList.toggle('hidden',!(Array.isArray(state.settings.ranking_divisions)&&state.settings.ranking_divisions.includes('UCS SIM World')));
@@ -848,7 +848,7 @@ function renderChampionShowcase(){
   const ordered=['UCS World','UCS International',...ucsDivisions().filter(d=>!['UCS World','UCS International'].includes(d))];
   const offlineId=String(state.settings?.ucs_offline_champion||'');
   const offlineFighter=fighterById(offlineId);
-  const offlinePhoto=offlineFighter?[offlineFighter.showcase_image_url,offlineFighter.avatar_url,offlineFighter.profile_image_url].find(safeHttps):null;
+  const offlinePhoto=offlineFighter?[state.settings?.ucs_offline_champion_image,offlineFighter.showcase_image_url,offlineFighter.avatar_url,offlineFighter.profile_image_url].find(safeHttps):null;
   const offlineCard=`<article class="ucs-champ-showcase-card ${offlineFighter?'':'ucs-champ-vacant'} ucs-offline-champion-card" ${offlineFighter?`role="button" tabindex="0" data-champ-profile="${esc(offlineFighter.id)}" aria-label="View ${esc(offlineFighter.name)} profile"`:''}>
     <span class="ucs-champ-showcase-division">UCS OFFLINE</span><span class="ucs-champ-vertical" aria-hidden="true">OFFLINE</span>
     ${offlinePhoto?`<img src="${esc(offlinePhoto)}" alt="${esc(offlineFighter.name)} portrait" loading="lazy">`:'<div class="ucs-champ-silhouette" aria-hidden="true"><span>♛</span></div>'}
@@ -2080,6 +2080,27 @@ $('#championForm')?.addEventListener('submit',async e=>{
   e.preventDefault();if(!state.isAdmin)return toast('Admin permission required.',true);
   const form=e.target,d=new FormData(form),button=form.querySelector('[type="submit"]');
   const division=String(d.get('division')),fighterId=String(d.get('fighter_id'));
+  if(division==='UCS Offline'){
+    const file=d.get('showcase_image');
+    const current=state.settings?.ucs_offline_champion||'';
+    const button=form.querySelector('[type="submit"]');
+    button.disabled=true;
+    try{
+      let photo=state.settings?.ucs_offline_champion_image||'';
+      if(file instanceof File&&file.size){
+        if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024)throw new Error('Use PNG, JPG or WEBP under 5 MB.');
+        const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[file.type];
+        const path='admin/offline-champion/'+crypto.randomUUID()+'.'+ext;
+        const {error}=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type,upsert:false});
+        if(error)throw error;
+        photo=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
+      }else if(current!==fighterId)photo='';
+      const values={ucs_offline_champion:fighterId,ucs_offline_champion_image:photo,ucs_offline_champion_flag:String(d.get('showcase_flag')||''),ucs_offline_champion_portrait_y:Number(d.get('portrait_y'))||50};
+      for(const [key,value] of Object.entries(values)){const {error}=await db.from('league_settings').upsert({key,value,updated_at:new Date().toISOString()},{onConflict:'key'});if(error)throw error;}
+      toast('UCS Offline champion granted.');await loadPublicData();
+    }catch(error){toast(error.message||'Could not grant offline champion.',true)}finally{button.disabled=false;}
+    return;
+  }
   const existing=state.champions.find(c=>c.division===division);
   const payload={division,fighter_id:fighterId,defenses:+d.get('defenses')||0,showcase_flag:String(d.get('showcase_flag')||''),portrait_y:Math.min(100,Math.max(0,Number(d.get('portrait_y'))||50)),granted_at:new Date().toISOString()};
   const file=d.get('showcase_image');
@@ -2106,7 +2127,7 @@ $('#championForm')?.addEventListener('submit',async e=>{
   }catch(error){toast(error.message||'Could not save champion image.',true)}
   finally{button.disabled=false}
 });
-$('#vacateTitleBtn')?.addEventListener('click',async()=>{const f=$('#championForm'),division=new FormData(f).get('division');if(!state.isAdmin)return;const {error}=await db.from('champions').upsert({division,fighter_id:null,defenses:0,showcase_image_url:null,showcase_flag:null,granted_at:new Date().toISOString()},{onConflict:'division'});if(error)return toast(error.message,true);await db.rpc('recalculate_ucs_rankings');toast(`${division} title vacated.`);await loadPublicData();});
+$('#vacateTitleBtn')?.addEventListener('click',async()=>{const f=$('#championForm'),division=new FormData(f).get('division');if(!state.isAdmin)return;if(division==='UCS Offline'){const {error}=await db.from('league_settings').upsert({key:'ucs_offline_champion',value:'',updated_at:new Date().toISOString()},{onConflict:'key'});if(error)return toast(error.message,true);toast('UCS Offline title vacated.');await loadPublicData();return;}const {error}=await db.from('champions').upsert({division,fighter_id:null,defenses:0,showcase_image_url:null,showcase_flag:null,granted_at:new Date().toISOString()},{onConflict:'division'});if(error)return toast(error.message,true);await db.rpc('recalculate_ucs_rankings');toast(`${division} title vacated.`);await loadPublicData();});
 $('#resultForm')?.addEventListener('submit',async e=>{e.preventDefault();const d=new FormData(e.target);if(d.get('winner_id')===d.get('loser_id'))return toast('Winner and loser must be different.',true);if(!state.isAdmin)return toast('Admin permission required.',true);const {error}=await db.rpc('publish_ucs_result',{p_winner_id:d.get('winner_id'),p_loser_id:d.get('loser_id'),p_method:d.get('method'),p_event_date:d.get('event_date')});if(error)return toast(error.message,true);toast('Result published, records and rankings updated.');await loadPublicData();});
 $('#scheduleBoutForm')?.addEventListener('submit',async e=>{
   e.preventDefault();if(!db||!state.isAdmin)return toast('UCS admin required.',true);
