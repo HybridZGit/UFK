@@ -1762,6 +1762,12 @@ $('#fighterContractForm')?.addEventListener('submit',async e=>{
   e.target.reset();closeContractModal();await refreshWallet();await refreshContracts();state.contractTab='sent';$$('#contractTabs button').forEach(x=>x.classList.toggle('active',x.dataset.contractTab==='sent'));renderContractCenter();showPage('account');toast('Contract challenge sent.');
 });
 
+$('#ucsDiscordSignIn')?.addEventListener('click',async()=>{
+ if(!db)return toast('Discord login is not configured yet.',true);
+ const {error}=await db.auth.signInWithOAuth({provider:'discord',options:{redirectTo:window.location.origin+'/#account',scopes:'identify email'}});
+ if(error)toast(error.message,true);
+});
+
 async function refreshSession(){
   if(!db){updateAdminUI();updateAccountUI();updatePhotographerUI();return;}
   const {data:{session}}=await db.auth.getSession();state.user=session?.user||null;state.isAdmin=false;state.profile=null;state.myFighter=null;state.wallet=null;state.userBets=[];state.fighterContracts=[];state.canPhotograph=false;
