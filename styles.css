@@ -2533,3 +2533,24 @@ main{background:transparent!important}
 .topbar .ucs-discord-icon:hover,.topbar .ucs-discord-icon:focus-visible{background:#7289ff;transform:translateY(-2px);outline-offset:3px}
 @media(max-width:1450px){.topbar .ucs-discord-icon{order:3}}
 @media(max-width:700px){.topbar .ucs-discord-icon{flex-basis:34px;width:34px;height:34px}}
+
+/* Premium cinematic home broadcast theater — preserve native Twitch embed and controls */
+.ucs-home-twitch-section{max-width:1380px!important;margin:42px auto 68px!important}
+.ucs-home-twitch-details{position:relative;overflow:hidden;border:1px solid #4b3a26!important;border-radius:18px!important;background:linear-gradient(150deg,#1b1716 0%,#0a0a0e 48%,#171115 100%)!important;box-shadow:0 25px 75px #000b,0 0 65px #ba7a1710!important}
+.ucs-home-twitch-details:before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,transparent,#dcb66a 30%,#fff0c4 50%,#dcb66a 70%,transparent);pointer-events:none}
+.ucs-home-twitch-summary{padding:28px clamp(18px,3vw,46px)!important;background:radial-gradient(ellipse at 80% 0%,#a56e231c,transparent 65%)!important}
+.ucs-home-twitch-identity{gap:20px!important}
+.ucs-home-twitch-symbol{width:56px!important;height:56px!important;flex:0 0 56px!important;border:1px solid #e4bd75!important;border-radius:50%!important;background:linear-gradient(145deg,#a87932,#362713)!important;box-shadow:0 0 28px #d7a54a44!important;color:#fff1cc!important;display:grid!important;place-items:center!important}
+.ucs-home-twitch-identity small{color:#d7ad61!important;letter-spacing:.18em!important;font-size:10px!important;font-weight:850!important}
+.ucs-home-twitch-identity strong{font-family:'Barlow Condensed',Impact,sans-serif!important;font-size:clamp(27px,3.5vw,52px)!important;line-height:1.03!important;letter-spacing:.025em!important;margin:8px 0!important}
+.ucs-home-twitch-identity span span{font-size:12px!important;color:#b9b3af!important;letter-spacing:.06em!important}
+.ucs-home-twitch-content{padding:0 clamp(12px,2vw,32px) 22px!important}
+.ucs-cinema-overline{display:flex;align-items:center;gap:9px;padding:13px 3px;color:#f1d9a6;font-size:10px;font-weight:900;letter-spacing:.14em}
+.ucs-cinema-dot{width:7px;height:7px;background:#e42237;border-radius:50%;box-shadow:0 0 12px #e42237}
+.ucs-cinema-quality{margin-left:auto;color:#89858c;font-size:10px}
+.ucs-home-twitch-player{position:relative;overflow:hidden;border-radius:11px!important;border:1px solid #4c4038!important;aspect-ratio:16/9!important;min-height:0!important;background:#050506!important;box-shadow:0 18px 50px #000b!important}
+.ucs-home-twitch-player iframe{display:block;width:100%!important;height:100%!important;position:absolute;inset:0;border:0}
+.ucs-home-twitch-footer{display:flex!important;justify-content:space-between!important;gap:20px!important;align-items:center!important;padding:18px 4px 2px!important;border-top:0!important;color:#aaa6a8!important;font-size:11px!important}
+.ucs-home-twitch-footer>span:first-child{color:#e5bc70!important;font-weight:900!important;letter-spacing:.08em!important;white-space:nowrap}
+.ucs-home-twitch-footer small{font-weight:500;color:#92909a;letter-spacing:0}
+@media(max-width:650px){.ucs-home-twitch-section{margin:24px auto 40px!important}.ucs-home-twitch-summary{padding:18px!important}.ucs-home-twitch-symbol{width:42px!important;height:42px!important;flex-basis:42px!important}.ucs-home-twitch-identity{gap:12px!important}.ucs-cinema-quality{display:none}.ucs-home-twitch-footer{flex-direction:column!important;align-items:flex-start!important;gap:8px!important}.ucs-home-twitch-identity strong{font-size:28px!important}}
