@@ -558,6 +558,21 @@ function renderTitleHistory(){
 }
 $('#ucsTitleFilters')?.addEventListener('submit',e=>{e.preventDefault();renderTitleHistory();});
 $('#ucsTitleFilters')?.addEventListener('reset',()=>setTimeout(renderTitleHistory,0));
+function ucsGuestFollowIds(){try{return JSON.parse(localStorage.getItem('ucs_guest_following')||'[]')}catch{return []}}
+function ucsSaveGuestFollows(ids){localStorage.setItem('ucs_guest_following',JSON.stringify(ids));}
+async function ucsRenderCommunity(){
+ const most=$('#ucsMostFollowed');if(!most||!db)return;
+ const line=(f,right)=>'<div style="display:flex;align-items:center;gap:10px;padding:12px 2px;border-bottom:1px solid #303036">'+ucsFlagHtml(f.region)+avatarHtml(f)+'<strong style="flex:1">'+esc(f.name)+'</strong><span>'+right+'</span></div>';
+ const {data:counts}=await db.from('ucs_fighter_follows').select('fighter_id,follow_clicks').order('follow_clicks',{ascending:false}).limit(10);
+ most.innerHTML=(counts||[]).map((x,i)=>{const f=fighterById(x.fighter_id);return f?line(f,'#'+(i+1)+' · '+Number(x.follow_clicks).toLocaleString()):''}).join('')||'No follows yet';
+ const {data:trending}=await db.rpc('ucs_follow_trending');
+ const trend=$('#ucsFollowTrending');if(trend)trend.innerHTML=(trending||[]).map(x=>{const f=fighterById(x.fighter_id);return f?line(f,'+'+Number(x.follow_count).toLocaleString()):''}).join('')||'No new follows in the past 24 hours';
+ const ids=ucsGuestFollowIds(),following=$('#ucsGuestFollowing');
+ if(following)following.innerHTML=ids.map(id=>{const f=fighterById(id);return f?line(f,'<button type="button" data-ucs-unfollow="'+esc(id)+'">Unfollow</button>'):''}).join('')||'No fighters followed on this browser yet.';
+ const timeline=$('#ucsFollowingTimeline');
+ if(timeline){const items=(state.results||[]).filter(r=>ids.includes(r.winner_id)||ids.includes(r.loser_id)).sort((a,b)=>String(b.event_date||'').localeCompare(String(a.event_date||''))).slice(0,10);timeline.innerHTML=items.map(r=>'<div style="padding:10px;border-bottom:1px solid #333">'+esc(fighterById(r.winner_id)?.name||'Fighter')+' defeated '+esc(fighterById(r.loser_id)?.name||'Fighter')+' · '+esc(r.event_date||'')+'</div>').join('')||'No recent recorded fights from followed fighters.';}
+}
+$('#ucsGuestFollowing')?.addEventListener('click',e=>{const id=e.target.closest('[data-ucs-unfollow]')?.dataset.ucsUnfollow;if(!id)return;ucsSaveGuestFollows(ucsGuestFollowIds().filter(x=>x!==id));ucsRenderCommunity();});
 function ucsP4pGuestId(){let id=localStorage.getItem('ucs_p4p_guest_id');if(!id){id=crypto.randomUUID();localStorage.setItem('ucs_p4p_guest_id',id);}return id;}
 function ucsP4pChoices(){try{return JSON.parse(localStorage.getItem('ucs_p4p_choices')||'[]')}catch{return []}}
 function ucsP4pSave(ids){localStorage.setItem('ucs_p4p_choices',JSON.stringify(ids));}
@@ -573,7 +588,7 @@ $('#ucsP4pChoices')?.addEventListener('click',e=>{const b=e.target.closest('butt
 $('#ucsSubmitP4p')?.addEventListener('click',async()=>{const ids=ucsP4pChoices();if(!ids.length)return;const {error}=await db.rpc('ucs_submit_p4p',{p_voter_id:ucsP4pGuestId(),p_fighter_ids:ids});$('#ucsP4pMessage').textContent=error?'Could not submit: '+error.message:'Your P4P vote has been counted!';});
 $('#ucsP4pVoteTab')?.addEventListener('click',()=>{$('#ucsP4pVoting').classList.remove('hidden');$('#ucsP4pResults').classList.add('hidden');});
 $('#ucsP4pResultsTab')?.addEventListener('click',async()=>{$('#ucsP4pVoting').classList.add('hidden');$('#ucsP4pResults').classList.remove('hidden');const {data,error}=await db.rpc('ucs_p4p_standings');$('#ucsP4pResults').innerHTML=error?'Unable to load results':(data||[]).map((x,i)=>'<div style="padding:12px;border-bottom:1px solid #333">#'+(i+1)+' '+esc(fighterById(x.fighter_id)?.name||'Fighter')+' · '+Number(x.points)+' points · '+Number(x.votes)+' votes</div>').join('')||'No votes yet.';});
-function renderAll(){ ucsRenderP4p(); renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+function renderAll(){ ucsRenderCommunity(); ucsRenderP4p(); renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -837,12 +852,12 @@ $('#ucsFollowFighter')?.addEventListener('click',async e=>{
  const {data,error}=await db.rpc('ucs_click_follow',{p_fighter_id:id});
  if(error){button.disabled=false;toast('Could not record follow: '+error.message,true);return;}
  const count=$('#ucsFollowCount');if(count)count.textContent=Number(data||0).toLocaleString()+' followers';
- button.textContent='✓ FOLLOWED';
+ button.textContent='✓ FOLLOWED';ucsSaveGuestFollows([...new Set([...ucsGuestFollowIds(),id])]);ucsRenderCommunity();
 });
 function openFighterProfile(id){
   const f=fighterById(id); if(!f)return;
   const followBtn=$('#ucsFollowFighter'),followCount=$('#ucsFollowCount');
-  if(followBtn){followBtn.dataset.fighterId=f.id;followBtn.disabled=false;followBtn.textContent='◎ FOLLOW';}
+  if(followBtn){followBtn.dataset.fighterId=f.id;followBtn.disabled=ucsGuestFollowIds().includes(String(f.id));followBtn.textContent=followBtn.disabled?'✓ FOLLOWED':'◎ FOLLOW';}
   if(followCount)followCount.textContent='Loading followers…';
   if(db)db.from('ucs_fighter_follows').select('follow_clicks').eq('fighter_id',f.id).maybeSingle().then(({data,error})=>{
     if(!error&&followCount&&followBtn?.dataset.fighterId===String(f.id))followCount.textContent=Number(data?.follow_clicks||0).toLocaleString()+' followers';
@@ -928,7 +943,7 @@ function openFighterProfile(id){
       const method=String(r.method||'—');
       const date=r.event_date?fmtDate(r.event_date):'—';
       const extra=[r.fight_title?'🏆 '+r.fight_title+' CHAMPIONSHIP':'',r.fight_description||'',won&&(r.is_good_win||r.is_big_win)?'★ GOOD WIN · RANKINGS BOOST':''].filter(Boolean);
-      return `<div class="ucs-ref-fight-row"><div class="ucs-ref-opponent"><strong>${esc(opponent?.name||'Unknown opponent')}</strong>${r.fight_title?'<span class="ucs-ref-title-tag">TC</span>':''}${extra.length?`<small>${esc(extra.join(' · '))}</small>`:''}</div><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><span class="ucs-ref-method">${esc(method)}</span><time class="ucs-ref-date">${esc(date)}<small style="display:block;margin-top:5px;white-space:nowrap">🇬🇧 London, The O2 Arena</small></time></div>`;
+      return `<div class="ucs-ref-fight-row"><div class="ucs-ref-opponent"><strong>${esc(opponent?.name||'Unknown opponent')}</strong>${r.fight_title?'<span class="ucs-ref-title-tag">TC</span>':''}${extra.length?`<small>${esc(extra.join(' · '))}</small>`:''}</div><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><span class="ucs-ref-method">${esc(method)}</span><time class="ucs-ref-date">${esc(date)}<small style="display:block;margin-top:5px;white-space:nowrap"><img src="https://flagcdn.com/w40/gb.png" alt="UK flag" style="width:20px;height:14px;vertical-align:middle;margin-right:5px"> London, The O2 Arena</small></time></div>`;
     }).join(''):empty('No official fight history yet.');
   }
   const koPressure=$('#profileKnockoutPressure');
@@ -1228,7 +1243,7 @@ function renderEvents(){
         <div class="ucs-match-versus ucs-red-vs-logo" role="img" aria-label="VS"></div>
         <div class="ucs-match-person ucs-match-person-right">${portrait(c)}<div class="ucs-match-person-info"><strong>${esc(c?.name||'TBA')}</strong><small>${c?esc(record(c)):'Fighter TBA'}</small></div></div>
       </div>
-      <div style="padding:4px 16px 12px;font-size:12px">🇬🇧 London, Greenwich, The O2 Arena</div><div class="ucs-match-bottom"><span>${esc(b.belt?b.belt+' TITLE FIGHT':b.event_name||'Non-title bout')} · UPCOMING</span><button type="button" class="ucs-see-bout" data-see-bout="${esc(b.id)}">SEE BOUT ↗</button>${boutLink(b)}</div>
+      <div style="padding:4px 16px 12px;font-size:12px"><img src="https://flagcdn.com/w40/gb.png" alt="UK flag" style="width:20px;height:14px;vertical-align:middle;margin-right:5px"> London, Greenwich, The O2 Arena</div><div class="ucs-match-bottom"><span>${esc(b.belt?b.belt+' TITLE FIGHT':b.event_name||'Non-title bout')} · UPCOMING</span><button type="button" class="ucs-see-bout" data-see-bout="${esc(b.id)}">SEE BOUT ↗</button>${boutLink(b)}</div>
     </article>`;
   };
   // Don't repeat scheduled pairings from legacy event rows; leave stored records untouched.
@@ -1240,7 +1255,7 @@ function renderEvents(){
       normalize(e.name)===normalize(c.name+' vs '+a.name));
   });
   const legacy=state.events.filter(e=>!duplicate(e)).map(e=>
-    `<article class="event-row"><time>${esc(fmtDate(e.event_date))}</time><strong>${esc(e.name)}</strong><span>${esc(e.details||e.status)}</span><small>🇬🇧 London, Greenwich, The O2 Arena</small></article>`
+    `<article class="event-row"><time>${esc(fmtDate(e.event_date))}</time><strong>${esc(e.name)}</strong><span>${esc(e.details||e.status)}</span><small><img src="https://flagcdn.com/w40/gb.png" alt="UK flag" style="width:20px;height:14px;vertical-align:middle;margin-right:5px"> London, Greenwich, The O2 Arena</small></article>`
   ).join('');
   root.innerHTML=ordered.map(boutCard).join('')+legacy||empty('No fight cards or results have been added yet.');
 }
@@ -2307,7 +2322,7 @@ function ucsRenderDossierRecords(f){
  const heading=$('#ucsDossierRecordHeading');if(heading)heading.textContent=mode==='pro'?'UCS PRO RECORD':mode==='offline'?'UCS OFFLINE RECORD':'ALL UCS BOUTS';
  $$('#ucsDossierTabs [data-ucs-record-tab]').forEach(b=>{const active=b.dataset.ucsRecordTab===mode;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
  const entries=[];
- if(mode!=='offline')for(const r of pro){const won=r.winner_id===f.id,opp=fighterById(won?r.loser_id:r.winner_id);entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind">PRO</b> ${esc(r.method||'Result')} · ${esc(fmtDate(r.event_date))}</small><small style="display:block">🇬🇧 London, The O2 Arena</small></div></div>`});}
+ if(mode!=='offline')for(const r of pro){const won=r.winner_id===f.id,opp=fighterById(won?r.loser_id:r.winner_id);entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind">PRO</b> ${esc(r.method||'Result')} · ${esc(fmtDate(r.event_date))}</small><small style="display:block"><img src="https://flagcdn.com/w40/gb.png" alt="UK flag" style="width:20px;height:14px;vertical-align:middle;margin-right:5px"> London, The O2 Arena</small></div></div>`});}
  if(mode!=='pro')for(const r of offline){const own=r.fighter_id===f.id,code=own?r.result:r.result==='W'?'L':r.result==='L'?'W':'D',opp=fighterById(own?r.opponent_id:r.fighter_id);entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${code==='W'?'win':code==='L'?'loss':''}">${code}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind offline">OFFLINE</b> ${esc(r.method)} · ${esc(fmtDate(r.event_date))}</small><small>${esc(r.event_name||'Offline bout')}</small></div></div>`});}
  entries.sort((x,y)=>String(y.date||'').localeCompare(String(x.date||'')));
  const root=$('#profileFightHistory');if(root)root.innerHTML=entries.length?entries.slice(0,50).map(x=>x.html).join(''):empty('No '+(mode==='offline'?'offline':'recorded')+' bouts yet.');
