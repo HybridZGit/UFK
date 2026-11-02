@@ -1009,25 +1009,35 @@ function openFighterProfile(id){
       ${contribute?`<div class="ucs-upcoming-footer">${contribute}</div>`:''}
     </article>`;
   }).join(''):empty('No upcoming bouts scheduled.');
-  // Discord bouts: deduplicate by fighter pair and fight type, and show opponent avatars.
+  // Discord bouts: completed results supersede stale duplicate upcoming rows.
   if(db){
-    const fighterId=String(f.id),target=$('#profileUpcomingFights');
-    const renderToken=String(Date.now())+':'+fighterId;
-    if(target)target.dataset.discordRenderToken=renderToken;
-    db.from('ucs_signup_matches').select('id,kind,red_fighter_id,blue_fighter_id,channel_id,status').or('red_fighter_id.eq.'+fighterId+',blue_fighter_id.eq.'+fighterId).eq('status','upcoming').order('created_at',{ascending:false}).limit(50).then(({data,error})=>{
-      if(error||!target||target.dataset.discordRenderToken!==renderToken||!$('#fighterModal')?.classList.contains('open'))return;
-      target.querySelectorAll('[data-ucs-discord-bout]').forEach(el=>el.remove());
+    const fighterId=String(f.id),upcomingTarget=$('#profileUpcomingFights'),historyTarget=$('#profileFightHistory');
+    const token=String(Date.now())+':'+fighterId;
+    if(upcomingTarget)upcomingTarget.dataset.discordRenderToken=token;
+    db.from('ucs_signup_matches').select('id,kind,red_fighter_id,blue_fighter_id,winner_fighter_id,result_method,completed_at,created_at,status').or('red_fighter_id.eq.'+fighterId+',blue_fighter_id.eq.'+fighterId).order('created_at',{ascending:false}).limit(100).then(({data,error})=>{
+      if(error||!upcomingTarget||upcomingTarget.dataset.discordRenderToken!==token||!$('#fighterModal')?.classList.contains('open'))return;
+      const key=b=>b.kind+':'+[String(b.red_fighter_id),String(b.blue_fighter_id)].sort().join(':');
+      const completedKeys=new Set((data||[]).filter(b=>b.status==='completed').map(key));
       const seen=new Set();
-      const cards=(data||[]).filter(b=>{
-        const key=b.kind+':'+[String(b.red_fighter_id),String(b.blue_fighter_id)].sort().join(':');
-        if(seen.has(key))return false;seen.add(key);return true;
-      }).map(b=>{
+      const pending=(data||[]).filter(b=>{const k=key(b);if(b.status!=='upcoming'||completedKeys.has(k)||seen.has(k))return false;seen.add(k);return true;});
+      const cards=pending.map(b=>{
         const opp=fighterById(b.red_fighter_id===fighterId?b.blue_fighter_id:b.red_fighter_id);
         const photo=opp?[opp.avatar_url,opp.profile_image_url,opp.showcase_image_url].find(safeHttps):null;
         const avatar=photo?'<img src="'+esc(photo)+'" alt="" loading="lazy" style="width:52px;height:52px;object-fit:cover;border-radius:50%">':'<span style="width:52px;height:52px;border-radius:50%;display:inline-grid;place-items:center;background:#252530">🥊</span>';
         return '<article data-ucs-discord-bout="'+esc(b.id)+'" class="ucs-upcoming-card" style="padding:16px;margin:10px 0"><div class="ucs-upcoming-main"><div class="ucs-upcoming-fighter"><div class="ucs-upcoming-avatar">'+avatar+'</div><div class="ucs-upcoming-fighter-info"><small>DISCORD '+(b.kind==='offline'?'OFFLINE':'LIVE')+' BOUT</small><strong>'+esc(opp?.name||'Opponent')+'</strong><span>10 ROUNDS · 1.5× Relative Time · 1.0 Damage</span></div></div><div class="ucs-upcoming-meta"><strong>DATE TBA</strong><span class="ucs-inline-status">● SCHEDULED</span></div></div></article>';
       }).join('');
-      if(cards){if(target.textContent.includes('No upcoming bouts scheduled.'))target.innerHTML=cards;else target.insertAdjacentHTML('beforeend',cards);}
+      upcomingTarget.querySelectorAll('[data-ucs-discord-bout]').forEach(el=>el.remove());
+      if(cards){if(upcomingTarget.textContent.includes('No upcoming bouts scheduled.'))upcomingTarget.innerHTML=cards;else upcomingTarget.insertAdjacentHTML('beforeend',cards);}
+      if(historyTarget){
+        historyTarget.querySelectorAll('[data-ucs-discord-history]').forEach(el=>el.remove());
+        const doneSeen=new Set();
+        const rows=(data||[]).filter(b=>{const k=key(b);if(b.status!=='completed'||doneSeen.has(k))return false;doneSeen.add(k);return true;}).map(b=>{
+          const won=String(b.winner_fighter_id)===fighterId;
+          const opp=fighterById(b.red_fighter_id===fighterId?b.blue_fighter_id:b.red_fighter_id);
+          return '<div data-ucs-discord-history="'+esc(b.id)+'" class="ucs-ref-fight-row"><div class="ucs-ref-opponent"><strong>'+esc(opp?.name||'Opponent')+'</strong><small>UCS '+(b.kind==='offline'?'OFFLINE':'LIVE')+' BOUT</small></div><span class="result-pill '+(won?'win':'loss')+'">'+(won?'W':'L')+'</span><span class="ucs-ref-method">'+esc(b.result_method||'—')+'</span><time class="ucs-ref-date">'+esc(b.completed_at?fmtDate(b.completed_at):'—')+'</time></div>';
+        }).join('');
+        if(rows){if(historyTarget.textContent.includes('No official fight history yet.'))historyTarget.innerHTML=rows;else historyTarget.insertAdjacentHTML('afterbegin',rows);}
+      }
     });
   }
   const contractBtn=$('#profileContractBtn');
