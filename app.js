@@ -1778,9 +1778,17 @@ async function refreshSession(){
     ]);
     if(!profileError&&profile){state.profile=profile;state.isAdmin=Boolean(profile.is_admin);}state.myFighter=myFighter||null;
     const {data:photoPermission}=await db.rpc('is_ucs_photographer');state.canPhotograph=Boolean(photoPermission);
+    if(state.user.identities?.some(identity=>identity.provider==='discord')){
+      const {data:claimedId,error:claimError}=await db.rpc('ucs_claim_discord_fighter');
+      if(claimError)console.warn('Discord fighter link:',claimError.message);
+      if(claimedId){const {data:linked}=await db.from('fighters').select('*').eq('id',claimedId).maybeSingle();if(linked)state.myFighter=linked;}
+    }
     await refreshWallet();await refreshContracts();
   } else {renderBets();renderContractCenter();}
   updateAdminUI();updateAccountUI();updatePhotographerUI();
+  if(state.myFighter&&state.user?.identities?.some(identity=>identity.provider==='discord')&&location.hash==='#account'){
+    showPage('rankings');openFighterProfile(state.myFighter.id);
+  }
 }
 function updateAdminUI(){
   $('#loginForm').classList.toggle('hidden',Boolean(state.user));$('#adminSession').classList.toggle('hidden',!state.user);$('#adminIdentity').textContent=state.user?`${state.user.email}${state.isAdmin?' · ADMIN':' · NOT ADMIN'}`:'';$('#adminControls').classList.toggle('hidden',!state.isAdmin);if(!state.isAdmin){ucsEarningsState.records=new Map();ucsEarningsState.loaded=false;ucsShowAdminTab('operations');}$('#adminLocked').classList.toggle('hidden',state.isAdmin);
