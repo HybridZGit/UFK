@@ -2455,3 +2455,8 @@ main{background:transparent!important}
  #fighterModal .ucs-ref-fight-row{grid-template-columns:minmax(0,1fr) 28px 55px minmax(0,95px);gap:5px}
  #fighterModal .ucs-ref-date{font-size:10px}
 }
+
+/* Compact account access at the right edge of the header */
+.topbar .ucs-account-icon{display:inline-flex;flex:0 0 40px;width:40px;height:40px;align-items:center;justify-content:center;border-radius:50%;background:#c80014;color:#fff;text-decoration:none;transition:background .2s,transform .2s}
+.topbar .ucs-account-icon:hover,.topbar .ucs-account-icon:focus-visible{background:#f01832;transform:translateY(-1px);outline-offset:3px}
+@media(max-width:760px){.topbar .ucs-account-icon{flex-basis:36px;width:36px;height:36px;margin-left:auto}.topbar .ucs-account-icon svg{width:21px;height:21px}}
