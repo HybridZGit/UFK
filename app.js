@@ -901,6 +901,8 @@ function openFighterProfile(id){
   if(debutEl)debutEl.innerHTML='<strong style="margin-right:12px">DEBUT</strong>'+esc(debutDates[0]||'No recorded fights');
   const rank=currentRank(f),titles=state.champions.filter(c=>c.fighter_id===f.id),history=fighterResults(f);
   $('#profileName').textContent=f.name;
+  const presence=$('#ucsProfileDiscordPresence');
+  if(presence){presence.dataset.fighterId=String(f.id);presence.textContent='⚫ Discord Offline';presence.className='ucs-discord-presence offline';refreshUcsDiscordPresence(f.id);}
   $('#ucsChampionCrownProfile')?.classList.toggle('hidden',!titles.length);
   $('#ucsMatcherinoVerifiedProfile')?.classList.toggle('hidden',!f.matcherino_verified);
   $('#profilePlatform').textContent=`UCS ${f.platform||'WORLD'}`;
@@ -2417,3 +2419,16 @@ $('#ucsRemoveSimDivision')?.addEventListener('click',async()=>{
  if(!confirm('Remove UCS SIM World from saved ranking divisions? Fighter records are preserved.'))return;
  await ucsSaveDivisions(next);
 });
+
+// Public Discord status is synced by the UCS bot; stale entries display as offline.
+async function refreshUcsDiscordPresence(fighterId){
+ if(!db)return;
+ const {data,error}=await db.from('ucs_fighter_presence').select('status,updated_at').eq('fighter_id',fighterId).maybeSingle();
+ const node=$('#ucsProfileDiscordPresence');
+ if(!node||node.dataset.fighterId!==String(fighterId))return;
+ const status=!error&&data&&Date.now()-new Date(data.updated_at).getTime()<10*60*1000?data.status:'offline';
+ const labels={online:'🟢 Discord Online',idle:'🟡 Discord Idle',dnd:'🔴 Do Not Disturb',offline:'⚫ Discord Offline'};
+ node.textContent=labels[status]||labels.offline;
+ node.className='ucs-discord-presence '+status;
+}
+setInterval(()=>{const n=$('#ucsProfileDiscordPresence');if(n?.dataset.fighterId)refreshUcsDiscordPresence(n.dataset.fighterId);},30000);
