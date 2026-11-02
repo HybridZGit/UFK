@@ -1764,7 +1764,7 @@ $('#fighterContractForm')?.addEventListener('submit',async e=>{
 
 $('#ucsDiscordSignIn')?.addEventListener('click',async()=>{
  if(!db)return toast('Discord login is not configured yet.',true);
- const {error}=await db.auth.signInWithOAuth({provider:'discord',options:{redirectTo:window.location.origin+'/#account',scopes:'identify email'}});
+ const {error}=await db.auth.signInWithOAuth({provider:'discord',options:{redirectTo:window.location.origin+'/?ucs_discord_login=1',scopes:'identify email'}});
  if(error)toast(error.message,true);
 });
 
@@ -1786,8 +1786,8 @@ async function refreshSession(){
     await refreshWallet();await refreshContracts();
   } else {renderBets();renderContractCenter();}
   updateAdminUI();updateAccountUI();updatePhotographerUI();
-  if(state.myFighter&&state.user?.identities?.some(identity=>identity.provider==='discord')&&location.hash==='#account'){
-    showPage('rankings');openFighterProfile(state.myFighter.id);
+  if(state.myFighter&&state.user?.identities?.some(identity=>identity.provider==='discord')&&(location.hash==='#account'||new URLSearchParams(location.search).has('ucs_discord_login'))){
+    showPage('rankings');history.replaceState(null,'','#fighter/'+encodeURIComponent(state.myFighter.id));openFighterProfile(state.myFighter.id);
   }
 }
 function updateAdminUI(){
