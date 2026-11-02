@@ -2132,8 +2132,8 @@ if(db){
   try{ucsMountHomeTwitch();}catch(error){console.error('UCS player',error);}
   try{await loadPublicData();}catch(error){console.error('UCS public rankings/events load',error);}
   try{renderAll();}catch(error){console.error('UCS render',error);}
-  try{updateAdminUI();await refreshSession();}catch(error){console.error('UCS account',error);}
   try{if(location.hash.startsWith('#fighter/')){showPage('rankings');openFighterProfile(decodeURIComponent(location.hash.slice(9)));}else if(location.hash.startsWith('#bout/'))ucsOpenBout(decodeURIComponent(location.hash.slice(6)));else if(location.hash&&$(location.hash))showPage(location.hash.slice(1));}catch(error){console.error('UCS navigation',error);}
+  try{updateAdminUI();await refreshSession();}catch(error){console.error('UCS account',error);}
 })();
 
 $('#ucsEventPosterInput')?.addEventListener('change',e=>{
