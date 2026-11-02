@@ -545,8 +545,19 @@ function renderTitleHistory(){
  for(const c of state.champions||[]){if(c.fighter_id&&c.granted_at)entries.push({date:c.granted_at,type:'TITLE AWARDED',title:c.division,detail:(fighterById(c.fighter_id)?.name||'Champion')+' awarded title'});}
  for(const b of state.scheduledBouts||[]){if(b.belt&&!b.is_title_eliminator&&['scheduled','confirmed','upcoming'].includes(String(b.status||'').toLowerCase()))entries.push({date:b.bout_date||b.created_at,type:'TITLE CONTEST SCHEDULED',title:b.belt,detail:(fighterById(b.fighter_a_id)?.name||'TBA')+' vs '+(fighterById(b.fighter_b_id)?.name||'TBA')});}
  entries.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
- box.innerHTML=entries.length?entries.map(e=>'<article style="padding:18px 4px;border-bottom:1px solid #333"><small style="color:#e0b341">'+esc(e.type)+'</small><h3>'+esc(e.title)+'</h3><p>'+esc(e.detail)+'</p><small>'+esc(String(e.date||'Date unavailable').slice(0,10))+'</small></article>').join(''):empty('No title events recorded yet.');
+ const form=$('#ucsTitleFilters');
+ if(form){
+ const divisions=[...new Set(entries.map(e=>String(e.title)))].sort();
+ const years=[...new Set(entries.map(e=>String(e.date||'').slice(0,4)).filter(x=>/^\\d{4}$/.test(x)))].sort().reverse();
+ const sync=(select,values,first)=>{const value=select.value;select.innerHTML='<option value="">'+first+'</option>'+values.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('');select.value=values.includes(value)?value:'';};
+ sync(form.elements.division,divisions,'All titles');sync(form.elements.year,years,'All years');
+ }
+ const filtered=entries.filter(e=>!form||(!form.elements.division.value||e.title===form.elements.division.value)&&(!form.elements.status.value||e.type===form.elements.status.value)&&(!form.elements.year.value||String(e.date||'').startsWith(form.elements.year.value))&&(!form.elements.fighter.value||e.detail.toLowerCase().includes(form.elements.fighter.value.trim().toLowerCase())));
+ if($('#ucsTitleCount'))$('#ucsTitleCount').textContent=filtered.length+' title event'+(filtered.length===1?'':'s');
+ box.innerHTML=filtered.length?filtered.map(e=>'<article style="padding:18px 4px;border-bottom:1px solid #333"><small style="color:#e0b341">'+esc(e.type)+'</small><h3>'+esc(e.title)+'</h3><p>'+esc(e.detail)+'</p><small>'+esc(String(e.date||'Date unavailable').slice(0,10))+'</small></article>').join(''):empty('No title events recorded yet.');
 }
+$('#ucsTitleFilters')?.addEventListener('submit',e=>{e.preventDefault();renderTitleHistory();});
+$('#ucsTitleFilters')?.addEventListener('reset',()=>setTimeout(renderTitleHistory,0));
 function renderAll(){ renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
