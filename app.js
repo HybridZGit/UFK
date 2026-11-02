@@ -1009,6 +1009,18 @@ function openFighterProfile(id){
       ${contribute?`<div class="ucs-upcoming-footer">${contribute}</div>`:''}
     </article>`;
   }).join(''):empty('No upcoming bouts scheduled.');
+  // Show Discord signup bouts alongside official scheduled bouts.
+  if(db){
+    const fighterId=String(f.id),target=$('#profileUpcomingFights');
+    db.from('ucs_signup_matches').select('id,kind,red_fighter_id,blue_fighter_id,channel_id,status').or('red_fighter_id.eq.'+fighterId+',blue_fighter_id.eq.'+fighterId).eq('status','upcoming').order('created_at',{ascending:false}).limit(30).then(({data,error})=>{
+      if(error||!target||!$('#fighterModal')?.classList.contains('open')||$('#ucsProfileDiscordPresence')?.dataset.fighterId!==fighterId)return;
+      const cards=(data||[]).map(b=>{
+        const opp=fighterById(b.red_fighter_id===fighterId?b.blue_fighter_id:b.red_fighter_id);
+        return '<article class="ucs-upcoming-card" style="padding:16px;margin:10px 0"><div class="ucs-upcoming-main"><div class="ucs-upcoming-fighter"><div class="ucs-upcoming-fighter-info"><small>DISCORD '+(b.kind==='offline'?'OFFLINE':'LIVE')+' BOUT</small><strong>'+esc(opp?.name||'Opponent')+'</strong><span>10 ROUNDS · 1.5× Relative Time · 1.0 Damage</span></div></div><div class="ucs-upcoming-meta"><strong>DATE TBA</strong><span class="ucs-inline-status">● SCHEDULED</span></div></div></article>';
+      }).join('');
+      if(cards){if(target.textContent.includes('No upcoming bouts scheduled.'))target.innerHTML=cards;else target.insertAdjacentHTML('beforeend',cards);}
+    });
+  }
   const contractBtn=$('#profileContractBtn');
   // Keep the contract CTA visible on every opponent profile. The click handler
   // will guide guests to sign in/create a fighter profile, and will explain if
