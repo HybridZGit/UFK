@@ -2511,3 +2511,6 @@ main{background:transparent!important}
 .topbar .ucs-account-dropdown a:hover,.topbar .ucs-account-dropdown a:focus-visible{background:#991022;color:white}
 @media(max-width:1450px){.topbar .ucs-account-menu{order:3}}
 @media(max-width:700px){.topbar .ucs-account-menu{order:3}}
+
+/* Restore original working account link after dropdown regression */
+.topbar .ucs-account-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 40px;width:40px;height:40px;border-radius:50%;background:#c80014;color:#fff;text-decoration:none}
