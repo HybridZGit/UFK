@@ -2564,3 +2564,10 @@ main{background:transparent!important}
 #fighterModal .ucs-dossier #profileBanner img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 40%!important;filter:none!important}
 #fighterModal .ucs-dossier #profileBanner:after{content:""!important;position:absolute!important;inset:0!important;background:linear-gradient(to bottom,rgba(17,17,22,.35),rgba(17,17,22,.7) 55%,#111116 100%)!important}
 #fighterModal .ucs-dossier-heading,#fighterModal .ucs-dossier-tabs,#fighterModal .ucs-dossier-body{position:relative!important;z-index:1!important}
+
+/* Fighter activity and social links */
+#fighterModal .ucs-profile-social-activity{margin-top:16px;padding-top:12px;border-top:1px solid #343139;overflow-wrap:anywhere}
+#fighterModal .ucs-profile-social-activity h3{margin:8px 0!important;font-size:11px!important;color:#e5bd70!important;letter-spacing:.8px!important}
+#fighterModal .ucs-profile-social-activity a{color:#e5bd70;text-decoration:underline;text-underline-offset:3px}
+#fighterModal #ucsProfileActivityDetail{margin:9px 0;font-size:11px;color:#a7a5af}
+#fighterModal #ucsProfileMatcherino{margin-top:10px;font-size:12px}
