@@ -898,6 +898,9 @@ $('#ucsFollowFighter')?.addEventListener('click',async e=>{
 });
 function openFighterProfile(id){
   const f=fighterById(id); if(!f)return;
+  const publicId=$('#ucsPublicFighterIdValue'),copyId=$('#ucsCopyFighterId');
+  if(publicId)publicId.textContent=String(f.id);
+  if(copyId){copyId.textContent='COPY ID';copyId.onclick=()=>{navigator.clipboard.writeText(String(f.id)).then(()=>{copyId.textContent='COPIED ✓';}).catch(()=>{copyId.textContent='SELECT ID ABOVE';});};}
   const followBtn=$('#ucsFollowFighter'),followCount=$('#ucsFollowCount');
   if(followBtn){followBtn.dataset.fighterId=f.id;followBtn.disabled=ucsGuestFollowIds().includes(String(f.id));followBtn.textContent=followBtn.disabled?'✓ FOLLOWED':'◎ FOLLOW';}
   if(followCount)followCount.textContent='Loading followers…';
