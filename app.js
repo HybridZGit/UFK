@@ -2114,7 +2114,7 @@ async function ucsLoadAdminContractFights(){
   if(error)throw error;
   const ids=[...new Set((rows||[]).flatMap(c=>[c.challenger_fighter_id,c.target_fighter_id].filter(Boolean)))],names={};
   if(ids.length){const {data:fs}=await db.from('fighters').select('id,name').in('id',ids);for(const f of fs||[])names[f.id]=f.name;}
-  const options=[...new Set((belts||[]).map(b=>b.division).filter(d=>!/^ucs\\s+offline$/i.test(d)))];
+  const options=[...new Set((belts||[]).map(b=>b.division).filter(d=>!/^ucs\s+offline$/i.test(d)))];
   root.innerHTML=(rows||[]).map(c=>'<article style="padding:18px;border:1px solid #4a3038;border-radius:12px;margin-bottom:12px"><strong>'+esc(names[c.challenger_fighter_id]||'Fighter')+' VS '+esc(names[c.target_fighter_id]||'Fighter')+'</strong><p>'+esc(c.status.toUpperCase())+' · '+esc(c.title_belt_division||'NON-TITLE')+'</p>'+(c.status==='accepted'?'<label>ADD CHAMPIONSHIP ON THE LINE <select data-contract-id="'+esc(c.id)+'"><option value="">NO BELT</option>'+options.map(b=>'<option value="'+esc(b)+'"'+(b===c.title_belt_division?' selected':'')+'>'+esc(b)+'</option>').join('')+'</select></label> <button class="btn primary" data-contract-save="'+esc(c.id)+'">SAVE CHAMPIONSHIP</button>':'<small>Completed, declined or cancelled contract — read only</small>')+'</article>').join('')||'<p>No contracts yet.</p>';
  }catch(e){root.textContent='Unable to load contracts: '+e.message;}
 }
