@@ -947,6 +947,18 @@ async function ucsRenderProfileCallouts(f){
   if(cards){if(root.textContent.includes('No upcoming'))root.innerHTML=cards;else root.insertAdjacentHTML('beforeend',cards);}
  }catch(e){console.warn('UCS callout profile:',e.message);}
 }
+function ucsUpdateWarpathBadge(f){
+ const badge=$('#ucsProfileFightTempoBadge');if(!badge||!f)return;
+ const now=Date.now(),cutoff=now-30*86400000,seen=new Set();
+ const check=(id,date)=>{
+  const time=Date.parse(String(date||''));if(!Number.isFinite(time)||time<cutoff||time>now)return;
+  seen.add(id);
+ };
+ for(const bout of fighterResults(f))check('pro:'+bout.id,bout.event_date);
+ for(const bout of ucsOfflineFor(f))check('offline:'+String(bout.id||[bout.fighter_id,bout.opponent_id,bout.event_date].join(':')),bout.event_date||bout.completed_at);
+ badge.classList.toggle('hidden',seen.size<4);
+ badge.title='UCS WARPATH · '+seen.size+' completed fights in the last 30 days';
+}
 function openFighterProfile(id){
   const f=fighterById(id); if(!f)return;
   const publicId=$('#ucsPublicFighterIdValue'),copyId=$('#ucsCopyFighterId');
@@ -964,6 +976,7 @@ function openFighterProfile(id){
   if(debutEl)debutEl.innerHTML='<strong style="margin-right:12px">DEBUT</strong>'+esc(debutDates[0]||'No recorded fights');
   const rank=currentRank(f),titles=state.champions.filter(c=>c.fighter_id===f.id),history=fighterResults(f);
   $('#profileName').textContent=f.name;
+  ucsUpdateWarpathBadge(f);
   const presence=$('#ucsProfileDiscordPresence');
   if(presence){presence.dataset.fighterId=String(f.id);presence.textContent='⚫ Discord Offline';presence.className='ucs-discord-presence offline';refreshUcsDiscordPresence(f.id);}
   $('#ucsChampionCrownProfile')?.classList.toggle('hidden',!titles.length);
@@ -1130,6 +1143,7 @@ function openFighterProfile(id){
       state.ucsDiscordOfflineByFighter=state.ucsDiscordOfflineByFighter||{};
       state.ucsDiscordOfflineByFighter[fighterId]=offlineRows;
       ucsRenderDossierRecords(f);
+      if(state.ucsCurrentProfile===f.id)ucsUpdateWarpathBadge(f);
 
     });
   }
