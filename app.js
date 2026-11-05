@@ -938,6 +938,10 @@ async function ucsRenderProfileCallouts(f){
   const {data,error}=await db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,status,created_at,responded_at').or('challenger_fighter_id.eq.'+token+',target_fighter_id.eq.'+token).order('created_at',{ascending:false}).limit(30);
   if(error||root.dataset.ucsCalloutFighter!==token)return;
   root.querySelectorAll('[data-ucs-callout]').forEach(el=>el.remove());
+  let log=document.getElementById('ucsProfileCalloutLog');
+  if(!log){log=document.createElement('section');log.id='ucsProfileCalloutLog';log.style.cssText='margin:18px 0;padding:16px;border:1px solid rgba(180,180,180,.2);border-radius:12px';root.insertAdjacentElement('afterend',log);}
+  const activities=(data||[]).map(x=>{const from=fighterById(x.challenger_fighter_id)?.name||'Fighter',to=fighterById(x.target_fighter_id)?.name||'Fighter';const message=x.status==='accepted'?to+' accepted '+from+'’s callout':x.status==='declined'?to+' declined '+from+'’s callout':x.status==='expired'?'Callout expired: '+from+' → '+to:from+' sent '+to+' a callout';return '<div style="padding:8px 0;border-bottom:1px solid rgba(180,180,180,.1)">'+esc(message)+'<small style="display:block;opacity:.6">'+esc(fmtDate(x.responded_at||x.created_at))+'</small></div>';}).join('');
+  log.innerHTML='<strong>🥊 UCS CALLOUT LOG</strong>'+(activities||'<p>No callouts yet.</p>');
   const accepted=(data||[]).filter(x=>x.status==='accepted');
   const cards=accepted.map(x=>{const opponent=fighterById(x.challenger_fighter_id===token?x.target_fighter_id:x.challenger_fighter_id);return '<article class="ucs-upcoming-card" data-ucs-callout="'+esc(x.id)+'" style="padding:16px;margin:10px 0"><div class="ucs-upcoming-main"><div class="ucs-upcoming-fighter"><div class="ucs-upcoming-fighter-info"><small>DISCORD CALLOUT · ACCEPTED</small><strong>vs '+esc(opponent?.name||'Opponent')+'</strong><span>Awaiting scheduling · DATE TBA</span></div></div></div></article>';}).join('');
   if(cards){if(root.textContent.includes('No upcoming'))root.innerHTML=cards;else root.insertAdjacentHTML('beforeend',cards);}
