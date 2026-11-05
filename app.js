@@ -935,11 +935,15 @@ async function ucsRenderProfileCallouts(f){
  const root=$('#profileUpcomingFights');if(!db||!root)return;
  const token=String(f.id);root.dataset.ucsCalloutFighter=token;
  try{
-  const {data,error}=await db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,status,created_at,responded_at').or('challenger_fighter_id.eq.'+token+',target_fighter_id.eq.'+token).order('created_at',{ascending:false}).limit(30);
+  const {data,error}=await db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,status,created_at,responded_at,title_belt_division').or('challenger_fighter_id.eq.'+token+',target_fighter_id.eq.'+token).order('created_at',{ascending:false}).limit(30);
   if(error||root.dataset.ucsCalloutFighter!==token)return;
   root.querySelectorAll('[data-ucs-callout]').forEach(el=>el.remove());
   const accepted=(data||[]).filter(x=>x.status==='accepted');
-  const cards=accepted.map(x=>{const opponent=fighterById(x.challenger_fighter_id===token?x.target_fighter_id:x.challenger_fighter_id);return '<article class="ucs-upcoming-card" data-ucs-callout="'+esc(x.id)+'" style="padding:16px;margin:10px 0"><div class="ucs-upcoming-main"><div class="ucs-upcoming-fighter"><div class="ucs-upcoming-fighter-info"><small>DISCORD CALLOUT · ACCEPTED</small><strong>vs '+esc(opponent?.name||'Opponent')+'</strong><span>Awaiting scheduling · DATE TBA</span></div></div></div></article>';}).join('');
+  const cards=accepted.map(x=>{
+   const opponent=fighterById(x.challenger_fighter_id===token?x.target_fighter_id:x.challenger_fighter_id);
+   const title=x.title_belt_division?'<div style="margin-top:9px;color:#f4c568;font-size:12px;font-weight:800">🏆 '+esc(x.title_belt_division.toUpperCase())+' CHAMPIONSHIP ON THE LINE</div>':'';
+   return '<article class="ucs-upcoming-card" data-ucs-callout="'+esc(x.id)+'" style="padding:16px;margin:10px 0"><div class="ucs-upcoming-main"><div class="ucs-upcoming-fighter"><div class="ucs-upcoming-fighter-info"><small>DISCORD CALLOUT · ACCEPTED</small><strong>vs '+esc(opponent?.name||'Opponent')+'</strong>'+title+'<span>Awaiting scheduling · DATE TBA</span></div></div></div></article>';
+  }).join('');
   if(cards){if(root.textContent.includes('No upcoming'))root.innerHTML=cards;else root.insertAdjacentHTML('beforeend',cards);}
  }catch(e){console.warn('UCS callout profile:',e.message);}
 }
