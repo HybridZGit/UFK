@@ -2041,21 +2041,43 @@ $('#adminFighterAvatarForm')?.addEventListener('submit',async e=>{
 
 const ucsEarningsState={records:new Map(),loaded:false};
 function ucsShowAdminTab(tab){
-  const earnings=tab==='earnings'&&state.isAdmin,news=tab==='news'&&state.isAdmin,event=tab==='event'&&state.isAdmin,results=tab==='results'&&state.isAdmin;
-  $('#adminOperationsPanel')?.classList.toggle('hidden',earnings||news||event||results);
-  for(const [id,active] of [['adminEarningsPanel',earnings],['adminNewsPanel',news],['adminEventHeroPanel',event],['adminEventResultsPanel',results]]){
+  const earnings=tab==='earnings'&&state.isAdmin,news=tab==='news'&&state.isAdmin,event=tab==='event'&&state.isAdmin,results=tab==='results'&&state.isAdmin,contracts=tab==='contracts'&&state.isAdmin;
+  $('#adminOperationsPanel')?.classList.toggle('hidden',earnings||news||event||results||contracts);
+  for(const [id,active] of [['adminEarningsPanel',earnings],['adminNewsPanel',news],['adminEventHeroPanel',event],['adminEventResultsPanel',results],['adminContractFightsPanel',contracts]]){
     $('#'+id)?.classList.toggle('hidden',!active);
     $('#'+id)?.setAttribute('aria-hidden',String(!active));
   }
-  for(const [id,active] of [['adminOperationsTab',!earnings&&!news&&!event&&!results],['adminEarningsTab',earnings],['adminNewsTab',news],['adminEventHeroTab',event],['adminEventResultsTab',results]]){
+  for(const [id,active] of [['adminOperationsTab',!earnings&&!news&&!event&&!results],['adminEarningsTab',earnings],['adminNewsTab',news],['adminEventHeroTab',event],['adminEventResultsTab',results],['adminContractFightsTab',contracts]]){
     $('#'+id)?.classList.toggle('active',active);
     $('#'+id)?.setAttribute('aria-selected',String(active));
   }
+  if(contracts)void ucsLoadAdminContractFights();
   if(earnings)ucsLoadEarnings();
   if(news)renderNews();
   if(event)ucsRenderEventHero();
   if(results){ucsRenderEventCards();ucsPopulateEventWinners();}
 }
+
+async function ucsLoadAdminContractFights(){
+ const root=$('#ucsAdminContractFightsList');if(!root||!db||!state.isAdmin)return;
+ root.textContent='Loading contract fights…';
+ try{
+  const [{data:rows,error},{data:belts}]=await Promise.all([db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,status,title_belt_division,created_at').order('created_at',{ascending:false}).limit(200),db.from('champions').select('division')]);
+  if(error)throw error;
+  const ids=[...new Set((rows||[]).flatMap(c=>[c.challenger_fighter_id,c.target_fighter_id].filter(Boolean)))],names={};
+  if(ids.length){const {data:fs}=await db.from('fighters').select('id,name').in('id',ids);for(const f of fs||[])names[f.id]=f.name;}
+  const options=[...new Set((belts||[]).map(b=>b.division))];
+  root.innerHTML=(rows||[]).map(c=>'<article style="padding:18px;border:1px solid #4a3038;border-radius:12px;margin-bottom:12px"><strong>'+esc(names[c.challenger_fighter_id]||'Fighter')+' VS '+esc(names[c.target_fighter_id]||'Fighter')+'</strong><p>'+esc(c.status.toUpperCase())+' · '+esc(c.title_belt_division||'NON-TITLE')+'</p>'+(c.status==='accepted'?'<label>ADD CHAMPIONSHIP ON THE LINE <select data-contract-id="'+esc(c.id)+'"><option value="">NO BELT</option>'+options.map(b=>'<option value="'+esc(b)+'"'+(b===c.title_belt_division?' selected':'')+'>'+esc(b)+'</option>').join('')+'</select></label> <button class="btn primary" data-contract-save="'+esc(c.id)+'">SAVE CHAMPIONSHIP</button>':'<small>Completed, declined or cancelled contract — read only</small>')+'</article>').join('')||'<p>No contracts yet.</p>';
+ }catch(e){root.textContent='Unable to load contracts: '+e.message;}
+}
+$('#ucsAdminContractFightsList')?.addEventListener('click',async e=>{
+ const btn=e.target.closest('[data-contract-save]');if(!btn||!state.isAdmin)return;
+ const id=btn.dataset.contractSave,select=$('#ucsAdminContractFightsList').querySelector('[data-contract-id="'+id+'"]');
+ if(!select)return;btn.disabled=true;
+ const {error}=await db.rpc('ucs_admin_set_contract_belt',{p_callout_id:id,p_division:select.value||null});
+ if(error){toast(error.message,true);btn.disabled=false;return;}
+ toast('Championship on the line updated');void ucsLoadAdminContractFights();
+});
 function ucsFormatEarnings(value){
   return String.fromCharCode(36)+Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
 }
@@ -2089,6 +2111,7 @@ function ucsPopulateEarningsInput(fighterId){
 }
 $('#adminOperationsTab')?.addEventListener('click',()=>ucsShowAdminTab('operations'));
 $('#adminEarningsTab')?.addEventListener('click',()=>ucsShowAdminTab('earnings'));
+$('#adminContractFightsTab')?.addEventListener('click',()=>ucsShowAdminTab('contracts'));
 $('#adminNewsTab')?.addEventListener('click',()=>ucsShowAdminTab('news'));
 $('#adminEventHeroTab')?.addEventListener('click',()=>ucsShowAdminTab('event'));
 $('#adminEventResultsTab')?.addEventListener('click',()=>ucsShowAdminTab('results'));
