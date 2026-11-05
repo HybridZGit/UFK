@@ -849,6 +849,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="app.js?v=ucs-offline-grant-20261102"></script>
+<section id="ucsContractFights" class="shell" style="padding:30px 0 16px"><h2 style="margin-bottom:8px">🏆 CONTRACT FIGHTS</h2><p style="opacity:.75">Open a Discord contract to see its matchup and title-fight status. UCS admins can optionally put a championship belt on an accepted contract.</p><div id="ucsContractFightCards" style="display:grid;gap:12px"><p>Loading contract fights…</p></div></section>
 <section id="ucsDiscordContractsBoard" class="shell" style="padding:32px 0 50px"><h2>🥊 CONTRACT ACTIVITY</h2><p style="opacity:.75">Discord challenges, acceptances, declines, contract channels, cancellations and results. Contract results do not alter official rankings.</p><div id="ucsDiscordContractRows" style="display:grid;gap:12px">Loading contract activity…</div></section>
 <script>
 (function(){
@@ -873,6 +874,50 @@
   }catch(e){console.error('Contract activity:',e);box.textContent='Contract activity temporarily unavailable.';}
  }
  window.addEventListener('load',load);setInterval(load,30000);
+})();
+</script>
+<script>
+(function(){
+ const box=document.getElementById('ucsContractFightCards');
+ const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ let db=null,isAdmin=false,belts=[],items=[];
+ async function refresh(){
+  if(!window.supabase||!window.UFK_SUPABASE_URL||!window.UFK_SUPABASE_ANON_KEY)return;
+  try{
+   if(!db)db=window.supabase.createClient(window.UFK_SUPABASE_URL,window.UFK_SUPABASE_ANON_KEY);
+   const [{data:rows,error},{data:champions},{data:sessionData}]=await Promise.all([
+    db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,status,title_belt_division,created_at').in('status',['accepted','completed']).order('created_at',{ascending:false}).limit(60),
+    db.from('champions').select('division,fighter_id'),
+    db.auth.getSession()
+   ]);
+   if(error)throw error;
+   belts=(champions||[]).map(c=>c.division).filter(Boolean);
+   const user=sessionData?.session?.user;
+   isAdmin=false;
+   if(user){const {data:p}=await db.from('profiles').select('is_admin').eq('id',user.id).maybeSingle();isAdmin=p?.is_admin===true;}
+   items=rows||[];
+   const ids=[...new Set(items.flatMap(c=>[c.challenger_fighter_id,c.target_fighter_id].filter(Boolean)))],names={};
+   if(ids.length){const {data:fs}=await db.from('fighters').select('id,name').in('id',ids);for(const f of fs||[])names[f.id]=f.name;}
+   box.innerHTML=items.length?items.map(c=>{
+    const title=c.title_belt_division?'🏆 '+safe(c.title_belt_division)+' TITLE FIGHT':'NON-TITLE CONTRACT';
+    const canEdit=isAdmin&&c.status==='accepted';
+    return '<details style="background:#171821;border:1px solid #353645;border-radius:12px;padding:17px"><summary style="cursor:pointer;list-style-position:inside"><strong>'+safe(names[c.challenger_fighter_id]||'Fighter')+' VS '+safe(names[c.target_fighter_id]||'Fighter')+'</strong><span style="display:block;color:#f7c66d;font-size:12px;margin-top:8px">'+title+'</span><small style="opacity:.7">'+safe(c.status.toUpperCase())+' · CLICK TO OPEN</small></summary><div style="margin-top:16px;border-top:1px solid #353645;padding-top:15px">'+(canEdit?'<label style="display:block;margin-bottom:7px">Championship belt (optional)</label><select data-belt="'+safe(c.id)+'" style="max-width:100%;background:#22242b;color:#fff;border:1px solid #5b5b65;border-radius:8px;padding:10px"><option value="">No belt / Non-title</option>'+belts.map(b=>'<option value="'+safe(b)+'"'+(b===c.title_belt_division?' selected':'')+'>'+safe(b)+'</option>').join('')+'</select> <button type="button" data-save-belt="'+safe(c.id)+'" style="padding:10px 14px;border-radius:8px;background:#d5a642;color:#111;font-weight:700;border:0;cursor:pointer">SAVE BELT</button><p data-belt-status="'+safe(c.id)+'" style="font-size:12px;opacity:.8"></p>':'<p style="opacity:.75">'+(c.title_belt_division?'This contract is designated as a championship bout.':'No championship belt assigned.')+'</p>')+'</div></details>';
+   }).join(''):'<p>No accepted contract fights yet.</p>';
+  }catch(e){console.error('Contract fights:',e);box.textContent='Contract fights are temporarily unavailable.';}
+ }
+ box?.addEventListener('click',async ev=>{
+  const btn=ev.target.closest('[data-save-belt]');if(!btn||!db||!isAdmin)return;
+  const id=btn.dataset.saveBelt,select=box.querySelector('[data-belt="'+id+'"]'),msg=box.querySelector('[data-belt-status="'+id+'"]');
+  if(!select||!msg)return;
+  btn.disabled=true;msg.textContent='Saving…';
+  try{
+   const {error}=await db.rpc('ucs_admin_set_contract_belt',{p_callout_id:id,p_division:select.value||null});
+   if(error)throw error;
+   msg.textContent='Saved! Championship designation updated.';
+   await refresh();
+  }catch(e){msg.textContent='Could not save: '+String(e.message||e);}finally{btn.disabled=false;}
+ });
+ window.addEventListener('load',refresh);setInterval(refresh,60000);
 })();
 </script>
 </body>
