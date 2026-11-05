@@ -169,7 +169,7 @@ async function loadPublicData(){
   state.photos=results[10].data||[];
   state.formerChampionships=results[11].data||[];
   ucsApplyRafaAvatar();
-  renderAll();ucsRenderOfflineAdminList();renderChampionShowcase();ucsPopulateOfflineChampionSelect();ucsRenderHomeChampion();ucsFillBeltArtForm();ucsPosterFill();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
+  renderAll();ucsRenderOfflineAdminList();renderChampionShowcase();void ucsRenderOfflineStandings(true);ucsPopulateOfflineChampionSelect();ucsRenderHomeChampion();ucsFillBeltArtForm();ucsPosterFill();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
 }
 
 // Optional live Discord avatar for RAFA. Lanyard only returns profiles for users
@@ -878,6 +878,36 @@ function ucsChampionFlagHtml(flag){
   const code=emojiCode||names[raw.toUpperCase()]||( /^[a-z]{2}$/i.test(raw)?raw.toLowerCase():null);
   return code?`<img class="ucs-flag-image" src="https://flagcdn.com/w80/${code}.png" alt="${esc(raw)} flag" loading="lazy">`:`<span>${esc(raw)}</span>`;
 }
+let ucsOfflineStandingsLastLoad=0,ucsOfflineStandingsLoading=false;
+async function ucsRenderOfflineStandings(force=false){
+ const root=$('#ucsOfflineStandingsRows');
+ if(!root||!db||ucsOfflineStandingsLoading||(!force&&Date.now()-ucsOfflineStandingsLastLoad<45000))return;
+ ucsOfflineStandingsLoading=true;
+ try{
+  const [{data:offline,error:offlineError},{data:contracts,error:contractError}]=await Promise.all([
+   db.from('ucs_signup_matches').select('id,red_fighter_id,blue_fighter_id,winner_fighter_id').eq('kind','offline').eq('status','completed').not('winner_fighter_id','is',null).limit(5000),
+   db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,winner_fighter_id').eq('status','completed').limit(5000)
+  ]);
+  if(offlineError)throw offlineError;if(contractError)throw contractError;
+  const totals=new Map();
+  const add=(winner,loser)=>{
+   if(!winner||!loser||winner===loser)return;
+   for(const id of [winner,loser])if(!totals.has(id))totals.set(id,{wins:0,losses:0});
+   totals.get(winner).wins++;totals.get(loser).losses++;
+  };
+  for(const b of offline||[])add(b.winner_fighter_id,b.winner_fighter_id===b.red_fighter_id?b.blue_fighter_id:b.red_fighter_id);
+  for(const b of contracts||[])if(b.winner_fighter_id)add(b.winner_fighter_id,b.winner_fighter_id===b.challenger_fighter_id?b.target_fighter_id:b.challenger_fighter_id);
+  const championId=String(state.settings?.ucs_offline_champion||'');
+  const rows=[...totals.entries()].map(([id,record])=>({fighter:fighterById(id),id,...record})).filter(x=>x.fighter).sort((a,b)=>b.wins-a.wins||a.losses-b.losses||a.fighter.name.localeCompare(b.fighter.name));
+  if(!rows.length){root.innerHTML='<p style="opacity:.7;font-size:13px">No completed offline or contract fights yet.</p>';return;}
+  root.innerHTML=rows.map((x,i)=>'<div role="button" tabindex="0" data-offline-profile="'+esc(x.id)+'" aria-label="View '+esc(x.fighter.name)+' profile" style="display:flex;align-items:center;gap:12px;padding:11px 5px;border-top:1px solid #352a31;cursor:pointer"><span style="width:24px;color:#b9a6ad;font-weight:700;font-size:12px">'+(i+1)+'</span>'+avatarHtml(x.fighter)+'<span style="flex:1;min-width:0"><strong style="font-size:13px">'+esc(x.fighter.name)+'</strong>'+(x.id===championId?'<small style="display:block;color:#e8bb67;font-size:10px;font-weight:700">♛ OFFLINE CHAMPION</small>':'')+'</span><strong style="white-space:nowrap;font-size:13px">'+x.wins+' W · '+x.losses+' L</strong></div>').join('');
+  ucsOfflineStandingsLastLoad=Date.now();
+ }catch(e){console.warn('Offline standings:',e);root.textContent='Offline standings temporarily unavailable.';}
+ finally{ucsOfflineStandingsLoading=false;}
+}
+$('#ucsOfflineStandingsRows')?.addEventListener('click',e=>{const row=e.target.closest('[data-offline-profile]');if(row)openFighterProfile(row.dataset.offlineProfile);});
+$('#ucsOfflineStandingsRows')?.addEventListener('keydown',e=>{const row=e.target.closest('[data-offline-profile]');if(row&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openFighterProfile(row.dataset.offlineProfile);}});
+setInterval(()=>{if($('#ucsOfflineStandingsRows'))void ucsRenderOfflineStandings(true);},60000);
 function renderChampionShowcase(){
   const root=$('#ucsChampionShowcase');if(!root)return;
   const ordered=['UCS World','UCS International',...ucsDivisions().filter(d=>!['UCS World','UCS International'].includes(d))];
