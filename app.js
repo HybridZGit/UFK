@@ -818,7 +818,7 @@ $('#ucsRankingsTitleFights')?.addEventListener('click',e=>{
 function ucsBeltArt(division){const art=state.settings?.championship_belt_art||{};const key=division==='UCS World'?'world':division==='UCS International'?'international':division==='UCS EU Division'?'eu':division==='UCS SIM World'?'sim_world':division.toLowerCase().replace(/^ucs\s*/,'').replace(/[^a-z0-9]+/g,'_');const url=art[key];return safeHttps(url)?url:null;}
 function renderRankingChampion(){
   const c=state.champions.find(x=>x.division===state.rankingDivision&&x.fighter_id);
-  const offlineChampion=state.rankingDivision==='UCS Offline'?fighterById(String(state.settings?.ucs_offline_champion||'2082db51-ad83-48fd-baef-9d980475c1f9')):null;
+  const offlineChampion=state.rankingDivision==='UCS Offline'?fighterById(String(state.settings?.ucs_offline_champion||'')):null;
   const f=offlineChampion||(c&&fighterById(c.fighter_id));
   if(!$('#worldChampionBanner')) return;
   $('#worldChampionBanner').classList.toggle('ucs-banner-with-belt',Boolean(ucsBeltArt(state.rankingDivision)));
@@ -881,7 +881,7 @@ function ucsChampionFlagHtml(flag){
 function renderChampionShowcase(){
   const root=$('#ucsChampionShowcase');if(!root)return;
   const ordered=['UCS World','UCS International',...ucsDivisions().filter(d=>!['UCS World','UCS International'].includes(d))];
-  const offlineId=String(state.settings?.ucs_offline_champion||'2082db51-ad83-48fd-baef-9d980475c1f9');
+  const offlineId=String(state.settings?.ucs_offline_champion||'');
   const offlineFighter=fighterById(offlineId);
   const offlinePhoto=offlineFighter?[state.settings?.ucs_offline_champion_image,offlineFighter.showcase_image_url,offlineFighter.avatar_url,offlineFighter.profile_image_url].find(safeHttps):null;
   const offlineCard=`<article class="ucs-champ-showcase-card ${offlineFighter?'':'ucs-champ-vacant'} ucs-offline-champion-card" ${offlineFighter?`role="button" tabindex="0" data-champ-profile="${esc(offlineFighter.id)}" aria-label="View ${esc(offlineFighter.name)} profile"`:''}>
@@ -2621,10 +2621,4 @@ function ucsPopulateOfflineChampionSelect(){
  select.innerHTML='<option value="">VACANT — NO CHAMPION</option>'+state.fighters.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(f=>'<option value="'+esc(f.id)+'">'+esc(f.name)+'</option>').join('');
  select.value=current;
 }
-$('#ucsOfflineChampionForm')?.addEventListener('submit',async e=>{
- e.preventDefault();if(!state.isAdmin||!db)return toast('Admin access required.',true);
- const id=$('#ucsOfflineChampionSelect')?.value||'';
- const {error}=await db.from('league_settings').upsert({key:'ucs_offline_champion',value:id,updated_at:new Date().toISOString()},{onConflict:'key'});
- if(error)return toast('Could not update offline champion: '+error.message,true);
- state.settings.ucs_offline_champion=id;renderChampionShowcase();toast('Offline champion updated.');
-});
+
