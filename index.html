@@ -416,11 +416,13 @@
         </form>
         <div class="ucs-admin-tabs" role="tablist" aria-label="Admin tools">
           <button type="button" class="ucs-admin-tab active" id="adminOperationsTab" role="tab" aria-controls="adminOperationsPanel" aria-selected="true">LEAGUE OPERATIONS</button>
+          <button type="button" class="ucs-admin-tab" id="adminContractFightsTab" role="tab" aria-controls="adminContractFightsPanel" aria-selected="false">CONTRACT FIGHTS</button>
           <button type="button" class="ucs-admin-tab" id="adminEarningsTab" role="tab" aria-controls="adminEarningsPanel" aria-selected="false">FIGHTER EARNINGS</button>
           <button type="button" class="ucs-admin-tab" id="adminEventResultsTab" role="tab" aria-controls="adminEventResultsPanel" aria-selected="false">EVENT WINNERS</button>
           <button type="button" class="ucs-admin-tab" id="adminEventHeroTab" role="tab" aria-controls="adminEventHeroPanel" aria-selected="false">EVENT POSTER & COUNTDOWN</button>
           <button type="button" class="ucs-admin-tab" id="adminNewsTab" role="tab" aria-controls="adminNewsPanel" aria-selected="false">NEWS EDITOR</button>
         </div>
+        <section id="adminContractFightsPanel" role="tabpanel" aria-labelledby="adminContractFightsTab" class="hidden" aria-hidden="true" style="padding:22px 0"><h2>🏆 CONTRACT FIGHTS</h2><p>Manage the championship on the line for any accepted Discord contract. Past and cancelled contracts are shown for reference. This does not change official champions or records.</p><div id="ucsAdminContractFightsList" style="display:grid;gap:14px;margin-top:18px">Open this tab to load contracts.</div></section>
         <div id="adminOperationsPanel" role="tabpanel" aria-labelledby="adminOperationsTab">
         <div class="admin-toolbar">
           <strong>UCS LEAGUE OPERATIONS</strong>
