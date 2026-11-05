@@ -849,24 +849,30 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="app.js?v=ucs-offline-grant-20261102"></script>
-<section id="ucsDiscordContractsBoard" class="shell" style="padding:32px 0 50px"><h2 style="margin-bottom:12px">🥊 DISCORD FIGHT CONTRACTS</h2><p style="opacity:.75">Challenges sent using /challenge in the UCS Discord server. Accepted contracts are not official scheduled fights until approved by staff.</p><div id="ucsDiscordContractRows" style="display:grid;gap:12px"><p>Loading contracts…</p></div></section>
+<section id="ucsDiscordContractsBoard" class="shell" style="padding:32px 0 50px"><h2>🥊 CONTRACT ACTIVITY</h2><p style="opacity:.75">Discord challenges, acceptances, declines, contract channels, cancellations and results. Contract results do not alter official rankings.</p><div id="ucsDiscordContractRows" style="display:grid;gap:12px">Loading contract activity…</div></section>
 <script>
 (function(){
- const box=document.getElementById('ucsDiscordContractRows');
- const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const box=document.getElementById('ucsDiscordContractRows'),safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  async function load(){
   if(!box||!window.supabase||!window.UFK_SUPABASE_URL||!window.UFK_SUPABASE_ANON_KEY)return;
   try{
    const db=window.supabase.createClient(window.UFK_SUPABASE_URL,window.UFK_SUPABASE_ANON_KEY);
-   const {data:cs,error}=await db.from('ucs_discord_challenges').select('id,challenger_fighter_id,opponent_fighter_id,weight_class,rounds,fight_type,status,created_at').order('created_at',{ascending:false}).limit(30);
-   if(error)throw error;
-   const ids=[...new Set((cs||[]).flatMap(c=>[c.challenger_fighter_id,c.opponent_fighter_id]))];
-   const names={};
+   const {data:contracts,error:e1}=await db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,status,created_at,winner_fighter_id,result_method').order('created_at',{ascending:false}).limit(100);if(e1)throw e1;
+   const {data:events,error:e2}=await db.from('ucs_contract_activity').select('id,callout_id,event_type,created_at,detail').order('created_at',{ascending:false}).limit(100);if(e2)throw e2;
+   const ids=[...new Set((contracts||[]).flatMap(c=>[c.challenger_fighter_id,c.target_fighter_id,c.winner_fighter_id].filter(Boolean)))],names={};
    if(ids.length){const {data:fs}=await db.from('fighters').select('id,name').in('id',ids);for(const f of fs||[])names[f.id]=f.name;}
-   box.innerHTML=(cs||[]).length?cs.map(c=>'<article style="background:#171821;border:1px solid #353645;border-radius:12px;padding:18px"><strong>'+safe(names[c.challenger_fighter_id]||'Fighter')+' VS '+safe(names[c.opponent_fighter_id]||'Fighter')+'</strong><div style="margin-top:8px;opacity:.8">'+safe(c.weight_class)+' · '+Number(c.rounds)+' rounds · '+(c.fight_type==='pro'?'UCS PRO':'EXHB')+'</div><strong style="display:inline-block;margin-top:10px;color:'+(c.status==='accepted'?'#4ade80':c.status==='pending'?'#fbbf24':'#cbd5e1')+'">'+safe(c.status.toUpperCase())+'</strong></article>').join(''):'<p>No Discord fight contracts yet. Use /challenge in Discord to send one.</p>';
-  }catch(e){box.textContent='Contracts are temporarily unavailable.';console.error('Discord contracts board:',e);}
+   const byId=new Map((contracts||[]).map(c=>[c.id,c]));
+   const cards=(events||[]).map(ev=>{
+    const c=byId.get(ev.callout_id);if(!c)return '';
+    const a=safe(names[c.challenger_fighter_id]||'Fighter'),b=safe(names[c.target_fighter_id]||'Fighter'),t=ev.event_type;
+    const message=t==='sent'?a+' sent '+b+' a contract':t==='accepted'?b+' accepted '+a+'’s contract':t==='declined'?b+' declined '+a+'’s contract':t==='channel_created'?'Contract bout channel created: '+a+' vs '+b:t==='cancelled'?'Contract cancelled: '+a+' vs '+b:t==='completed'?'Contract result: '+a+' vs '+b+(c.winner_fighter_id?' · Winner: '+safe(names[c.winner_fighter_id]||'Fighter'):' · Draw')+(c.result_method?' · '+safe(c.result_method):''):'Contract expired: '+a+' vs '+b;
+    const color=['accepted','completed'].includes(t)?'#4ade80':['declined','cancelled'].includes(t)?'#fb7185':'#fbbf24';
+    return '<article style="background:#171821;border:1px solid #353645;border-radius:12px;padding:18px"><strong>'+message+'</strong><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px"><span style="color:'+color+';font-weight:700">'+safe(t.replace('_',' ').toUpperCase())+'</span><small style="opacity:.7">'+safe(new Date(ev.created_at).toLocaleString())+'</small></div></article>';
+   }).filter(Boolean);
+   box.innerHTML=cards.length?cards.join(''):'<p>No contract activity yet. Use /callout in Discord.</p>';
+  }catch(e){console.error('Contract activity:',e);box.textContent='Contract activity temporarily unavailable.';}
  }
- window.addEventListener('load',load);setInterval(load,60000);
+ window.addEventListener('load',load);setInterval(load,30000);
 })();
 </script>
 </body>
