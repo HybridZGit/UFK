@@ -2594,9 +2594,13 @@ function ucsRenderDossierRecords(f){
  const ol=offline.filter(r=>(r.fighter_id===f.id?r.result:r.result==='W'?'L':r.result==='L'?'W':'D')==='L').length;
  const od=offline.length-ow-ol;
  const pw=Number(f.wins)||0,pl=Number(f.losses)||0,pd=Number(f.draws)||0;
- const w=mode==='pro'?pw:mode==='offline'?ow:pw+ow,l=mode==='pro'?pl:mode==='offline'?ol:pl+ol,d=mode==='pro'?pd:mode==='offline'?od:pd+od;
+ const contracts=state.ucsCompletedContractsByFighter?.[f.id]||[];
+ const cw=contracts.filter(r=>r.winner_fighter_id===f.id).length;
+ const cl=contracts.filter(r=>r.winner_fighter_id!==f.id).length;
+ // Display the complete fight record on the PRO profile tab, without changing official PRO data or rankings.
+ const w=mode==='offline'?ow+cw:pw+ow+cw,l=mode==='offline'?ol+cl:pl+ol+cl,d=mode==='offline'?od:pd+od;
  [['#ucsDossierWins',w],['#ucsDossierLosses',l],['#ucsDossierDraws',d],['#profileRecord',w+'-'+l+'-'+d],['#profileFights',w+l+d]].forEach(([sel,val])=>{const el=$(sel);if(el)el.textContent=val;});
- const heading=$('#ucsDossierRecordHeading');if(heading)heading.textContent=mode==='pro'?'UCS PRO RECORD':mode==='offline'?'UCS OFFLINE RECORD':'ALL UCS BOUTS';
+ const heading=$('#ucsDossierRecordHeading');if(heading)heading.textContent=mode==='pro'?'FULL FIGHT RECORD':mode==='offline'?'UCS OFFLINE + CONTRACT RECORD':'ALL UCS BOUTS';
  $$('#ucsDossierTabs [data-ucs-record-tab]').forEach(b=>{const active=b.dataset.ucsRecordTab===mode;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
  const entries=[];
  for(const r of pro){const won=r.winner_id===f.id,opp=fighterById(won?r.loser_id:r.winner_id);entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind">PRO</b> ${esc(r.method||'Result')} · ${esc(fmtDate(r.event_date))}</small><small style="display:block"><img src="https://flagcdn.com/w40/gb.png" alt="UK flag" style="width:20px;height:14px;vertical-align:middle;margin-right:5px"> London, The O2 Arena</small></div></div>`});}
