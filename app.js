@@ -824,7 +824,7 @@ function renderRankingChampion(){
   $('#worldChampionBanner').classList.toggle('ucs-banner-with-belt',Boolean(ucsBeltArt(state.rankingDivision)));
   $('#worldChampionBanner').style.setProperty('--ucs-belt-image',ucsBeltArt(state.rankingDivision)?`url("${ucsBeltArt(state.rankingDivision)}")`:'none');
   $('#worldChampionBanner').innerHTML=f
-    ? `<small>#C · ${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><div class="champion-inline">${avatarHtml(f,'champion-avatar')}<div><strong>${esc(f.name)}</strong><span>${esc(record(f))} · ${offlineChampion?0:(c?.defenses||0)} title defenses</span></div></div>`
+    ? `<small>#C · ${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><div class="champion-inline">${avatarHtml(f,'champion-avatar')}<div><strong>${esc(f.name)}</strong><span>${esc(ucsAllBoutsLeaderboardRecord(f))} · ${offlineChampion?0:(c?.defenses||0)} title defenses</span></div></div>`
     : `<small>${esc(state.rankingDivision.toUpperCase())} CHAMPION</small><strong>VACANT</strong><span>No champion assigned</span>`;
   renderRankingTitleFights();
 }
