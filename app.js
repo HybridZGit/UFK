@@ -832,11 +832,14 @@ function renderRankingChampion(){
 let ucsHomeChampionIndex=0;
 function ucsHomeChampionSlides(){
   const divisions=['UCS World','UCS International',...ucsDivisions().filter(d=>!['UCS World','UCS International'].includes(d))];
-  return divisions.map(division=>{
+  const slides=divisions.map(division=>{
     const champ=state.champions.find(c=>c.division===division&&c.fighter_id);
     const fighter=champ&&fighterById(champ.fighter_id);
     return {division,champ,fighter};
   }).filter(x=>x.fighter);
+  const offlineFighter=fighterById(String(state.settings?.ucs_offline_champion||''));
+  if(offlineFighter)slides.push({division:'UCS Offline',champ:null,fighter:offlineFighter,isOffline:true});
+  return slides;
 }
 function ucsRenderHomeChampion(){
   const image=$('#ucsHomeChampionImage'),details=$('#ucsHomeChampionDetails'),dots=$('#ucsChampionDots');
@@ -846,10 +849,10 @@ function ucsRenderHomeChampion(){
   root?.classList.toggle('hidden',!slides.length);
   if(!slides.length)return;
   ucsHomeChampionIndex=(ucsHomeChampionIndex+slides.length)%slides.length;
-  const {division,champ,fighter}=slides[ucsHomeChampionIndex];
-  const picture=[champ?.showcase_image_url,fighter?.avatar_url,fighter?.profile_image_url].find(url=>safeHttps(url));
+  const {division,champ,fighter,isOffline}=slides[ucsHomeChampionIndex];
+  const picture=(isOffline?[state.settings?.ucs_offline_champion_image,fighter?.showcase_image_url,fighter?.avatar_url,fighter?.profile_image_url]:[champ?.showcase_image_url,fighter?.avatar_url,fighter?.profile_image_url]).find(url=>safeHttps(url));
   const flag=champ?.showcase_flag||'';
-  const belt=ucsBeltArt(division);
+  const belt=isOffline?null:ucsBeltArt(division);
   image.parentElement?.style.setProperty('--ucs-home-belt',belt?`url("${belt}")`:'none');
   image.parentElement?.classList.toggle('ucs-home-has-belt',!!belt);
   const record=Number(fighter.wins||0)+'-'+Number(fighter.losses||0)+'-'+Number(fighter.draws||0);
@@ -857,7 +860,12 @@ function ucsRenderHomeChampion(){
   const total=Number(fighter.wins||0)+Number(fighter.losses||0)+Number(fighter.draws||0);
   const winRate=total?Math.round(Number(fighter.wins||0)/total*100):0;
   image.innerHTML=picture?'<img src="'+esc(picture)+'" alt="'+esc(fighter.name)+' champion portrait">':'<span class="ucs-home-champion-silhouette">♛</span>';
-  details.innerHTML='<span class="ucs-home-champion-division">'+esc(division.toUpperCase())+' · UCS CHAMPION</span><h3>'+esc(fighter.name)+'</h3><div class="ucs-home-champion-record">OFFICIAL RECORD · '+esc(record)+(flag?' <span>'+esc(flag)+'</span>':'')+'</div><div class="ucs-home-champion-stats"><div><small>TITLE DEFENSES</small><strong>'+defenses+'</strong></div><div><small>WIN RATE</small><strong>'+winRate+'%</strong></div><div><small>WINS</small><strong>'+Number(fighter.wins||0)+'</strong></div></div><button type="button" class="ucs-home-champion-profile" data-spotlight-profile="'+esc(fighter.id)+'">VIEW FIGHTER PROFILE →</button>';
+  if(isOffline){
+    const wins=ucsOfflineChampionHomeWins.get(String(fighter.id));
+    details.innerHTML='<span class="ucs-home-champion-division">UCS OFFLINE · OFFLINE CHAMPION</span><h3>'+esc(fighter.name)+'</h3><div class="ucs-home-champion-record">OFFLINE + CONTRACT DIVISION · MOST COMPLETED WINS</div><div class="ucs-home-champion-stats"><div><small>OFFLINE + CONTRACT WINS</small><strong>'+(wins===undefined?'—':wins)+'</strong></div><div><small>CHAMPIONSHIP RULE</small><strong style="font-size:15px">MOST WINS</strong></div><div><small>TITLE DEFENSES</small><strong>N/A</strong></div></div><button type="button" class="ucs-home-champion-profile" data-spotlight-profile="'+esc(fighter.id)+'">VIEW FIGHTER PROFILE →</button>';
+  }else{
+    details.innerHTML='<span class="ucs-home-champion-division">'+esc(division.toUpperCase())+' · UCS CHAMPION</span><h3>'+esc(fighter.name)+'</h3><div class="ucs-home-champion-record">OFFICIAL RECORD · '+esc(record)+(flag?' <span>'+esc(flag)+'</span>':'')+'</div><div class="ucs-home-champion-stats"><div><small>TITLE DEFENSES</small><strong>'+defenses+'</strong></div><div><small>WIN RATE</small><strong>'+winRate+'%</strong></div><div><small>WINS</small><strong>'+Number(fighter.wins||0)+'</strong></div></div><button type="button" class="ucs-home-champion-profile" data-spotlight-profile="'+esc(fighter.id)+'">VIEW FIGHTER PROFILE →</button>';
+  }
   dots.innerHTML=slides.map((x,i)=>'<button type="button" data-champion-slide="'+i+'" aria-label="Show '+esc(x.fighter.name)+'" aria-current="'+(i===ucsHomeChampionIndex)+'" class="'+(i===ucsHomeChampionIndex?'active':'')+'"></button>').join('');
 }
 function ucsMoveHomeChampion(step){ucsHomeChampionIndex+=step;ucsRenderHomeChampion();}
@@ -878,6 +886,7 @@ function ucsChampionFlagHtml(flag){
   const code=emojiCode||names[raw.toUpperCase()]||( /^[a-z]{2}$/i.test(raw)?raw.toLowerCase():null);
   return code?`<img class="ucs-flag-image" src="https://flagcdn.com/w80/${code}.png" alt="${esc(raw)} flag" loading="lazy">`:`<span>${esc(raw)}</span>`;
 }
+const ucsOfflineChampionHomeWins=new Map();
 let ucsOfflineStandingsLastLoad=0,ucsOfflineStandingsLoading=false;
 async function ucsRenderOfflineStandings(force=false){
  const root=$('#ucsOfflineStandingsRows');
@@ -898,6 +907,9 @@ async function ucsRenderOfflineStandings(force=false){
   for(const b of offline||[])add(b.winner_fighter_id,b.winner_fighter_id===b.red_fighter_id?b.blue_fighter_id:b.red_fighter_id);
   for(const b of contracts||[])if(b.winner_fighter_id)add(b.winner_fighter_id,b.winner_fighter_id===b.challenger_fighter_id?b.target_fighter_id:b.challenger_fighter_id);
   const championId=String(state.settings?.ucs_offline_champion||'');
+  ucsOfflineChampionHomeWins.clear();
+  for(const [id,record] of totals)ucsOfflineChampionHomeWins.set(String(id),record.wins);
+  if(ucsHomeChampionSlides()[ucsHomeChampionIndex]?.isOffline)ucsRenderHomeChampion();
   const rows=[...totals.entries()].map(([id,record])=>({fighter:fighterById(id),id,...record})).filter(x=>x.fighter).sort((a,b)=>(b.id===championId)-(a.id===championId)||b.wins-a.wins||a.losses-b.losses||a.fighter.name.localeCompare(b.fighter.name));
   if(!rows.length){root.innerHTML='<p style="opacity:.7;font-size:13px">No completed offline or contract fights yet.</p>';return;}
   root.innerHTML=rows.map((x,i)=>'<div role="button" tabindex="0" data-offline-profile="'+esc(x.id)+'" aria-label="View '+esc(x.fighter.name)+' profile" style="display:flex;align-items:center;gap:12px;padding:11px 5px;border-top:1px solid #352a31;cursor:pointer"><span style="width:24px;color:#b9a6ad;font-weight:700;font-size:12px">'+(x.id===championId?'C':i+(rows.some(r=>r.id===championId)?0:1))+'</span>'+avatarHtml(x.fighter)+'<span style="flex:1;min-width:0"><strong style="font-size:13px">'+esc(x.fighter.name)+'</strong>'+(x.id===championId?'<small style="display:block;color:#e8bb67;font-size:10px;font-weight:700">♛ OFFLINE CHAMPION</small>':'')+'</span><strong style="white-space:nowrap;font-size:13px">'+x.wins+' W · '+x.losses+' L</strong></div>').join('');
