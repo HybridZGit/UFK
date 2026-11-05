@@ -757,7 +757,31 @@ function ucsAllBoutsLeaderboardRecord(f){
   }
   return w+'-'+l+'-'+d;
 }
+// Load completed Discord offline bouts for every leaderboard fighter, not only opened profiles.
+let ucsLeaderboardOfflineLoading=false,ucsLeaderboardOfflineLoadedAt=0;
+async function ucsLoadLeaderboardOfflineBouts(){
+  if(!db||ucsLeaderboardOfflineLoading||Date.now()-ucsLeaderboardOfflineLoadedAt<60000)return;
+  ucsLeaderboardOfflineLoading=true;
+  try{
+    const {data,error}=await db.from('ucs_signup_matches')
+      .select('id,kind,red_fighter_id,blue_fighter_id,winner_fighter_id,result_method,completed_at,created_at,status')
+      .eq('kind','offline').eq('status','completed').not('winner_fighter_id','is',null)
+      .order('created_at',{ascending:false}).limit(1000);
+    if(error)throw error;
+    const byFighter={};
+    for(const b of data||[]){
+      const loser=b.winner_fighter_id===b.red_fighter_id?b.blue_fighter_id:b.red_fighter_id;
+      const bout={id:'discord-'+b.id,fighter_id:b.winner_fighter_id,opponent_id:loser,result:'W',method:b.result_method||'Result',event_date:String(b.completed_at||b.created_at||'').slice(0,10),event_name:'UCS Discord Offline Bout'};
+      for(const id of [b.winner_fighter_id,loser])if(id)(byFighter[id]??=[]).push(bout);
+    }
+    state.ucsDiscordOfflineByFighter=byFighter;
+    ucsLeaderboardOfflineLoadedAt=Date.now();
+    renderRanks($('#fighterSearch')?.value||'');
+  }catch(e){console.warn('UCS leaderboard offline records:',e.message);}
+  finally{ucsLeaderboardOfflineLoading=false;}
+}
 function renderRanks(filter=''){
+  void ucsLoadLeaderboardOfflineBouts();
   const platform=['UCS PS5','UCS PC','UCS XBOX'].includes(state.rankingDivision)?state.rankingDivision.replace('UCS ',''):null;
   const championIds=new Set(state.champions.filter(c=>c.fighter_id&&c.division===state.rankingDivision).map(c=>String(c.fighter_id)));
   const rows=state.fighters.filter(f=>!championIds.has(String(f.id))&&f.name.toLowerCase().includes(filter.toLowerCase())&&(state.rankingDivision!=='UCS SIM World'||f.sim_division===true)&&(!platform||(f.platform||'').toUpperCase()===platform)&&ucsEligibleForDivision(f,state.rankingDivision));
