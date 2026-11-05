@@ -1004,12 +1004,12 @@ function openFighterProfile(id){
   const debutDates=(state.results||[]).filter(r=>r.winner_id===f.id||r.loser_id===f.id).map(r=>r.event_date).filter(Boolean).sort();
   const debutEl=$('#ucsProfileDebut');
   if(debutEl)debutEl.innerHTML='<strong style="margin-right:12px">DEBUT</strong>'+esc(debutDates[0]||'No recorded fights');
-  const rank=currentRank(f),titles=state.champions.filter(c=>c.fighter_id===f.id),history=fighterResults(f);
+  const rank=currentRank(f),titles=state.champions.filter(c=>c.fighter_id===f.id),isOfflineChampion=String(state.settings?.ucs_offline_champion||'')===String(f.id),careerTitleCount=titles.length+(isOfflineChampion?1:0),history=fighterResults(f);
   $('#profileName').textContent=f.name;
   ucsUpdateWarpathBadge(f);
   const presence=$('#ucsProfileDiscordPresence');
   if(presence){presence.dataset.fighterId=String(f.id);presence.textContent='⚫ Discord Offline';presence.className='ucs-discord-presence offline';refreshUcsDiscordPresence(f.id);}
-  $('#ucsChampionCrownProfile')?.classList.toggle('hidden',!titles.length);
+  $('#ucsChampionCrownProfile')?.classList.toggle('hidden',careerTitleCount===0);
   $('#ucsMatcherinoVerifiedProfile')?.classList.toggle('hidden',!f.matcherino_verified);
   $('#profilePlatform').textContent=`UCS ${f.platform||'WORLD'}`;
   $('#profileRegion').innerHTML=`${ucsFlagHtml(f.region)}${esc(f.region||'Region not set')}`;
@@ -1080,13 +1080,13 @@ function openFighterProfile(id){
   $('#profileRecord').textContent=`${f.wins||0}-${f.losses||0}-${f.draws||0}`;
   $('#profileScore').textContent=Number(f.score||0).toFixed(1);
   $('#profileStreak').textContent=fighterForm(f);
-  $('#profileTitles').textContent=String(titles.length);
+  $('#profileTitles').textContent=String(careerTitleCount);
   const championSpotlight=$('#profileChampionSpotlight');
-  championSpotlight?.classList.toggle('hidden',titles.length===0);
-  modal.classList.toggle('ucs-is-champion',titles.length>0);
-  if(titles.length){
+  championSpotlight?.classList.toggle('hidden',careerTitleCount===0);
+  modal.classList.toggle('ucs-is-champion',careerTitleCount>0);
+  if(careerTitleCount){
     $('#profileChampionHeading').textContent='titles';
-    $('#profileChampionBelts').innerHTML=titles.map(t=>`<div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;line-height:1.5"><span aria-hidden="true" style="font-size:14px">🏆</span><span>${esc(t.division)} Championship</span></div>`).join('');
+    $('#profileChampionBelts').innerHTML=titles.map(t=>`<div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;line-height:1.5"><span aria-hidden="true" style="font-size:14px">🏆</span><span>${esc(t.division)} Championship</span></div>`).join('')+(isOfflineChampion?'<div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;line-height:1.5;color:#f2c878"><span aria-hidden="true">♛</span><span>UCS Offline Champion · Most Offline + Contract Wins</span></div>':'');
   }else{
     $('#profileChampionBelts').textContent='';
   }
@@ -2114,7 +2114,7 @@ async function ucsLoadAdminContractFights(){
   if(error)throw error;
   const ids=[...new Set((rows||[]).flatMap(c=>[c.challenger_fighter_id,c.target_fighter_id].filter(Boolean)))],names={};
   if(ids.length){const {data:fs}=await db.from('fighters').select('id,name').in('id',ids);for(const f of fs||[])names[f.id]=f.name;}
-  const options=[...new Set((belts||[]).map(b=>b.division))];
+  const options=[...new Set((belts||[]).map(b=>b.division).filter(d=>!/^ucs\\s+offline$/i.test(d)))];
   root.innerHTML=(rows||[]).map(c=>'<article style="padding:18px;border:1px solid #4a3038;border-radius:12px;margin-bottom:12px"><strong>'+esc(names[c.challenger_fighter_id]||'Fighter')+' VS '+esc(names[c.target_fighter_id]||'Fighter')+'</strong><p>'+esc(c.status.toUpperCase())+' · '+esc(c.title_belt_division||'NON-TITLE')+'</p>'+(c.status==='accepted'?'<label>ADD CHAMPIONSHIP ON THE LINE <select data-contract-id="'+esc(c.id)+'"><option value="">NO BELT</option>'+options.map(b=>'<option value="'+esc(b)+'"'+(b===c.title_belt_division?' selected':'')+'>'+esc(b)+'</option>').join('')+'</select></label> <button class="btn primary" data-contract-save="'+esc(c.id)+'">SAVE CHAMPIONSHIP</button>':'<small>Completed, declined or cancelled contract — read only</small>')+'</article>').join('')||'<p>No contracts yet.</p>';
  }catch(e){root.textContent='Unable to load contracts: '+e.message;}
 }
