@@ -930,6 +930,19 @@ $('#ucsFollowFighter')?.addEventListener('click',async e=>{
  const count=$('#ucsFollowCount');if(count)count.textContent=Number(data||0).toLocaleString()+' followers';
  button.textContent='✓ FOLLOWED';ucsSaveGuestFollows([...new Set([...ucsGuestFollowIds(),id])]);ucsRenderCommunity();
 });
+// Discord /callout activity: public read-only display, never alters official records.
+async function ucsRenderProfileCallouts(f){
+ const root=$('#profileUpcomingFights');if(!db||!root)return;
+ const token=String(f.id);root.dataset.ucsCalloutFighter=token;
+ try{
+  const {data,error}=await db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,status,created_at,responded_at').or('challenger_fighter_id.eq.'+token+',target_fighter_id.eq.'+token).order('created_at',{ascending:false}).limit(30);
+  if(error||root.dataset.ucsCalloutFighter!==token)return;
+  root.querySelectorAll('[data-ucs-callout]').forEach(el=>el.remove());
+  const accepted=(data||[]).filter(x=>x.status==='accepted');
+  const cards=accepted.map(x=>{const opponent=fighterById(x.challenger_fighter_id===token?x.target_fighter_id:x.challenger_fighter_id);return '<article class="ucs-upcoming-card" data-ucs-callout="'+esc(x.id)+'" style="padding:16px;margin:10px 0"><div class="ucs-upcoming-main"><div class="ucs-upcoming-fighter"><div class="ucs-upcoming-fighter-info"><small>DISCORD CALLOUT · ACCEPTED</small><strong>vs '+esc(opponent?.name||'Opponent')+'</strong><span>Awaiting scheduling · DATE TBA</span></div></div></div></article>';}).join('');
+  if(cards){if(root.textContent.includes('No upcoming'))root.innerHTML=cards;else root.insertAdjacentHTML('beforeend',cards);}
+ }catch(e){console.warn('UCS callout profile:',e.message);}
+}
 function openFighterProfile(id){
   const f=fighterById(id); if(!f)return;
   const publicId=$('#ucsPublicFighterIdValue'),copyId=$('#ucsCopyFighterId');
@@ -1060,6 +1073,7 @@ function openFighterProfile(id){
     koFill.style.width=(percentage??0)+'%';
     $('#profileKnockoutDescription').textContent=percentage===null?'No official wins recorded in the available results.':'Knockouts per win across the selected official fight sample.';
   }
+  void ucsRenderProfileCallouts(f);
   const upcoming=state.scheduledBouts.filter(b=>b.fighter_a_id===f.id||b.fighter_b_id===f.id);
   $('#profileUpcomingFights').innerHTML=upcoming.length?upcoming.map(b=>{
     const other=fighterById(b.fighter_a_id===f.id?b.fighter_b_id:b.fighter_a_id);
