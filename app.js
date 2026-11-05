@@ -747,11 +747,21 @@ function renderHome(){
   renderMarquee();
 }
 
+// Leaderboard display only: match the ALL BOUTS tab (PRO + OFFLINE).
+function ucsAllBoutsLeaderboardRecord(f){
+  const offline=ucsOfflineFor(f);
+  let w=Number(f.wins)||0,l=Number(f.losses)||0,d=Number(f.draws)||0;
+  for(const bout of offline){
+    const result=bout.fighter_id===f.id?bout.result:bout.result==='W'?'L':bout.result==='L'?'W':'D';
+    if(result==='W')w++;else if(result==='L')l++;else d++;
+  }
+  return w+'-'+l+'-'+d;
+}
 function renderRanks(filter=''){
   const platform=['UCS PS5','UCS PC','UCS XBOX'].includes(state.rankingDivision)?state.rankingDivision.replace('UCS ',''):null;
   const championIds=new Set(state.champions.filter(c=>c.fighter_id&&c.division===state.rankingDivision).map(c=>String(c.fighter_id)));
   const rows=state.fighters.filter(f=>!championIds.has(String(f.id))&&f.name.toLowerCase().includes(filter.toLowerCase())&&(state.rankingDivision!=='UCS SIM World'||f.sim_division===true)&&(!platform||(f.platform||'').toUpperCase()===platform)&&ucsEligibleForDivision(f,state.rankingDivision));
-  $('#rankRows').innerHTML=rows.length?rows.map((f,i)=>`<tr class="fighter-rank-row" data-fighter-profile="${f.id}" tabindex="0"><td><span class="rank-number">${i+1}</span></td><td class="rank-name"><div class="rank-fighter-cell">${avatarHtml(f)}<div><strong>${ucsFlagHtml(f.region)}${esc(f.name)}</strong><span>${esc(record(f))} · ${esc(f.platform||'UNASSIGNED')}</span></div></div></td><td>${chip(f.resume)}</td><td>${chip(f.momentum)}</td><td>${chip(f.finishing)}</td><td>${chip(f.activity)}</td><td>${chip(f.big_fight)}</td><td class="overall">${Number(f.score||0).toFixed(1)}</td></tr>`).join(''):`<tr><td colspan="8">${empty(`No ${state.rankingDivision} fighters in the database yet.`)}</td></tr>`;
+  $('#rankRows').innerHTML=rows.length?rows.map((f,i)=>`<tr class="fighter-rank-row" data-fighter-profile="${f.id}" tabindex="0"><td><span class="rank-number">${i+1}</span></td><td class="rank-name"><div class="rank-fighter-cell">${avatarHtml(f)}<div><strong>${ucsFlagHtml(f.region)}${esc(f.name)}</strong><span>${esc(ucsAllBoutsLeaderboardRecord(f))} · ${esc(f.platform||'UNASSIGNED')}</span></div></div></td><td>${chip(f.resume)}</td><td>${chip(f.momentum)}</td><td>${chip(f.finishing)}</td><td>${chip(f.activity)}</td><td>${chip(f.big_fight)}</td><td class="overall">${Number(f.score||0).toFixed(1)}</td></tr>`).join(''):`<tr><td colspan="8">${empty(`No ${state.rankingDivision} fighters in the database yet.`)}</td></tr>`;
   renderRankingChampion();
 }
 function renderRankingTitleFights(){
