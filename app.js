@@ -755,6 +755,11 @@ function ucsAllBoutsLeaderboardRecord(f){
     const result=bout.fighter_id===f.id?bout.result:bout.result==='W'?'L':bout.result==='L'?'W':'D';
     if(result==='W')w++;else if(result==='L')l++;else d++;
   }
+  const contracts=state.ucsLeaderboardCompletedContractsByFighter?.[f.id]||[];
+  for(const bout of contracts){
+    if(bout.winner_fighter_id===f.id)w++;
+    else if(bout.winner_fighter_id)l++;
+  }
   return w+'-'+l+'-'+d;
 }
 // Load completed Discord offline bouts for every leaderboard fighter, not only opened profiles.
@@ -763,11 +768,24 @@ async function ucsLoadLeaderboardOfflineBouts(){
   if(!db||ucsLeaderboardOfflineLoading||Date.now()-ucsLeaderboardOfflineLoadedAt<60000)return;
   ucsLeaderboardOfflineLoading=true;
   try{
-    const {data,error}=await db.from('ucs_signup_matches')
-      .select('id,kind,red_fighter_id,blue_fighter_id,winner_fighter_id,result_method,completed_at,created_at,status')
-      .eq('kind','offline').eq('status','completed').not('winner_fighter_id','is',null)
-      .order('created_at',{ascending:false}).limit(1000);
-    if(error)throw error;
+    const [offlineResponse,contractResponse]=await Promise.all([
+      db.from('ucs_signup_matches')
+        .select('id,kind,red_fighter_id,blue_fighter_id,winner_fighter_id,result_method,completed_at,created_at,status')
+        .eq('kind','offline').eq('status','completed').not('winner_fighter_id','is',null)
+        .order('created_at',{ascending:false}).limit(5000),
+      db.from('ucs_callouts')
+        .select('id,challenger_fighter_id,target_fighter_id,winner_fighter_id')
+        .eq('status','completed').not('winner_fighter_id','is',null).limit(5000)
+    ]);
+    if(offlineResponse.error)throw offlineResponse.error;
+    if(contractResponse.error)throw contractResponse.error;
+    const data=offlineResponse.data;
+    const contractsByFighter={};
+    for(const bout of contractResponse.data||[]){
+      for(const id of [bout.challenger_fighter_id,bout.target_fighter_id])
+        if(id)(contractsByFighter[id]??=[]).push(bout);
+    }
+    state.ucsLeaderboardCompletedContractsByFighter=contractsByFighter;
     const byFighter={};
     for(const b of data||[]){
       const loser=b.winner_fighter_id===b.red_fighter_id?b.blue_fighter_id:b.red_fighter_id;
