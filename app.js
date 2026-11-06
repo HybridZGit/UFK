@@ -2677,7 +2677,8 @@ function ucsRenderDossierRecords(f){
  const cw=contracts.filter(r=>r.winner_fighter_id===f.id).length;
  const cl=contracts.filter(r=>r.winner_fighter_id!==f.id).length;
  // Display the complete fight record on the PRO profile tab, without changing official PRO data or rankings.
- const w=mode==='offline'?ow+cw:pw+ow+cw,l=mode==='offline'?ol+cl:pl+ol+cl,d=mode==='offline'?od:pd+od;
+ const open=ucsOpenStats(f.id);
+ const w=mode==='open'?open.w:mode==='offline'?ow+cw:pw+ow+cw,l=mode==='open'?open.l:mode==='offline'?ol+cl:pl+ol+cl,d=mode==='open'?open.d:mode==='offline'?od:pd+od;
  const koMethod=m=>/(KO|TKO|KNOCKOUT)/i.test(String(m||''));
  const fullWins=pw+ow+cw,fullKOs=pro.filter(r=>r.winner_id===f.id&&koMethod(r.method)).length+offline.filter(r=>(r.fighter_id===f.id?r.result:r.result==='W'?'L':r.result==='L'?'W':'D')==='W'&&koMethod(r.method)).length+contracts.filter(r=>r.winner_fighter_id===f.id&&koMethod(r.result_method)).length;
  const koPct=fullWins?Math.round(fullKOs/fullWins*100):null;
@@ -2685,8 +2686,8 @@ function ucsRenderDossierRecords(f){
  const koBar=$('#profileKnockoutFill');if(koBar)koBar.style.width=(koPct??0)+'%';
  const koCount=$('#profileKOs');if(koCount)koCount.textContent=String(fullKOs);
  const koDesc=$('#profileKnockoutDescription');if(koDesc)koDesc.textContent='Knockouts per win across PRO, Offline and Contract bouts.';
- [['#ucsDossierWins',w],['#ucsDossierLosses',l],['#ucsDossierDraws',d],['#profileRecord',w+'-'+l+'-'+d],['#profileFights',w+l+d]].forEach(([sel,val])=>{const el=$(sel);if(el)el.textContent=val;});
- const heading=$('#ucsDossierRecordHeading');if(heading)heading.textContent=mode==='pro'?'FULL FIGHT RECORD':mode==='offline'?'UCS OFFLINE + CONTRACT RECORD':'ALL UCS BOUTS';
+ [['#ucsDossierWins',w],['#ucsDossierLosses',l],['#ucsDossierDraws',d],['#profileRecord',w+'-'+l+'-'+d],['#profileFights',w+l+d+(mode==='open'?open.nc:0)]].forEach(([sel,val])=>{const el=$(sel);if(el)el.textContent=val;});
+ const heading=$('#ucsDossierRecordHeading');if(heading)heading.textContent=mode==='pro'?'FULL FIGHT RECORD':mode==='offline'?'UCS OFFLINE + CONTRACT RECORD':mode==='open'?'UCS OPEN RECORD':'ALL UCS BOUTS';
  $$('#ucsDossierTabs [data-ucs-record-tab]').forEach(b=>{const active=b.dataset.ucsRecordTab===mode;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
  const entries=[];
  for(const r of pro){const won=r.winner_id===f.id,isNC=/^NC$|^NO CONTEST$/i.test(String(r.method||'')),opp=fighterById(won?r.loser_id:r.winner_id);entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${isNC?'ucs-nc-result':won?'win':'loss'}">${isNC?'NC':won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind">PRO</b> ${esc(r.method||'Result')} · ${esc(fmtDate(r.event_date))}</small><small style="display:block"><img src="https://flagcdn.com/w40/gb.png" alt="UK flag" style="width:20px;height:14px;vertical-align:middle;margin-right:5px"> London, The O2 Arena</small></div></div>`});}
@@ -2696,6 +2697,11 @@ function ucsRenderDossierRecords(f){
   const opp=fighterById(opponentId),won=r.winner_fighter_id===f.id;
   const date=r.concluded_at||r.responded_at||r.created_at;
   entries.push({date,html:`<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind offline">CONTRACT</b> ${esc(r.result_method||'Result')} · ${esc(fmtDate(date))}</small><small>📍 UCS Discord · Online · UCS Discord Contract Bout${r.title_belt_division?' · 🏆 '+esc(r.title_belt_division)+' CHAMPIONSHIP':''}</small></div></div>`});
+ }
+ for(const r of ucsOpenResults().filter(r=>r.fighter_a_id===f.id||r.fighter_b_id===f.id)){
+  const opponentId=r.fighter_a_id===f.id?r.fighter_b_id:r.fighter_a_id,opp=fighterById(opponentId);
+  const code=r.result==='NC'?'NC':r.result==='D'?'D':r.winner_id===f.id?'W':'L';
+  entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${code==='W'?'win':code==='L'?'loss':code==='NC'?'ucs-nc-result':''}">${code}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind">UCS OPEN</b> ${esc(r.method||'Open rules')} · ${esc(fmtDate(r.event_date))}</small><small>Independent division · No standard UCS restrictions</small></div></div>`});
  }
  entries.sort((x,y)=>String(y.date||'').localeCompare(String(x.date||'')));
  const root=$('#profileFightHistory');if(root)root.innerHTML=entries.length?entries.slice(0,50).map(x=>x.html).join(''):empty('No recorded bouts yet.');
