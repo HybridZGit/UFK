@@ -769,6 +769,12 @@ function renderHome(){
     const a=fighterById(r.challenger_fighter_id),c=fighterById(r.target_fighter_id);
     recentActivity.push({id:'contract:'+r.id,date:r.concluded_at||r.created_at||'',label:nc?(a?.name||'Unknown')+' vs '+(c?.name||'Unknown'):(w?.name||'Unknown')+' def. '+(l?.name||'Unknown'),method:nc?'NC':r.result_method||'Result',kind:'CONTRACT',nc});
   }
+  for(const r of ucsOpenResults()){
+    const a=fighterById(r.fighter_a_id),b=fighterById(r.fighter_b_id),winner=fighterById(r.winner_id);
+    const other=r.winner_id===r.fighter_a_id?b:a;
+    const noWinner=r.result==='NC'||r.result==='D';
+    recentActivity.push({id:'open:'+r.id,date:r.event_date||r.created_at||'',label:noWinner?(a?.name||'Unknown')+' vs '+(b?.name||'Unknown'):(winner?.name||'Unknown')+' def. '+(other?.name||'Unknown'),method:r.result==='NC'?'NC':r.result==='D'?'Draw':r.method||'Open rules',kind:'UCS OPEN',nc:r.result==='NC'});
+  }
   recentActivity.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   $('#recentResults').innerHTML=recentActivity.length?recentActivity.slice(0,4).map(r=>{
     return `<div class="mini-row"><div class="mini-badge${r.nc?' ucs-nc-result':''}">${r.nc?'NC':'W'}</div><div class="mini-copy"><strong>${esc(r.label)}</strong><span>${esc(r.kind)} · ${esc(r.method)}</span></div><div class="mini-time">${esc(fmtDate(r.date))}</div></div>`;
