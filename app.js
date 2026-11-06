@@ -729,9 +729,25 @@ function renderHome(){
   $('#featuredFightEvent').textContent=bout?.event_name||featured.event_label||'UCS MAIN EVENT';
   $('#featuredFightDate').textContent=bout?.bout_date?fmtDate(bout.bout_date):'DATE TO BE ANNOUNCED';
 
-  $('#recentResults').innerHTML=state.results.length?state.results.slice(0,4).map(r=>{
+  const recentActivity=[];
+  for(const r of state.results){
+    const nc=/^NC$|^NO CONTEST$/i.test(String(r.method||''));
     const w=fighterById(r.winner_id),l=fighterById(r.loser_id);
-    return `<div class="mini-row"><div class="mini-badge">W</div><div class="mini-copy"><strong>${esc(w?.name||'Unknown')} def. ${esc(l?.name||'Unknown')}</strong><span>${esc(r.method)}</span></div><div class="mini-time">${esc(fmtDate(r.event_date))}</div></div>`;
+    recentActivity.push({id:'pro:'+r.id,date:r.event_date||'',label:nc?(w?.name||'Unknown')+' vs '+(l?.name||'Unknown'):(w?.name||'Unknown')+' def. '+(l?.name||'Unknown'),method:nc?'NC':r.method||'Result',kind:'PRO',nc});
+  }
+  for(const r of state.ucsHomeOfflineResults||[]){
+    const w=fighterById(r.winner_fighter_id),loserId=r.winner_fighter_id===r.red_fighter_id?r.blue_fighter_id:r.red_fighter_id,l=fighterById(loserId);
+    recentActivity.push({id:'offline:'+r.id,date:r.completed_at||r.created_at||'',label:(w?.name||'Unknown')+' def. '+(l?.name||'Unknown'),method:r.result_method||'Result',kind:'OFFLINE',nc:false});
+  }
+  for(const r of state.ucsHomeContractResults||[]){
+    const nc=!r.winner_fighter_id&&/^NC$|^NO CONTEST$/i.test(String(r.result_method||''));
+    const w=fighterById(r.winner_fighter_id),loserId=r.winner_fighter_id===r.challenger_fighter_id?r.target_fighter_id:r.challenger_fighter_id,l=fighterById(loserId);
+    const a=fighterById(r.challenger_fighter_id),c=fighterById(r.target_fighter_id);
+    recentActivity.push({id:'contract:'+r.id,date:r.concluded_at||r.created_at||'',label:nc?(a?.name||'Unknown')+' vs '+(c?.name||'Unknown'):(w?.name||'Unknown')+' def. '+(l?.name||'Unknown'),method:nc?'NC':r.result_method||'Result',kind:'CONTRACT',nc});
+  }
+  recentActivity.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  $('#recentResults').innerHTML=recentActivity.length?recentActivity.slice(0,4).map(r=>{
+    return `<div class="mini-row"><div class="mini-badge${r.nc?' ucs-nc-result':''}">${r.nc?'NC':'W'}</div><div class="mini-copy"><strong>${esc(r.label)}</strong><span>${esc(r.kind)} · ${esc(r.method)}</span></div><div class="mini-time">${esc(fmtDate(r.date))}</div></div>`;
   }).join(''):empty('No results yet.');
 
   $('#championList').innerHTML=state.champions.filter(c=>c.fighter_id).length?state.champions.filter(c=>c.fighter_id).map(c=>{
@@ -775,12 +791,14 @@ async function ucsLoadLeaderboardOfflineBouts(){
         .eq('kind','offline').eq('status','completed').not('winner_fighter_id','is',null)
         .order('created_at',{ascending:false}).limit(5000),
       db.from('ucs_callouts')
-        .select('id,challenger_fighter_id,target_fighter_id,winner_fighter_id,concluded_at,created_at')
+        .select('id,challenger_fighter_id,target_fighter_id,winner_fighter_id,result_method,concluded_at,created_at')
         .eq('status','completed').not('winner_fighter_id','is',null).limit(5000)
     ]);
     if(offlineResponse.error)throw offlineResponse.error;
     if(contractResponse.error)throw contractResponse.error;
     const data=offlineResponse.data;
+    state.ucsHomeOfflineResults=data||[];
+    state.ucsHomeContractResults=contractResponse.data||[];
     const contractsByFighter={};
     for(const bout of contractResponse.data||[]){
       for(const id of [bout.challenger_fighter_id,bout.target_fighter_id])
@@ -797,6 +815,7 @@ async function ucsLoadLeaderboardOfflineBouts(){
     ucsLeaderboardOfflineLoadedAt=Date.now();
     renderRanks($('#fighterSearch')?.value||'');
     renderEvents();
+    renderHome();
     renderTaleOfTheTape();
     ucsRefreshStreakPopups();
   }catch(e){console.warn('UCS leaderboard offline records:',e.message);}
