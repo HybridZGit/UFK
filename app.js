@@ -752,8 +752,8 @@ function ucsAllBoutsLeaderboardRecord(f){
   const offline=ucsOfflineFor(f);
   let w=Number(f.wins)||0,l=Number(f.losses)||0,d=Number(f.draws)||0;
   for(const bout of offline){
-    const result=bout.fighter_id===f.id?bout.result:bout.result==='W'?'L':bout.result==='L'?'W':'D';
-    if(result==='W')w++;else if(result==='L')l++;else d++;
+    const result=bout.result==='NC'?'NC':bout.fighter_id===f.id?bout.result:bout.result==='W'?'L':bout.result==='L'?'W':'D';
+    if(result==='W')w++;else if(result==='L')l++;else if(result==='D')d++;
   }
   const contracts=state.ucsLeaderboardCompletedContractsByFighter?.[f.id]||[];
   for(const bout of contracts){
@@ -775,7 +775,7 @@ async function ucsLoadLeaderboardOfflineBouts(){
         .order('created_at',{ascending:false}).limit(5000),
       db.from('ucs_callouts')
         .select('id,challenger_fighter_id,target_fighter_id,winner_fighter_id,concluded_at,created_at')
-        .eq('status','completed').not('winner_fighter_id','is',null).limit(5000)
+        .eq('status','completed').limit(5000)
     ]);
     if(offlineResponse.error)throw offlineResponse.error;
     if(contractResponse.error)throw contractResponse.error;
@@ -999,7 +999,7 @@ async function ucsRenderProfileCallouts(f){
   const {data,error}=await db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,status,created_at,responded_at,title_belt_division,winner_fighter_id,result_method,concluded_at').or('challenger_fighter_id.eq.'+token+',target_fighter_id.eq.'+token).order('created_at',{ascending:false}).limit(30);
   if(error||root.dataset.ucsCalloutFighter!==token)return;
   state.ucsCompletedContractsByFighter=state.ucsCompletedContractsByFighter||{};
-  state.ucsCompletedContractsByFighter[token]=(data||[]).filter(x=>x.status==='completed'&&x.winner_fighter_id);
+  state.ucsCompletedContractsByFighter[token]=(data||[]).filter(x=>x.status==='completed'&&(x.winner_fighter_id||/^NC$|^NO CONTEST$/i.test(String(x.result_method||''))));
   if(state.ucsCurrentProfile===token)ucsRenderDossierRecords(f);
   root.querySelectorAll('[data-ucs-callout]').forEach(el=>el.remove());
   const accepted=(data||[]).filter(x=>x.status==='accepted');
@@ -2610,11 +2610,14 @@ function ucsRenderDossierRecords(f){
  const mode=state.ucsRecordTab||'pro',offline=ucsOfflineFor(f),pro=fighterResults(f);
  const ow=offline.filter(r=>(r.fighter_id===f.id?r.result:r.result==='W'?'L':r.result==='L'?'W':'D')==='W').length;
  const ol=offline.filter(r=>(r.fighter_id===f.id?r.result:r.result==='W'?'L':r.result==='L'?'W':'D')==='L').length;
- const od=offline.length-ow-ol;
+ const od=offline.filter(r=>String(r.result||'').toUpperCase()==='D').length;
  const pw=Number(f.wins)||0,pl=Number(f.losses)||0,pd=Number(f.draws)||0;
  const contracts=state.ucsCompletedContractsByFighter?.[f.id]||[];
  const cw=contracts.filter(r=>r.winner_fighter_id===f.id).length;
- const cl=contracts.filter(r=>r.winner_fighter_id!==f.id).length;
+ const cl=contracts.filter(r=>r.winner_fighter_id&&r.winner_fighter_id!==f.id).length;
+ const ncOffline=offline.filter(r=>String(r.result||'').toUpperCase()==='NC').length;
+ const ncContracts=contracts.filter(r=>!r.winner_fighter_id&&/^NC$|^NO CONTEST$/i.test(String(r.result_method||''))).length;
+ const nc=ncOffline+ncContracts;
  // Display the complete fight record on the PRO profile tab, without changing official PRO data or rankings.
  const w=mode==='offline'?ow+cw:pw+ow+cw,l=mode==='offline'?ol+cl:pl+ol+cl,d=mode==='offline'?od:pd+od;
  const koMethod=m=>/(KO|TKO|KNOCKOUT)/i.test(String(m||''));
@@ -2624,17 +2627,17 @@ function ucsRenderDossierRecords(f){
  const koBar=$('#profileKnockoutFill');if(koBar)koBar.style.width=(koPct??0)+'%';
  const koCount=$('#profileKOs');if(koCount)koCount.textContent=String(fullKOs);
  const koDesc=$('#profileKnockoutDescription');if(koDesc)koDesc.textContent='Knockouts per win across PRO, Offline and Contract bouts.';
- [['#ucsDossierWins',w],['#ucsDossierLosses',l],['#ucsDossierDraws',d],['#profileRecord',w+'-'+l+'-'+d],['#profileFights',w+l+d]].forEach(([sel,val])=>{const el=$(sel);if(el)el.textContent=val;});
+ [['#ucsDossierWins',w],['#ucsDossierLosses',l],['#ucsDossierDraws',d],['#ucsDossierNC',nc],['#profileRecord',w+'-'+l+'-'+d+(nc?' ('+nc+' NC)':'')],['#profileFights',w+l+d+nc]].forEach(([sel,val])=>{const el=$(sel);if(el)el.textContent=val;});
  const heading=$('#ucsDossierRecordHeading');if(heading)heading.textContent=mode==='pro'?'FULL FIGHT RECORD':mode==='offline'?'UCS OFFLINE + CONTRACT RECORD':'ALL UCS BOUTS';
  $$('#ucsDossierTabs [data-ucs-record-tab]').forEach(b=>{const active=b.dataset.ucsRecordTab===mode;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
  const entries=[];
  for(const r of pro){const won=r.winner_id===f.id,opp=fighterById(won?r.loser_id:r.winner_id);entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind">PRO</b> ${esc(r.method||'Result')} · ${esc(fmtDate(r.event_date))}</small><small style="display:block"><img src="https://flagcdn.com/w40/gb.png" alt="UK flag" style="width:20px;height:14px;vertical-align:middle;margin-right:5px"> London, The O2 Arena</small></div></div>`});}
- for(const r of offline){const own=r.fighter_id===f.id,code=own?r.result:r.result==='W'?'L':r.result==='L'?'W':'D',opp=fighterById(own?r.opponent_id:r.fighter_id),venue=r.location||r.venue||"UCS Discord · Online";entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${code==='W'?'win':code==='L'?'loss':''}">${code}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind offline">OFFLINE</b> ${esc(r.method)} · ${esc(fmtDate(r.event_date))}</small><small>📍 ${esc(venue)} · ${esc(r.event_name||'Offline bout')}</small></div></div>`});}
+ for(const r of offline){const own=r.fighter_id===f.id,code=r.result==='NC'?'NC':own?r.result:r.result==='W'?'L':r.result==='L'?'W':'D',opp=fighterById(own?r.opponent_id:r.fighter_id),venue=r.location||r.venue||"UCS Discord · Online";entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${code==='W'?'win':code==='L'?'loss':''}">${code}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind offline">OFFLINE</b> ${esc(r.method)} · ${esc(fmtDate(r.event_date))}</small><small>📍 ${esc(venue)} · ${esc(r.event_name||'Offline bout')}</small></div></div>`});}
  for(const r of state.ucsCompletedContractsByFighter?.[f.id]||[]){
   const opponentId=r.challenger_fighter_id===f.id?r.target_fighter_id:r.challenger_fighter_id;
-  const opp=fighterById(opponentId),won=r.winner_fighter_id===f.id;
+  const opp=fighterById(opponentId),won=r.winner_fighter_id===f.id,isNC=!r.winner_fighter_id&&/^NC$|^NO CONTEST$/i.test(String(r.result_method||''));
   const date=r.concluded_at||r.responded_at||r.created_at;
-  entries.push({date,html:`<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind offline">CONTRACT</b> ${esc(r.result_method||'Result')} · ${esc(fmtDate(date))}</small><small>📍 UCS Discord · Online · UCS Discord Contract Bout${r.title_belt_division?' · 🏆 '+esc(r.title_belt_division)+' CHAMPIONSHIP':''}</small></div></div>`});
+  entries.push({date,html:`<div class="profile-fight-row"><span class="result-pill ${isNC?'':won?'win':'loss'}">${isNC?'NC':won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind offline">CONTRACT</b> ${esc(r.result_method||'Result')} · ${esc(fmtDate(date))}</small><small>📍 UCS Discord · Online · UCS Discord Contract Bout${r.title_belt_division?' · 🏆 '+esc(r.title_belt_division)+' CHAMPIONSHIP':''}</small></div></div>`});
  }
  entries.sort((x,y)=>String(y.date||'').localeCompare(String(x.date||'')));
  const root=$('#profileFightHistory');if(root)root.innerHTML=entries.length?entries.slice(0,50).map(x=>x.html).join(''):empty('No recorded bouts yet.');
