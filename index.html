@@ -516,6 +516,19 @@
             <div id="ucsDivisionAdminList" aria-live="polite"></div>
           </div>
 
+          <section class="admin-card" id="ucsOpenAdmin">
+            <h3>UCS OPEN · INDEPENDENT RESULTS</h3>
+            <p>No standard UCS restrictions. OPEN bouts have their own records, rankings and championship. Recording an OPEN result does not change standard UCS fighter stats.</p>
+            <form id="ucsOpenResultForm" style="display:grid;gap:12px">
+              <label>RED CORNER<select name="fighter_a_id" class="fighter-select" required></select></label>
+              <label>BLUE CORNER<select name="fighter_b_id" class="fighter-select" required></select></label>
+              <label>RESULT<select name="result"><option value="A">RED CORNER WINS</option><option value="B">BLUE CORNER WINS</option><option value="D">DRAW</option><option value="NC">NO CONTEST</option></select></label>
+              <label>METHOD / RULESET<input name="method" placeholder="e.g. Decision · Open rules" maxlength="80"></label>
+              <label>FIGHT DATE<input type="date" name="event_date" required></label>
+              <button type="submit" class="btn primary">RECORD UCS OPEN FIGHT</button>
+            </form>
+            <h4>UCS OPEN FIGHT HISTORY</h4><div id="ucsOpenResultsList"></div>
+          </section>
           <form class="admin-card" id="championForm">
             <h3>Grant championship</h3><p>Assign or replace the champion for a division.</p>
             <label>Division<select name="division"><option>UCS Offline</option><option>UCS World</option><option>UCS International</option><option>UCS SIM World</option><option>UCS PS5</option><option>UCS PC</option><option>UCS XBOX</option></select></label>
@@ -857,7 +870,7 @@
   <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=ucs-all-activity-recent-results-20261106"></script>
+  <script src="app.js?v=ucs-open-independent-20261106"></script>
 <section id="ucsContractFights" class="shell" style="padding:30px 0 16px"><h2 style="margin-bottom:8px">🏆 CONTRACT FIGHTS</h2><p style="opacity:.75">Open a Discord contract to see its matchup and title-fight status. UCS admins can optionally put a championship belt on an accepted contract.</p><div id="ucsContractFightCards" style="display:grid;gap:12px"><p>Loading contract fights…</p></div></section>
 <section id="ucsDiscordContractsBoard" class="shell" style="padding:32px 0 50px"><h2>🥊 CONTRACT ACTIVITY</h2><p style="opacity:.75">Discord challenges, acceptances, declines, contract channels, cancellations and results. Contract results do not alter official rankings.</p><div id="ucsDiscordContractRows" style="display:grid;gap:12px">Loading contract activity…</div></section>
 <script>
