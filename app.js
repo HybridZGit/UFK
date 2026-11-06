@@ -774,7 +774,7 @@ async function ucsLoadLeaderboardOfflineBouts(){
         .eq('kind','offline').eq('status','completed').not('winner_fighter_id','is',null)
         .order('created_at',{ascending:false}).limit(5000),
       db.from('ucs_callouts')
-        .select('id,challenger_fighter_id,target_fighter_id,winner_fighter_id')
+        .select('id,challenger_fighter_id,target_fighter_id,winner_fighter_id,concluded_at,created_at')
         .eq('status','completed').not('winner_fighter_id','is',null).limit(5000)
     ]);
     if(offlineResponse.error)throw offlineResponse.error;
@@ -795,6 +795,7 @@ async function ucsLoadLeaderboardOfflineBouts(){
     state.ucsDiscordOfflineByFighter=byFighter;
     ucsLeaderboardOfflineLoadedAt=Date.now();
     renderRanks($('#fighterSearch')?.value||'');
+    ucsRefreshStreakPopups();
   }catch(e){console.warn('UCS leaderboard offline records:',e.message);}
   finally{ucsLeaderboardOfflineLoading=false;}
 }
@@ -2687,3 +2688,45 @@ function ucsPopulateOfflineChampionSelect(){
  select.value=current;
 }
 
+
+/* Rotating fighter win-streak notifications; read-only, from completed bouts. */
+let ucsStreakCards=[],ucsStreakIndex=0,ucsStreakTimer=null,ucsStreakDismissedUntil=0;
+function ucsRefreshStreakPopups(){
+ const cards=[];
+ for(const f of state.fighters){
+  const bouts=[];
+  for(const r of fighterResults(f))bouts.push({date:r.event_date||'',won:r.winner_id===f.id,opponent:fighterById(r.winner_id===f.id?r.loser_id:r.winner_id)?.name||'Unknown'});
+  for(const r of ucsOfflineFor(f)){
+   const own=r.fighter_id===f.id,won=(own?r.result:r.result==='W'?'L':r.result==='L'?'W':'D')==='W';
+   bouts.push({date:r.event_date||'',won,opponent:fighterById(own?r.opponent_id:r.fighter_id)?.name||'Unknown'});
+  }
+  for(const r of state.ucsLeaderboardCompletedContractsByFighter?.[f.id]||[]){
+   const opponentId=r.challenger_fighter_id===f.id?r.target_fighter_id:r.challenger_fighter_id;
+   bouts.push({date:r.concluded_at||r.created_at||'',won:r.winner_fighter_id===f.id,opponent:fighterById(opponentId)?.name||'Unknown'});
+  }
+  bouts.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  const wins=[];for(const b of bouts){if(!b.won)break;wins.push(b);}
+  if(wins.length>=3)cards.push({fighter:f,count:wins.length,opponents:wins.slice(0,3).map(x=>x.opponent),record:ucsAllBoutsLeaderboardRecord(f)});
+ }
+ ucsStreakCards=cards.sort((a,b)=>b.count-a.count||a.fighter.name.localeCompare(b.fighter.name));
+ if(ucsStreakIndex>=ucsStreakCards.length)ucsStreakIndex=0;
+ ucsShowStreakPopup();
+}
+function ucsShowStreakPopup(){
+ let box=$('#ucsStreakPopup');
+ if(!box){
+  const style=document.createElement('style');style.textContent=`
+  #ucsStreakPopup{position:fixed;bottom:18px;right:18px;z-index:9997;width:min(355px,calc(100vw - 28px));background:#181820;border:1px solid #49434b;border-left:4px solid #ec174e;border-radius:14px;box-shadow:0 16px 45px #000b;color:#fff;padding:15px 38px 15px 14px;font-family:inherit;animation:ucsStreakIn .35s ease}
+  #ucsStreakPopup[hidden]{display:none}#ucsStreakPopup .ucs-streak-main{display:flex;align-items:center;gap:12px;cursor:pointer}#ucsStreakPopup img,#ucsStreakPopup .ucs-streak-avatar{width:58px;height:58px;flex:0 0 58px;object-fit:cover;border-radius:50%;border:2px solid #e61a50;background:#30303a;display:grid;place-items:center;font-weight:900}
+  #ucsStreakPopup .ucs-streak-label{color:#f9c75c;font-size:10px;font-weight:900;letter-spacing:1px}#ucsStreakPopup strong{display:block;font-size:17px;margin:3px 0}#ucsStreakPopup .ucs-streak-record{font-size:12px;color:#c8c5cf}#ucsStreakPopup .ucs-streak-opp{font-size:12px;color:#e0dce4;margin-top:10px;line-height:1.5}#ucsStreakPopup .ucs-streak-close{position:absolute;top:8px;right:9px;border:0;background:transparent;color:#ccc;font-size:20px;cursor:pointer}#ucsStreakPopup .ucs-streak-hint{color:#e76c8d;font-size:10px;margin-top:8px} @keyframes ucsStreakIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@media(max-width:600px){#ucsStreakPopup{bottom:10px;right:10px;padding:12px 32px 12px 12px}}
+  `;document.head.appendChild(style);
+  box=document.createElement('aside');box.id='ucsStreakPopup';box.setAttribute('aria-label','UCS fighter win streak');document.body.appendChild(box);
+  box.addEventListener('click',e=>{if(e.target.closest('.ucs-streak-close')){ucsStreakDismissedUntil=Date.now()+30*60*1000;box.hidden=true;return;}const id=box.dataset.fighterId;if(id)openFighterProfile(id);});
+ }
+ if(!ucsStreakCards.length||Date.now()<ucsStreakDismissedUntil){box.hidden=true;return;}
+ const item=ucsStreakCards[ucsStreakIndex++%ucsStreakCards.length],f=item.fighter;
+ const avatar=[f.avatar_url,f.profile_image_url,f.showcase_image_url].find(safeHttps);
+ box.dataset.fighterId=f.id;box.hidden=false;
+ box.innerHTML='<button type="button" class="ucs-streak-close" aria-label="Dismiss streak notifications">×</button><div class="ucs-streak-main">'+(avatar?'<img src="'+esc(avatar)+'" alt="">':'<span class="ucs-streak-avatar">'+esc(initials(f.name))+'</span>')+'<div><div class="ucs-streak-label">🔥 UCS HOT STREAK</div><strong>'+esc(f.name)+' · '+item.count+' FIGHT WIN STREAK</strong><div class="ucs-streak-record">Full record: '+esc(item.record)+'</div></div></div><div class="ucs-streak-opp">Last 3 opponents: '+item.opponents.map(esc).join(' · ')+'</div><div class="ucs-streak-hint">Tap to view fighter profile</div>';
+}
+setTimeout(()=>{ucsRefreshStreakPopups();if(!ucsStreakTimer)ucsStreakTimer=setInterval(ucsShowStreakPopup,11000);},4500);
