@@ -1006,7 +1006,9 @@ async function ucsRenderProfileCallouts(f){
   const cards=accepted.map(x=>{
    const opponent=fighterById(x.challenger_fighter_id===token?x.target_fighter_id:x.challenger_fighter_id);
    const title=x.title_belt_division?'<div style="margin-top:9px;color:#f4c568;font-size:12px;font-weight:800">🏆 '+esc(x.title_belt_division.toUpperCase())+' CHAMPIONSHIP ON THE LINE</div>':'';
-   return '<article class="ucs-upcoming-card" data-ucs-callout="'+esc(x.id)+'" style="padding:16px;margin:10px 0"><div class="ucs-upcoming-main"><div class="ucs-upcoming-fighter"><div class="ucs-upcoming-fighter-info"><small>DISCORD CALLOUT · ACCEPTED</small><strong>vs '+esc(opponent?.name||'Opponent')+'</strong>'+title+'<span>Awaiting scheduling · DATE TBA</span></div></div></div></article>';
+   const photo=opponent?[opponent.avatar_url,opponent.profile_image_url,opponent.showcase_image_url].find(safeHttps):null;
+   const avatar=photo?'<img src="'+esc(photo)+'" alt="" loading="lazy" style="width:52px;height:52px;object-fit:cover;border-radius:10px">':'<span style="width:52px;height:52px;display:inline-grid;place-items:center;background:#252530;border-radius:10px">🥊</span>';
+   return '<article class="ucs-upcoming-card" data-ucs-callout="'+esc(x.id)+'" style="padding:16px;margin:10px 0"><div class="ucs-upcoming-main"><div class="ucs-upcoming-fighter"><div class="ucs-upcoming-avatar">'+avatar+'</div><div class="ucs-upcoming-fighter-info"><small>DISCORD CONTRACT BOUT · ACCEPTED</small><strong>'+esc(opponent?.name||'Opponent')+'</strong><span>10 ROUNDS · 1.5× Relative Time · 1.0 Damage</span>'+title+'</div></div><div class="ucs-upcoming-meta"><strong>DATE TBA</strong><span class="ucs-inline-status">● ACCEPTED · AWAITING SCHEDULING</span></div></div></article>';
   }).join('');
   if(cards){if(root.textContent.includes('No upcoming'))root.innerHTML=cards;else root.insertAdjacentHTML('beforeend',cards);}
  }catch(e){console.warn('UCS callout profile:',e.message);}
