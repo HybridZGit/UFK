@@ -114,6 +114,7 @@ setInterval(ucsUpdateFightCountdown,1000);
 
 function fmtDate(d){ if(!d) return ''; const x=new Date(`${String(d).slice(0,10)}T12:00:00`); return Number.isNaN(x.getTime())?d:x.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
 function record(f){ return `${f?.wins ?? 0}-${f?.losses ?? 0}-${f?.draws ?? 0}${f?.region ? ` · ${f.region}` : ''}`; }
+function ucsFullCardRecord(f){return (f?ucsAllBoutsLeaderboardRecord(f):'0-0-0')+(f?.region?' · '+f.region:'');}
 function fighterById(id){ return state.fighters.find(f=>f.id===id); }
 function empty(msg){ return `<div class="data-empty">${esc(msg)}</div>`; }
 function chip(v){ const n=Number(v||0); return `<span class="score-chip ${n<8?'mid':''}">${n.toFixed(1)}</span>`; }
@@ -795,6 +796,8 @@ async function ucsLoadLeaderboardOfflineBouts(){
     state.ucsDiscordOfflineByFighter=byFighter;
     ucsLeaderboardOfflineLoadedAt=Date.now();
     renderRanks($('#fighterSearch')?.value||'');
+    renderEvents();
+    renderTaleOfTheTape();
     ucsRefreshStreakPopups();
   }catch(e){console.warn('UCS leaderboard offline records:',e.message);}
   finally{ucsLeaderboardOfflineLoading=false;}
@@ -1463,9 +1466,9 @@ function renderEvents(){
         <span class="ucs-match-poster-caption"><strong>${esc(a?.name||'TBA')} VS ${esc(c?.name||'TBA')}</strong><small>VIEW FULL POSTER ↗</small></span>
       </a>`:''}
       <div class="ucs-match-contest">
-        <div class="ucs-match-person">${portrait(a)}<div class="ucs-match-person-info"><strong>${esc(a?.name||'TBA')}</strong><small>${a?esc(record(a)):'Fighter TBA'}</small></div></div>
+        <div class="ucs-match-person">${portrait(a)}<div class="ucs-match-person-info"><strong>${esc(a?.name||'TBA')}</strong><small>${a?esc(ucsFullCardRecord(a)):'Fighter TBA'}</small></div></div>
         <div class="ucs-match-versus ucs-red-vs-logo" role="img" aria-label="VS"></div>
-        <div class="ucs-match-person ucs-match-person-right">${portrait(c)}<div class="ucs-match-person-info"><strong>${esc(c?.name||'TBA')}</strong><small>${c?esc(record(c)):'Fighter TBA'}</small></div></div>
+        <div class="ucs-match-person ucs-match-person-right">${portrait(c)}<div class="ucs-match-person-info"><strong>${esc(c?.name||'TBA')}</strong><small>${c?esc(ucsFullCardRecord(c)):'Fighter TBA'}</small></div></div>
       </div>
       <div style="padding:4px 16px 12px;font-size:12px"><img src="https://flagcdn.com/w40/gb.png" alt="UK flag" style="width:20px;height:14px;vertical-align:middle;margin-right:5px"> London, Greenwich, The O2 Arena</div><div class="ucs-match-bottom"><span>${esc(b.belt?b.belt+' TITLE FIGHT':b.event_name||'Non-title bout')} · UPCOMING</span><button type="button" class="ucs-see-bout" data-see-bout="${esc(b.id)}">SEE BOUT ↗</button>${boutLink(b)}</div>
     </article>`;
