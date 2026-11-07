@@ -646,7 +646,21 @@ $('#ucsP4pChoices')?.addEventListener('click',e=>{const b=e.target.closest('butt
 $('#ucsSubmitP4p')?.addEventListener('click',async()=>{const ids=ucsP4pChoices();if(!ids.length)return;const {error}=await db.rpc('ucs_submit_p4p',{p_voter_id:ucsP4pGuestId(),p_fighter_ids:ids});$('#ucsP4pMessage').textContent=error?'Could not submit: '+error.message:'Your P4P vote has been counted!';});
 $('#ucsP4pVoteTab')?.addEventListener('click',()=>{$('#ucsP4pVoting').classList.remove('hidden');$('#ucsP4pResults').classList.add('hidden');});
 $('#ucsP4pResultsTab')?.addEventListener('click',async()=>{$('#ucsP4pVoting').classList.add('hidden');$('#ucsP4pResults').classList.remove('hidden');const {data,error}=await db.rpc('ucs_p4p_standings');$('#ucsP4pResults').innerHTML=error?'Unable to load results':(data||[]).map((x,i)=>'<div style="padding:12px;border-bottom:1px solid #333">#'+(i+1)+' '+esc(fighterById(x.fighter_id)?.name||'Fighter')+' · '+Number(x.points)+' points · '+Number(x.votes)+' votes</div>').join('')||'No votes yet.';});
-function renderAll(){ ucsRenderOpenAdmin(); ucsRenderCommunity(); ucsRenderP4p(); renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+function ucsRenderTournament(){
+ const box=$('#ucsTournamentBoard');if(!box)return;
+ const t=state.settings?.ucs_tournament;
+ if(!t||!Array.isArray(t.participants)){box.innerHTML='<div class="data-empty">No UCS tournament announced yet. Watch Discord for the next signup.</div>';return;}
+ const pName=p=>p?.name||'TBD';
+ const player=p=>'<span class="ucs-tournament-player '+(p?'':'pending')+'">'+esc(pName(p))+'</span>';
+ const rows=Array.isArray(t.rounds)&&t.rounds.length?t.rounds:[];
+ const status=t.status==='signup'?'SIGNUPS OPEN':t.status==='complete'?'COMPLETED':'BRACKET LIVE';
+ const headline='<div class="ucs-tournament-hero"><div><span class="ucs-tournament-kicker">🏆 OFFICIAL UCS TOURNAMENT</span><h3>'+esc(t.title||'UCS TOURNAMENT')+'</h3><p>'+esc(status)+' · '+t.participants.length+'/8 ENTRANTS</p></div>'+(t.champion?'<div class="ucs-tournament-champion">👑 CHAMPION<br><strong>'+esc(pName(t.champion))+'</strong></div>':'')+'</div>';
+ const seeds='<div class="ucs-tournament-seeds"><h4>OFFICIAL ENTRANTS</h4><div class="ucs-tournament-seed-grid">'+t.participants.map((p,i)=>'<div class="ucs-tournament-seed"><small>SEED '+(i+1)+'</small><strong>'+esc(pName(p))+'</strong></div>').join('')+'</div></div>';
+ const names=['QUARTERFINALS','SEMIFINALS','CHAMPIONSHIP FINAL'];
+ const bracket=rows.length?'<div class="ucs-tournament-bracket">'+rows.map((round,ri)=>'<div class="ucs-tournament-round"><h4>'+names[ri]+'</h4>'+round.map((m,mi)=>'<div class="ucs-tournament-match"><small>MATCH '+(mi+1)+(m.method?' · '+esc(m.method):'')+'</small><div class="'+(m.winner&&m.winner.fighter_id===m.a?.fighter_id?'winner':'')+'">'+player(m.a)+(m.winner&&m.winner.fighter_id===m.a?.fighter_id?' <span>✓</span>':'')+'</div><div class="'+(m.winner&&m.winner.fighter_id===m.b?.fighter_id?'winner':'')+'">'+player(m.b)+(m.winner&&m.winner.fighter_id===m.b?.fighter_id?' <span>✓</span>':'')+'</div></div>').join('')+'</div>').join('')+'</div>':'<div class="ucs-tournament-waiting">React with ✅ on the tournament announcement in Discord to claim a slot. The bracket is generated when eight fighters join.</div>';
+ box.innerHTML=headline+seeds+bracket;
+}
+function renderAll(){ ucsRenderTournament(); ucsRenderOpenAdmin(); ucsRenderCommunity(); ucsRenderP4p(); renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
