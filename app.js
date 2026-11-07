@@ -2706,7 +2706,7 @@ function ucsRenderDossierRecords(f){
  const cl=contracts.filter(r=>r.winner_fighter_id!==f.id).length;
  // Display the complete fight record on the PRO profile tab, without changing official PRO data or rankings.
  const open=ucsOpenStats(f.id);
- const w=mode==='open'?open.w:mode==='offline'?ow+cw:pw+ow+cw,l=mode==='open'?open.l:mode==='offline'?ol+cl:pl+ol+cl,d=mode==='open'?open.d:mode==='offline'?od:pd+od;
+ const w=mode==='open'?open.w:mode==='offline'?ow:pw+ow+cw,l=mode==='open'?open.l:mode==='offline'?ol:pl+ol+cl,d=mode==='open'?open.d:mode==='offline'?od:pd+od;
  const koMethod=m=>/(KO|TKO|KNOCKOUT)/i.test(String(m||''));
  const fullWins=pw+ow+cw,fullKOs=pro.filter(r=>r.winner_id===f.id&&koMethod(r.method)).length+offline.filter(r=>(r.fighter_id===f.id?r.result:r.result==='W'?'L':r.result==='L'?'W':'D')==='W'&&koMethod(r.method)).length+contracts.filter(r=>r.winner_fighter_id===f.id&&koMethod(r.result_method)).length;
  const koPct=fullWins?Math.round(fullKOs/fullWins*100):null;
