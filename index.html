@@ -806,6 +806,7 @@
     <div class="fighter-modal-backdrop" data-close-profile></div>
     <article class="fighter-profile-panel" role="dialog" aria-modal="true" aria-labelledby="profileName">
       <button class="profile-close" type="button" data-close-profile aria-label="Close fighter profile">×</button>
+      <div style="display:flex;justify-content:flex-end;padding:12px 54px 0 16px"><button id="ucsDownloadProfile" type="button" style="background:#ed174c;color:#fff;border:1px solid #ff416b;border-radius:8px;padding:11px 17px;font-size:13px;font-weight:900;letter-spacing:.5px;cursor:pointer">⬇ DOWNLOAD PROFILE</button></div>
       <div class="profile-sponsor"><span>RANKINGS PRESENTED BY</span><img src="assets/ufk-fight-kit.png" alt="UFK Fight Kit"></div>
       <div class="ucs-profile-top-redesign ucs-dossier">
 <div class="ucs-dossier-heading"><span>UCS · OFFICIAL FIGHTER RECORD</span><div class="ucs-fighter-name-row"><span id="ucsChampionCrownProfile" class="ucs-profile-champion-crown hidden" title="Current UCS champion" aria-label="Current UCS champion">👑</span><h2 id="profileName">FIGHTER</h2><span id="ucsProfileFightTempoBadge" class="hidden" title="Four or more completed fights in the past 30 days" style="border:1px solid #d6ac64;border-radius:9px;padding:6px 10px;background:#282127;color:#ffe0a2;font-size:11px;font-weight:800">⚡ UCS WARPATH · 4 FIGHTS / 30 DAYS</span><span id="ucsProfileDiscordPresence" class="ucs-discord-presence offline" aria-label="Discord presence">⚫ Discord Offline</span><span id="ucsMatcherinoVerifiedProfile" class="ucs-matcherino-verified hidden"><span class="ucs-matcherino-tick" aria-hidden="true">✓</span><span class="ucs-matcherino-label">MATCHERINO VERIFIED</span></span><span id="profileServerIcon" class="ucs-fighter-server-icon hidden"></span></div><p><span id="profilePlatform">UCS WORLD</span> · <span id="profileRegion">—</span></p><span id="profileUnderdog" class="ucs-underdog-badge hidden">★ UNDERDOG</span><div id="profileFormerTitles" class="ucs-former-titles hidden"></div><div id="ucsProfileDebut" style="margin-top:8px;font-size:13px"></div><div id="ucsPublicFighterId" style="margin-top:9px;font-size:12px;color:#bcb8c5;display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap"><strong style="color:#f2c36e">ID#</strong> <code id="ucsPublicFighterIdValue" style="color:#e5e3eb;font-size:11px;overflow-wrap:anywhere"></code><button id="ucsCopyFighterId" type="button" title="Copy full fighter ID" style="border:1px solid #625365;border-radius:5px;background:#24202a;color:#f2c36e;padding:3px 8px;cursor:pointer;font-size:11px">COPY ID</button></div></div>
@@ -946,6 +947,60 @@
   }catch(e){msg.textContent='Could not save: '+String(e.message||e);}finally{btn.disabled=false;}
  });
  window.addEventListener('load',refresh);setInterval(refresh,60000);
+})();
+</script>
+<script>
+/* Export a shareable PNG of the currently selected fighter and record tab. */
+(function(){
+ const button=document.getElementById('ucsDownloadProfile');
+ if(!button)return;
+ const get=id=>document.getElementById(id)?.textContent?.trim()||'';
+ const drawRounded=(ctx,x,y,w,h,r)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);};
+ const imageFromUrl=url=>new Promise(resolve=>{
+   if(!url)return resolve(null);
+   const img=new Image();img.crossOrigin='anonymous';
+   const timer=setTimeout(()=>resolve(null),3500);
+   img.onload=()=>{clearTimeout(timer);resolve(img);};
+   img.onerror=()=>{clearTimeout(timer);resolve(null);};
+   img.src=url;
+ });
+ button.addEventListener('click',async()=>{
+  if(button.disabled)return;
+  button.disabled=true;const original=button.textContent;button.textContent='GENERATING IMAGE...';
+  try{
+   const name=get('profileName')||'UCS FIGHTER';
+   const active=document.querySelector('#ucsDossierTabs [data-ucs-record-tab].active');
+   const mode=active?.textContent?.trim()||'UCS PRO';
+   const w=get('ucsDossierWins')||'0',l=get('ucsDossierLosses')||'0',d=get('ucsDossierDraws')||'0';
+   const avatar=document.querySelector('#profileAvatar img')?.src||'';
+   const img=await imageFromUrl(avatar);
+   const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;
+   const ctx=canvas.getContext('2d');
+   const bg=ctx.createLinearGradient(0,0,1080,1350);bg.addColorStop(0,'#18151f');bg.addColorStop(1,'#07070c');ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1350);
+   ctx.fillStyle='#ef174c';ctx.fillRect(0,0,1080,15);ctx.fillRect(75,1240,930,6);
+   ctx.textAlign='center';ctx.fillStyle='#f1bd69';ctx.font='bold 34px Arial';ctx.fillText('UNDISPUTED CHAMPIONSHIP SERIES',540,92);
+   ctx.fillStyle='#a7a6b2';ctx.font='bold 22px Arial';ctx.fillText('OFFICIAL UCS FIGHTER PROFILE',540,135);
+   ctx.save();ctx.beginPath();ctx.arc(540,385,175,0,Math.PI*2);ctx.clip();
+   ctx.fillStyle='#302b39';ctx.fillRect(365,210,350,350);
+   if(img){const scale=Math.max(350/img.width,350/img.height);const iw=img.width*scale,ih=img.height*scale;ctx.drawImage(img,540-iw/2,385-ih/2,iw,ih);}
+   else {ctx.fillStyle='#fff';ctx.font='bold 95px Arial';ctx.fillText(name.split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase(),540,420);}
+   ctx.restore();
+   ctx.strokeStyle='#f1bd69';ctx.lineWidth=8;ctx.beginPath();ctx.arc(540,385,178,0,Math.PI*2);ctx.stroke();
+   ctx.fillStyle='#fff';ctx.font='bold 64px Arial';
+   const displayName=name.length>24?name.slice(0,23)+'…':name;ctx.fillText(displayName,540,660);
+   ctx.fillStyle='#f1bd69';ctx.font='bold 29px Arial';ctx.fillText(mode.toUpperCase()+' RECORD',540,725);
+   drawRounded(ctx,100,780,880,290,26);ctx.fillStyle='#1e1b26';ctx.fill();
+   const stats=[['WINS',w],['LOSSES',l],['DRAWS',d]];
+   stats.forEach(([label,value],i)=>{const x=250+i*290;ctx.fillStyle=i===0?'#26d49a':i===1?'#fb617f':'#f1bd69';ctx.font='bold 100px Arial';ctx.fillText(value,x,910);ctx.fillStyle='#d6d2de';ctx.font='bold 25px Arial';ctx.fillText(label,x,970);});
+   ctx.fillStyle='#b5b0bf';ctx.font='22px Arial';ctx.fillText('UCS · FIGHTER RECORD',540,1170);
+   const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+   if(!blob)throw Error('Could not export image');
+   const url=URL.createObjectURL(blob);const a=document.createElement('a');
+   a.href=url;a.download='UCS-'+name.replace(/[^a-z0-9-]+/gi,'-').slice(0,45)+'-profile.png';
+   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+  }catch(error){console.error('Profile download:',error);alert('Unable to download profile. Please try again.');}
+  finally{button.disabled=false;button.textContent=original;}
+ });
 })();
 </script>
 </body>
