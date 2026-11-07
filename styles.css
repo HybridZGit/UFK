@@ -2625,3 +2625,6 @@ main{background:transparent!important}
  #fighterModal .ucs-dossier-left .profile-avatar{height:270px!important}
  #fighterModal .ucs-dossier-facts:last-child{grid-column:auto!important}
 }
+
+/* Let the actual Discord banner show through the red fighter-card treatment. */
+#fighterModal .ucs-dossier-heading{background:linear-gradient(105deg,#30060cba 0%,#8e1128a6 47%,#26070eaf 100%)!important}
