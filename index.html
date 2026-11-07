@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=ucs-profile-reverted-20261107" />
+  <link rel="stylesheet" href="styles.css?v=ucs-tournaments-20261107" />
 <style>.result-pill.ucs-nc-result{background:#2563eb!important;color:#fff!important;border-color:#3b82f6!important}</style>
 <style>#recentResults .mini-badge.ucs-nc-result{background:#2563eb!important;color:#fff!important;font-size:10px}</style>
 </head>
@@ -28,7 +28,7 @@
       <a href="#rankings" data-page="rankings">Rankings</a><a href="#titles" data-page="titles">Titles</a><a href="#community" data-page="community">Community</a>
       <a href="#betting" data-page="betting">Betting</a>
       <a href="#fights" data-page="fights">Fights</a>
-      <a href="#events" data-page="events">Events</a>
+      <a href="#events" data-page="events">Events</a><a href="#tournaments" data-page="tournaments">Tournaments</a>
       <a href="#watch" data-page="watch">WATCH LIVE</a>
       <a href="#news" data-page="news">News</a>
       <a href="#photography" data-page="photography">Photography</a>
@@ -289,6 +289,12 @@
       <p class="ucs-watch-disclaimer">Twitch playback and chat depend on Twitch availability and browser privacy settings. If an embed is blocked, use the Twitch link above.</p>
     </section>
 
+    <section class="page shell section-space ucs-tournament-page" id="tournaments">
+      <div class="section-kicker">UCS · OFFICIAL COMPETITION</div>
+      <div class="section-title-row"><h2>UCS <em>TOURNAMENTS</em></h2></div>
+      <p class="ucs-tournament-intro">Live Discord signups, official seeds, knockout brackets and tournament champions. Join through the reaction signup posted by UCS staff.</p>
+      <div id="ucsTournamentBoard" aria-live="polite"><div class="data-empty">No tournament announced yet.</div></div>
+    </section>
     <section class="page shell section-space ucs-events-page" id="events">
       <div class="section-kicker">OFFICIAL UCS EVENTS</div><div class="section-title-row"><h2>UCS <em>EVENTS</em></h2></div>
       <div id="ucsEventsGrid" class="ucs-events-grid"><div class="data-empty">Loading UCS events…</div></div><section id="ucsEventResultsDetail" class="ucs-event-results-detail hidden" aria-live="polite"></section>
@@ -870,7 +876,7 @@
   <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=ucs-open-all-features-20261106"></script>
+  <script src="app.js?v=ucs-tournaments-20261107"></script>
 <section id="ucsContractFights" class="shell" style="padding:30px 0 16px"><h2 style="margin-bottom:8px">🏆 CONTRACT FIGHTS</h2><p style="opacity:.75">Open a Discord contract to see its matchup and title-fight status. UCS admins can optionally put a championship belt on an accepted contract.</p><div id="ucsContractFightCards" style="display:grid;gap:12px"><p>Loading contract fights…</p></div></section>
 <section id="ucsDiscordContractsBoard" class="shell" style="padding:32px 0 50px"><h2>🥊 CONTRACT ACTIVITY</h2><p style="opacity:.75">Discord challenges, acceptances, declines, contract channels, cancellations and results. Contract results do not alter official rankings.</p><div id="ucsDiscordContractRows" style="display:grid;gap:12px">Loading contract activity…</div></section>
 <script>
