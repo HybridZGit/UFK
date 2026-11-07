@@ -564,36 +564,44 @@ async function ucsPopulateGoodWins(){
   const el=$('#ucsGoodWinSelect');if(!el||!db)return;
   const current=el.value;
   el.innerHTML='<option value="">LOADING COMPLETED FIGHTS...</option>';
-  const {data,error}=await db.from('results').select('*').order('event_date',{ascending:false}).limit(1000);
-  if(error){
-    el.innerHTML='<option value="">ERROR LOADING FIGHTS — RETRY</option>';
-    toast('Good win fights: '+error.message,true);return;
-  }
-  const rows=data||[];
+  const [regular,offline,contracts]=await Promise.all([
+    db.from('results').select('id,winner_id,loser_id,event_date,is_good_win').order('event_date',{ascending:false}).limit(1000),
+    db.from('ucs_signup_matches').select('id,kind,red_fighter_id,blue_fighter_id,winner_fighter_id,completed_at,is_good_win').eq('status','completed').not('winner_fighter_id','is',null).order('completed_at',{ascending:false}).limit(1000),
+    db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,winner_fighter_id,concluded_at,is_good_win').eq('status','completed').not('winner_fighter_id','is',null).order('concluded_at',{ascending:false}).limit(1000)
+  ]);
+  const error=regular.error||offline.error||contracts.error;
+  if(error){el.innerHTML='<option value="">ERROR LOADING FIGHTS — RETRY</option>';toast('Good win fights: '+error.message,true);return;}
+  const rows=[
+    ...(regular.data||[]).filter(r=>r.winner_id&&r.loser_id).map(r=>({source:'result',id:r.id,winner_id:r.winner_id,loser_id:r.loser_id,date:r.event_date,is_good_win:r.is_good_win})),
+    ...(offline.data||[]).map(r=>({source:'offline',id:r.id,winner_id:r.winner_fighter_id,loser_id:r.winner_fighter_id===r.red_fighter_id?r.blue_fighter_id:r.red_fighter_id,date:r.completed_at,is_good_win:r.is_good_win})),
+    ...(contracts.data||[]).map(r=>({source:'contract',id:r.id,winner_id:r.winner_fighter_id,loser_id:r.winner_fighter_id===r.challenger_fighter_id?r.target_fighter_id:r.challenger_fighter_id,date:r.concluded_at,is_good_win:r.is_good_win}))
+  ].sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
   state.goodWinResults=rows;
   el.innerHTML='<option value="">SELECT COMPLETED FIGHT ('+rows.length+')</option>'+rows.map(r=>{
     const winner=fighterById(r.winner_id),loser=fighterById(r.loser_id);
-    return '<option value="'+esc(r.id)+'">'+esc(winner?.name||'UNKNOWN')+' BEAT '+esc(loser?.name||'UNKNOWN')+' · '+esc(fmtDate(r.event_date))+(r.is_good_win?' ★ GOOD WIN':'')+'</option>';
+    const type=r.source==='contract'?'CONTRACT':r.source==='offline'?'OFFLINE':'REGULAR';
+    return '<option value="'+esc(r.source+':'+r.id)+'">['+type+'] '+esc(winner?.name||'UNKNOWN')+' BEAT '+esc(loser?.name||'UNKNOWN')+' · '+esc(fmtDate(r.date))+(r.is_good_win?' ★ GOOD WIN':'')+'</option>';
   }).join('');
-  if(rows.some(r=>r.id===current))el.value=current;
+  if(rows.some(r=>r.source+':'+r.id===current))el.value=current;
   ucsFillGoodWin();
 }
 function ucsFillGoodWin(){
   const form=$('#ucsGoodWinForm');if(!form)return;
-  const r=(state.goodWinResults||state.fightDetailsResults||state.results).find(x=>x.id===form.elements.result_id.value);
+  const r=(state.goodWinResults||[]).find(x=>x.source+':'+x.id===form.elements.result_id.value);
   form.elements.is_good_win.value=r?.is_good_win?'true':'false';
 }
 $('#ucsGoodWinSelect')?.addEventListener('change',ucsFillGoodWin);
 $('#ucsGoodWinSelect')?.addEventListener('focus',()=>{if(!state.goodWinResults?.length)ucsPopulateGoodWins();});
 $('#ucsGoodWinForm')?.addEventListener('submit',async e=>{
   e.preventDefault();if(!db||!state.isAdmin)return toast('Admin permission required.',true);
-  const d=new FormData(e.currentTarget),id=d.get('result_id');
-  if(!(state.fightDetailsResults||state.results).some(r=>r.id===id))return toast('Select a completed fight.',true);
-  const {error}=await db.from('results').update({is_good_win:d.get('is_good_win')==='true'}).eq('id',id);
+  const d=new FormData(e.currentTarget),value=String(d.get('result_id')||'');
+  const r=(state.goodWinResults||[]).find(x=>x.source+':'+x.id===value);
+  if(!r)return toast('Select a completed fight.',true);
+  const {error}=await db.rpc('ucs_admin_set_bout_good_win',{p_source:r.source,p_bout_id:r.id,p_good:d.get('is_good_win')==='true'});
   if(error)return toast(error.message,true);
-  const rank=await db.rpc('recalculate_ucs_rankings');
-  if(rank.error)return toast('Win saved but ranking update failed: '+rank.error.message,true);
-  await loadPublicData();toast('GOOD WIN AND RANKINGS UPDATED.');
+  await loadPublicData();
+  await ucsPopulateGoodWins();
+  toast('GOOD WIN AND RANKINGS UPDATED.');
 });
 function renderTitleHistory(){
  const box=$('#ucsTitleHistory');if(!box)return;
