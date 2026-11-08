@@ -2731,20 +2731,30 @@ function ucsRenderDossierRecords(f){
   const code=r.result==='NC'?'NC':r.result==='D'?'D':r.winner_id===f.id?'W':'L';
   entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${code==='W'?'win':code==='L'?'loss':code==='NC'?'ucs-nc-result':''}">${code}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind">UCS OPEN</b> ${esc(r.method||'Open rules')} · ${esc(fmtDate(r.event_date))}</small><small>Independent division · No standard UCS restrictions</small></div></div>`});
  }
- // Build historical records in fight order, then display newest first.
- // A debut is the first recorded bout in the selected category.
+ // Reconstruct the record BEFORE each bout. Official PRO totals may contain
+ // older bouts missing from the results feed, so retain that opening balance.
  entries.sort((x,y)=>String(x.date||'').localeCompare(String(y.date||'')));
- const historyRecord={W:0,L:0,D:0};
+ const proCounts={W:0,L:0,D:0};
+ for(const r of pro){
+  const result=/^NC$|^NO CONTEST$/i.test(String(r.method||''))?'NC':r.winner_id===f.id?'W':'L';
+  if(proCounts[result]!==undefined)proCounts[result]++;
+ }
+ const baseline=(mode==='pro'||mode==='all')?{
+  W:Math.max(0,pw-proCounts.W),L:Math.max(0,pl-proCounts.L),D:Math.max(0,pd-proCounts.D)
+ }:{W:0,L:0,D:0};
+ const historyRecord={...baseline};
+ const hasEarlierUnlisted=Object.values(baseline).some(n=>n>0);
  entries.forEach((entry,index)=>{
   const result=String(entry.result||'').toUpperCase();
-  if(result==='W'||result==='L'||result==='D')historyRecord[result]++;
-  const historical=historyRecord.W+'-'+historyRecord.L+'-'+historyRecord.D;
+  const before=historyRecord.W+'-'+historyRecord.L+'-'+historyRecord.D;
+  const debut=index===0&&!hasEarlierUnlisted&&historyRecord.W+historyRecord.L+historyRecord.D===0;
   const label='<div class="ucs-historical-record" style="font-size:11px;color:#e8c98a;font-weight:800;margin-top:5px">'+
-    (index===0?'<span style="color:#f3a83d;margin-right:10px">★ DEBUT</span>':'')+
-    '<span>RECORD AFTER FIGHT: '+historical+'</span></div>';
+    (debut?'<span style="color:#f3a83d;margin-right:10px">★ DEBUT</span>':'')+
+    '<span>RECORD BEFORE FIGHT: '+before+'</span></div>';
   const closing='</div></div>';
   const last=entry.html.lastIndexOf(closing);
   if(last>=0)entry.html=entry.html.slice(0,last)+label+entry.html.slice(last);
+  if(historyRecord[result]!==undefined)historyRecord[result]++;
  });
  entries.reverse();
  const root=$('#profileFightHistory');if(root)root.innerHTML=entries.length?entries.slice(0,50).map(x=>x.html).join(''):empty('No recorded bouts yet.');
