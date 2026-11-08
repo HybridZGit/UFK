@@ -1608,6 +1608,19 @@ function ucsNewsDate(item){
   const stamp=item.published_at||item.created_at;
   return stamp?new Date(stamp).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}):'UCS NEWS';
 }
+function ucsAllBoutRecord(f){
+ const offline=ucsOfflineFor(f);
+ let ow=0,ol=0,od=0;
+ for(const r of offline){
+  const result=r.fighter_id===f.id?r.result:r.result==='W'?'L':r.result==='L'?'W':'D';
+  if(result==='W')ow++;else if(result==='L')ol++;else od++;
+ }
+ const contracts=state.ucsCompletedContractsByFighter?.[f.id]||[];
+ const cw=contracts.filter(r=>r.winner_fighter_id===f.id).length;
+ const cl=contracts.filter(r=>r.winner_fighter_id!==f.id).length;
+ const open=ucsOpenStats(f.id);
+ return [Number(f.wins||0)+ow+cw+open.w,Number(f.losses||0)+ol+cl+open.l,Number(f.draws||0)+od+open.d].join('-');
+}
 function renderTopEarners(){
   const container=$('#ucsTopEarners');if(!container)return;
   const entries=state.fighters.map(f=>({fighter:f,earnings:Number(state.fighterEarnings.get(f.id)||0)}))
@@ -1621,7 +1634,7 @@ function renderTopEarners(){
     <div class="ucs-earner-row">
       <span class="ucs-earner-rank">${String(i+1).padStart(2,'0')}</span>
       ${avatarHtml(fighter,'ucs-earner-avatar')}
-      <div class="ucs-earner-identity"><strong>${esc(fighter.name)}</strong><small>${esc(record(fighter))} · ${esc(fighter.platform||'UCS')}</small></div>
+      <div class="ucs-earner-identity"><strong>${esc(fighter.name)}</strong><small>${esc(ucsAllBoutRecord(fighter))} · ${esc(fighter.platform||'UCS')}</small></div>
       <strong class="ucs-earner-value">${ucsFormatEarnings(earnings)}</strong>
     </div>`).join('');
 }
