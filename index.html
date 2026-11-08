@@ -462,7 +462,9 @@
 <div class="ucs-rp-cols"><label>FIGHT TYPE<select id="ucsReplayBoutType"><option value="regular">REGULAR FIGHT</option><option value="main_event">MAIN EVENT</option><option value="title_fight">CHAMPIONSHIP / TITLE FIGHT</option></select></label><label>CHAMPIONSHIP / TITLE NAME<input id="ucsReplayChampionship" maxlength="160" placeholder="UCS WORLD CHAMPIONSHIP"></label></div>
 <div class="ucs-rp-cols"><label>WEIGHT CLASS<input id="ucsReplayWeightClass" maxlength="80" placeholder="Heavyweight"></label><label>SCHEDULED ROUNDS<input id="ucsReplayRounds" type="number" min="1" max="30" placeholder="12"></label></div>
 <label>FIGHT DESCRIPTION / STAKES<textarea id="ucsReplayNotes" rows="3" maxlength="1500" placeholder="UCS World Championship on the line — defending champion vs challenger..."></textarea></label>
-<label>VIDEO (MP4, WEBM, MOV — UP TO 50 MB)<input id="ucsReplayUploadFile" type="file" accept="video/mp4,video/webm,video/quicktime,.mov" required></label>
+<label>UPLOAD VIDEO (MP4, WEBM, MOV — MAX 50 MB)<input id="ucsReplayUploadFile" type="file" accept="video/mp4,video/webm,video/quicktime,.mov"></label>
+<p style="margin:0;color:#cfc1c8">OR paste a direct HTTPS video URL for longer fights (MP4/WebM file hosted elsewhere). You don't need to select a file if you enter a URL.</p>
+<label>EXTERNAL VIDEO URL<input id="ucsReplayExternalUrl" type="url" placeholder="https://example.com/rafa-vs-rico.mp4"></label>
 <label class="ucs-rp-check"><input id="ucsReplayPublish" type="checkbox" checked> Publish video</label>
 <button class="btn primary" type="submit" id="ucsReplaySubmit">UPLOAD REPLAY</button><p id="ucsReplayUploadMessage" role="status"></p>
 </form><h4>MANAGE REPLAYS</h4><div id="ucsReplayManage"></div></section><form id="ucsOfflineChampionForm" class="hidden" style="padding:20px;margin:14px 0;border:1px solid #4a3038;border-radius:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:end">
@@ -921,7 +923,7 @@
   <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=ucs-faceoff-rebalanced-20261108"></script><script src="replays.js?v=4" defer></script>
+  <script src="app.js?v=ucs-faceoff-rebalanced-20261108"></script><script src="replays.js?v=5" defer></script>
 <section id="ucsContractFights" class="shell" style="padding:30px 0 16px"><h2 style="margin-bottom:8px">🏆 CONTRACT FIGHTS</h2><p style="opacity:.75">Open a Discord contract to see its matchup and title-fight status. UCS admins can optionally put a championship belt on an accepted contract.</p><div id="ucsContractFightCards" style="display:grid;gap:12px"><p>Loading contract fights…</p></div></section>
 <section id="ucsDiscordContractsBoard" class="shell" style="padding:32px 0 50px"><h2>🥊 CONTRACT ACTIVITY</h2><p style="opacity:.75">Discord challenges, acceptances, declines, contract channels, cancellations and results. Contract results do not alter official rankings.</p><div id="ucsDiscordContractRows" style="display:grid;gap:12px">Loading contract activity…</div></section>
 <script>
