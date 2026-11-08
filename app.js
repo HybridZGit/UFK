@@ -2830,6 +2830,38 @@ async function ucsSavePoster(e,upcoming){
 }
 $('#ucsUpcomingPosterForm')?.addEventListener('submit',e=>ucsSavePoster(e,true));
 $('#ucsProfileBannerForm')?.addEventListener('submit',e=>ucsSavePoster(e,false));
+function ucsRenderCommonOpponentMatchups(f){
+ const root=$('#ucsCommonOpponentMatchups');if(!root)return;
+ const fights=state.results||[];
+ const isNC=r=>/^NC$|^NO CONTEST$/i.test(String(r.method||''));
+ const against=(id,opponentId)=>fights.filter(r=>!isNC(r)&&((r.winner_id===id&&r.loser_id===opponentId)||(r.loser_id===id&&r.winner_id===opponentId)));
+ const summary=(rows,id)=>{
+  const wins=rows.filter(r=>r.winner_id===id).length,losses=rows.length-wins;
+  const kos=rows.filter(r=>r.winner_id===id&&/KO|TKO|KNOCKOUT/i.test(String(r.method||''))).length;
+  return {wins,losses,kos,score:wins*3+kos,record:wins+'-'+losses};
+ };
+ const comparisons=[];
+ for(const opponent of state.fighters){
+  if(opponent.id===f.id)continue;
+  const own=against(f.id,opponent.id);if(!own.length)continue;
+  for(const other of state.fighters){
+   if(other.id===f.id||other.id===opponent.id)continue;
+   const theirs=against(other.id,opponent.id);if(!theirs.length)continue;
+   const a=summary(own,f.id),b=summary(theirs,other.id);
+   comparisons.push({opponent,other,a,b,own,theirs,edge:a.score-b.score});
+  }
+ }
+ comparisons.sort((a,b)=>Math.abs(b.edge)-Math.abs(a.edge)||b.own.length+b.theirs.length-a.own.length-a.theirs.length||a.opponent.name.localeCompare(b.opponent.name));
+ const unique=[],seen=new Set();
+ for(const c of comparisons){const key=c.opponent.id+':'+c.other.id;if(seen.has(key))continue;seen.add(key);unique.push(c);if(unique.length>=20)break;}
+ if(!unique.length){root.innerHTML='';return;}
+ const renderSide=(name,stats,rows,better)=>'<div class="ucs-common-side'+(better?' ucs-common-better':'')+'"><strong>'+esc(name)+'</strong><small>'+esc(stats.record)+' vs shared opponent · '+stats.kos+' KO/TKO win'+(stats.kos===1?'':'s')+'</small><small>'+rows.map(r=>esc((r.winner_id=== (name===f.name?f.id:undefined)?'W':'')||r.method||'Result')+' · '+esc(fmtDate(r.event_date))).join(' · ')+'</small></div>';
+ root.innerHTML='<div class="profile-section-title"><span>COMMON OPPONENT MATCHUPS</span></div>'+unique.map(c=>{
+  const leftBetter=c.edge>0,rightBetter=c.edge<0;
+  const side=(name,stats,rows,id,better)=>'<div class="ucs-common-side'+(better?' ucs-common-better':'')+'"><strong>'+esc(name)+'</strong><small>'+stats.record+' vs opponent · '+stats.kos+' KO/TKO wins</small><small>'+rows.map(r=>(r.winner_id===id?'W':'L')+' ('+esc(r.method||'Result')+')').join(' · ')+'</small></div>';
+  return '<article class="ucs-common-card"><div class="ucs-common-head">SHARED OPPONENT: '+esc(c.opponent.name)+'</div><div class="ucs-common-grid">'+side(f.name,c.a,c.own,f.id,leftBetter)+side(c.other.name,c.b,c.theirs,c.other.id,rightBetter)+'</div><div class="ucs-common-verdict">'+(c.edge===0?'EVEN RESULTS':esc((leftBetter?f.name:c.other.name)+' performed better by results and stoppages'))+'</div></article>';
+ }).join('')+'<p class="ucs-common-note">PRO results only. Comparison scores prioritize wins, then KO/TKO wins; they do not account for opponent form, fight circumstances or quality of opposition.</p>';
+}
 function ucsRenderDossierRecords(f){
  const mode=state.ucsRecordTab||'pro',offline=ucsOfflineFor(f),pro=fighterResults(f);
  const ow=offline.filter(r=>(r.fighter_id===f.id?r.result:r.result==='W'?'L':r.result==='L'?'W':'D')==='W').length;
@@ -2878,6 +2910,7 @@ function ucsRenderDossierRecords(f){
  });
  const root=$('#profileFightHistory');if(root)root.innerHTML=entries.length?entries.map(x=>x.html).join(''):empty('No recorded bouts yet.');
  ucsRenderProfileBoutBanners(f);
+ ucsRenderCommonOpponentMatchups(f);
 }
 $('#ucsDossierTabs')?.addEventListener('click',e=>{const b=e.target.closest('[data-ucs-record-tab]');if(!b||!state.ucsCurrentProfile)return;state.ucsRecordTab=b.dataset.ucsRecordTab;const f=fighterById(state.ucsCurrentProfile);if(f)ucsRenderDossierRecords(f);});
 function ucsRenderOfflineAdminList(){
