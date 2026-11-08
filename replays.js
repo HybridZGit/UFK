@@ -8,6 +8,9 @@ let fighters=[],replays=[],activeVideo=null,profileId=null;
 const name=id=>fighters.find(f=>String(f.id)===String(id))?.name||'Unknown fighter';
 const date=r=>r.fought_on||'';
 const visible=()=>replays.filter(r=>r.published);
+const replayLink=id=>location.origin+location.pathname+'#replay/'+encodeURIComponent(id);
+const copyText=async text=>{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text);return;}const el=document.createElement('textarea');el.value=text;document.body.append(el);el.select();document.execCommand('copy');el.remove();};
+const shareStatus=msg=>{const el=$('#ucsReplayShareStatus');if(el)el.textContent=msg;};
 const status=(msg)=>{const el=$('#ucsReplayStatus');if(el)el.textContent=msg;};
 function selectOptions(){
  const opts=fighters.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(f=>'<option value="'+escapeHtml(f.id)+'">@'+escapeHtml(f.name)+'</option>').join('');
@@ -15,12 +18,12 @@ function selectOptions(){
  const el=$('#ucsReplayFilter');if(el){const prev=el.value;el.innerHTML='<option value="">All fighters</option>'+opts;el.value=prev;}
 }
 function closePlayer(){if(activeVideo){activeVideo.pause();activeVideo.removeAttribute('src');activeVideo.load();activeVideo=null;}$('#ucsReplayPlayer')?.classList.add('hidden');$('#ucsReplayCards')?.classList.remove('hidden');}
-function openReplay(id){
+function openReplay(id,updateHash=true){
  const r=visible().find(x=>x.id===id);if(!r)return;
  const player=$('#ucsReplayPlayer'),video=$('#ucsReplayVideo');if(!player||!video)return;
  closePlayer();$('#ucsReplayTitlePlaying').textContent=r.title;$('#ucsReplayMetaPlaying').textContent=[name(r.fighter_a_id)+' vs '+name(r.fighter_b_id),r.event_name,date(r)].filter(Boolean).join(' · ');
  if(!/^https:\/\//i.test(r.video_url)){status('Video URL is invalid');return;}
- video.src=r.video_url;activeVideo=video;player.classList.remove('hidden');$('#ucsReplayCards').classList.add('hidden');player.scrollIntoView({block:'start',behavior:'smooth'});
+ video.src=r.video_url;activeVideo=video;player.classList.remove('hidden');$('#ucsReplayCards').classList.add('hidden');if(updateHash)history.replaceState(null,'','#replay/'+encodeURIComponent(id));player.scrollIntoView({block:'start',behavior:'smooth'});
 }
 function render(){
  const grid=$('#ucsReplayCards');if(!grid)return;
@@ -42,7 +45,7 @@ async function load(){
  if(!client)return status('Replay service is not configured.');
  const [f,r]=await Promise.all([client.from('fighters').select('id,name').limit(1000),client.from('ucs_fight_replays').select('*').order('created_at',{ascending:false}).limit(500)]);
  if(f.error||r.error){status('Unable to load replays: '+(f.error?.message||r.error?.message));return;}
- fighters=f.data||[];replays=r.data||[];selectOptions();render();status('');
+ fighters=f.data||[];replays=r.data||[];selectOptions();render();status('');openDeepLink();
 }
 async function upload(e){
  e.preventDefault();const form=e.currentTarget,button=$('#ucsReplaySubmit'),message=$('#ucsReplayUploadMessage');
@@ -74,6 +77,7 @@ async function manage(e){
  if(del&&r.storage_path)await client.storage.from('ucs-fight-replays').remove([r.storage_path]);
  if(activeVideo&&del)closePlayer();await load();
 }
+function openDeepLink(){const match=location.hash.match(/^#replay\/([a-f0-9-]{36})$/i);if(!match)return;if(typeof showPage==='function')showPage('replays');if(visible().some(r=>r.id===match[1]))openReplay(match[1],false);else status('This replay is not published or is unavailable.');}
 function goToReplays(fighter){
  closePlayer();const filter=$('#ucsReplayFilter');if(filter)filter.value=fighter||'';const search=$('#ucsReplaySearch');if(search)search.value='';
  render();if(typeof closeFighterProfile==='function')closeFighterProfile();
@@ -83,8 +87,11 @@ window.ucsReplayProfile=id=>{profileId=id;renderProfile();};
 document.addEventListener('DOMContentLoaded',()=>{
  $('#ucsReplaySearch')?.addEventListener('input',render);
  $('#ucsReplayFilter')?.addEventListener('change',render);
- $('#ucsReplayCards')?.addEventListener('click',e=>{const btn=e.target.closest('[data-replay]');if(btn)openReplay(btn.dataset.replay);});
- $('#ucsReplayBack')?.addEventListener('click',closePlayer);
+ $('#ucsReplayCards')?.addEventListener('click',async e=>{const copy=e.target.closest('[data-copy-replay]');if(copy){try{await copyText(replayLink(copy.dataset.copyReplay));copy.textContent='✓ LINK COPIED';setTimeout(()=>copy.textContent='🔗 COPY DISCORD LINK',1800);}catch(err){status('Could not copy link: '+err.message);}return;}const btn=e.target.closest('[data-replay]');if(btn)openReplay(btn.dataset.replay);});
+ $('#ucsReplayBack')?.addEventListener('click',()=>{closePlayer();history.replaceState(null,'','#replays');});
+$('#ucsReplayCopyLink')?.addEventListener('click',async()=>{const match=location.hash.match(/^#replay\/([a-f0-9-]{36})$/i);if(!match)return;try{await copyText(replayLink(match[1]));shareStatus('Replay link copied for Discord.');}catch(e){shareStatus('Unable to copy link.');}});
+$('#ucsReplayCopyVideo')?.addEventListener('click',async()=>{const video=activeVideo;if(!video)return;try{await copyText(video.src);shareStatus('Direct video URL copied. Discord may preview MP4 files depending on its settings.');}catch(e){shareStatus('Unable to copy video URL.');}});
+window.addEventListener('hashchange',openDeepLink);
  $('#ucsReplayUploadForm')?.addEventListener('submit',upload);
  $('#ucsReplayManage')?.addEventListener('click',manage);
  $('#ucsReplayProfileList')?.addEventListener('click',e=>{const btn=e.target.closest('[data-profile-replay]');if(btn){goToReplays('');openReplay(btn.dataset.profileReplay);}});
