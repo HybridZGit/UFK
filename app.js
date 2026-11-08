@@ -2695,6 +2695,24 @@ $('#ucsPosterDownload')?.addEventListener('click',()=>{
 /* Offline bouts: separate from official PRO result and ranking calculations. */
 function ucsOfflineBouts(){return Array.isArray(state.settings?.ucs_offline_bouts)?state.settings.ucs_offline_bouts:[];}
 function ucsOfflineFor(f){return [...ucsOfflineBouts().filter(r=>r.fighter_id===f.id||r.opponent_id===f.id),...(state.ucsDiscordOfflineByFighter?.[f.id]||[])];}
+function ucsOpponentPreFightRecord(opponentId,date){
+ if(!opponentId||!date)return null;
+ const opponent=fighterById(opponentId);if(!opponent)return null;
+ const bouts=fighterResults(opponent).filter(r=>r.event_date).slice().sort((a,b)=>String(a.event_date).localeCompare(String(b.event_date))||String(a.id).localeCompare(String(b.id)));
+ const counted={W:0,L:0,D:0},before={W:0,L:0,D:0};
+ for(const r of bouts){
+  const outcome=/^NC$|^NO CONTEST$/i.test(String(r.method||''))?'NC':r.winner_id===opponentId?'W':'L';
+  if(outcome in counted)counted[outcome]++;
+  if(String(r.event_date)<String(date)&&outcome in before)before[outcome]++;
+ }
+ const baseline={
+  W:Math.max(0,(Number(opponent.wins)||0)-counted.W),
+  L:Math.max(0,(Number(opponent.losses)||0)-counted.L),
+  D:Math.max(0,(Number(opponent.draws)||0)-counted.D)
+ };
+ const w=baseline.W+before.W,l=baseline.L+before.L,d=baseline.D+before.D;
+ return {text:w+'-'+l+'-'+d,debut:w+l+d===0};
+}
 function ucsRenderDossierRecords(f){
  const mode=state.ucsRecordTab||'pro',offline=ucsOfflineFor(f),pro=fighterResults(f);
  const ow=offline.filter(r=>(r.fighter_id===f.id?r.result:r.result==='W'?'L':r.result==='L'?'W':'D')==='W').length;
@@ -2718,45 +2736,29 @@ function ucsRenderDossierRecords(f){
  const heading=$('#ucsDossierRecordHeading');if(heading)heading.textContent=mode==='pro'?'FULL FIGHT RECORD':mode==='offline'?'UCS OFFLINE RECORD':mode==='open'?'UCS OPEN RECORD':'ALL UCS BOUTS';
  $$('#ucsDossierTabs [data-ucs-record-tab]').forEach(b=>{const active=b.dataset.ucsRecordTab===mode;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
  const entries=[];
- if(mode==='pro'||mode==='all')for(const r of pro){const won=r.winner_id===f.id,isNC=/^NC$|^NO CONTEST$/i.test(String(r.method||'')),opp=fighterById(won?r.loser_id:r.winner_id);entries.push({date:r.event_date,result:isNC?'NC':won?'W':'L',html:`<div class="profile-fight-row"><span class="result-pill ${isNC?'ucs-nc-result':won?'win':'loss'}">${isNC?'NC':won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind">PRO</b> ${esc(r.method||'Result')} · ${esc(fmtDate(r.event_date))}</small><small style="display:block"><img src="https://flagcdn.com/w40/gb.png" alt="UK flag" style="width:20px;height:14px;vertical-align:middle;margin-right:5px"> London, The O2 Arena</small>${won&&(r.is_good_win||r.is_big_win)?'<div class="ucs-good-win-tag">★ BIG WIN · RANKINGS BOOST</div>':''}</div></div>`});}
- if(mode==='offline'||mode==='all')for(const r of offline){const own=r.fighter_id===f.id,code=own?r.result:r.result==='W'?'L':r.result==='L'?'W':'D',opp=fighterById(own?r.opponent_id:r.fighter_id),venue=r.location||r.venue||"UCS Discord · Online";entries.push({date:r.event_date,result:code,html:`<div class="profile-fight-row"><span class="result-pill ${code='W'?'win':code==='L'?'loss':''}">${code}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind offline">OFFLINE</b> ${esc(r.method)} · ${esc(fmtDate(r.event_date))}</small><small>📍 ${esc(venue)} · ${esc(r.event_name||'Offline bout')}</small>${code==='W'&&r.is_good_win?'<div class="ucs-good-win-tag">★ BIG WIN · RANKINGS BOOST</div>':''}</div></div>`});}
+ if(mode==='pro'||mode==='all')for(const r of pro){const won=r.winner_id===f.id,isNC=/^NC$|^NO CONTEST$/i.test(String(r.method||'')),opp=fighterById(won?r.loser_id:r.winner_id);entries.push({date:r.event_date,opponentId:opp?.id,result:isNC?'NC':won?'W':'L',html:`<div class="profile-fight-row"><span class="result-pill ${isNC?'ucs-nc-result':won?'win':'loss'}">${isNC?'NC':won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind">PRO</b> ${esc(r.method||'Result')} · ${esc(fmtDate(r.event_date))}</small><small style="display:block"><img src="https://flagcdn.com/w40/gb.png" alt="UK flag" style="width:20px;height:14px;vertical-align:middle;margin-right:5px"> London, The O2 Arena</small>${won&&(r.is_good_win||r.is_big_win)?'<div class="ucs-good-win-tag">★ BIG WIN · RANKINGS BOOST</div>':''}</div></div>`});}
+ if(mode==='offline'||mode==='all')for(const r of offline){const own=r.fighter_id===f.id,code=own?r.result:r.result==='W'?'L':r.result==='L'?'W':'D',opp=fighterById(own?r.opponent_id:r.fighter_id),venue=r.location||r.venue||"UCS Discord · Online";entries.push({date:r.event_date,opponentId:opp?.id,result:code,html:`<div class="profile-fight-row"><span class="result-pill ${code='W'?'win':code==='L'?'loss':''}">${code}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind offline">OFFLINE</b> ${esc(r.method)} · ${esc(fmtDate(r.event_date))}</small><small>📍 ${esc(venue)} · ${esc(r.event_name||'Offline bout')}</small>${code==='W'&&r.is_good_win?'<div class="ucs-good-win-tag">★ BIG WIN · RANKINGS BOOST</div>':''}</div></div>`});}
  if(mode==='all')for(const r of state.ucsCompletedContractsByFighter?.[f.id]||[]){
   const opponentId=r.challenger_fighter_id===f.id?r.target_fighter_id:r.challenger_fighter_id;
   const opp=fighterById(opponentId),won=r.winner_fighter_id===f.id;
   const date=r.concluded_at||r.responded_at||r.created_at;
-  entries.push({date,result:won?'W':'L',html:`<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind offline">CONTRACT</b> ${esc(r.result_method||'Result')} · ${esc(fmtDate(date))}</small><small>📍 UCS Discord · Online · UCS Discord Contract Bout${r.title_belt_division?' · 🏆 '+esc(r.title_belt_division)+' CHAMPIONSHIP':''}</small>${won&&r.is_good_win?'<div class="ucs-good-win-tag">★ BIG WIN · RANKINGS BOOST</div>':''}</div></div>`});
+  entries.push({date,opponentId:opp?.id,result:won?'W':'L',html:`<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind offline">CONTRACT</b> ${esc(r.result_method||'Result')} · ${esc(fmtDate(date))}</small><small>📍 UCS Discord · Online · UCS Discord Contract Bout${r.title_belt_division?' · 🏆 '+esc(r.title_belt_division)+' CHAMPIONSHIP':''}</small>${won&&r.is_good_win?'<div class="ucs-good-win-tag">★ BIG WIN · RANKINGS BOOST</div>':''}</div></div>`});
  }
  if(mode==='open'||mode==='all')for(const r of ucsOpenResults().filter(r=>r.fighter_a_id===f.id||r.fighter_b_id===f.id)){
   const opponentId=r.fighter_a_id===f.id?r.fighter_b_id:r.fighter_a_id,opp=fighterById(opponentId);
   const code=r.result==='NC'?'NC':r.result==='D'?'D':r.winner_id===f.id?'W':'L';
   entries.push({date:r.event_date,html:`<div class="profile-fight-row"><span class="result-pill ${code==='W'?'win':code==='L'?'loss':code==='NC'?'ucs-nc-result':''}">${code}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind">UCS OPEN</b> ${esc(r.method||'Open rules')} · ${esc(fmtDate(r.event_date))}</small><small>Independent division · No standard UCS restrictions</small></div></div>`});
  }
- // Reconstruct the record BEFORE each bout. Official PRO totals may contain
- // older bouts missing from the results feed, so retain that opening balance.
- entries.sort((x,y)=>String(x.date||'').localeCompare(String(y.date||'')));
- const proCounts={W:0,L:0,D:0};
- for(const r of pro){
-  const result=/^NC$|^NO CONTEST$/i.test(String(r.method||''))?'NC':r.winner_id===f.id?'W':'L';
-  if(proCounts[result]!==undefined)proCounts[result]++;
- }
- const baseline=(mode==='pro'||mode==='all')?{
-  W:Math.max(0,pw-proCounts.W),L:Math.max(0,pl-proCounts.L),D:Math.max(0,pd-proCounts.D)
- }:{W:0,L:0,D:0};
- const historyRecord={...baseline};
- const hasEarlierUnlisted=Object.values(baseline).some(n=>n>0);
- entries.forEach((entry,index)=>{
-  const result=String(entry.result||'').toUpperCase();
-  const before=historyRecord.W+'-'+historyRecord.L+'-'+historyRecord.D;
-  const debut=index===0&&!hasEarlierUnlisted&&historyRecord.W+historyRecord.L+historyRecord.D===0;
+ // Display the OPPONENT'S pre-fight record, never the viewed fighter's.
+ entries.sort((x,y)=>String(y.date||'').localeCompare(String(x.date||'')));
+ entries.forEach(entry=>{
+  const prior=ucsOpponentPreFightRecord(entry.opponentId,entry.date);
+  if(!prior)return;
   const label='<div class="ucs-historical-record" style="font-size:11px;color:#e8c98a;font-weight:800;margin-top:5px">'+
-    (debut?'<span style="color:#f3a83d;margin-right:10px">★ DEBUT</span>':'')+
-    '<span>RECORD BEFORE FIGHT: '+before+'</span></div>';
-  const closing='</div></div>';
-  const last=entry.html.lastIndexOf(closing);
+   (prior.debut?'<span style="color:#f3a83d">★ DEBUT</span>':'<span>'+esc(prior.text)+'</span>')+'</div>';
+  const closing='</div></div>',last=entry.html.lastIndexOf(closing);
   if(last>=0)entry.html=entry.html.slice(0,last)+label+entry.html.slice(last);
-  if(historyRecord[result]!==undefined)historyRecord[result]++;
  });
- entries.reverse();
  const root=$('#profileFightHistory');if(root)root.innerHTML=entries.length?entries.slice(0,50).map(x=>x.html).join(''):empty('No recorded bouts yet.');
 }
 $('#ucsDossierTabs')?.addEventListener('click',e=>{const b=e.target.closest('[data-ucs-record-tab]');if(!b||!state.ucsCurrentProfile)return;state.ucsRecordTab=b.dataset.ucsRecordTab;const f=fighterById(state.ucsCurrentProfile);if(f)ucsRenderDossierRecords(f);});
