@@ -13,7 +13,9 @@
   <link rel="stylesheet" href="styles.css?v=ucs-tournament-bracket-20261107b" />
 <style>.result-pill.ucs-nc-result{background:#2563eb!important;color:#fff!important;border-color:#3b82f6!important}</style>
 <style>#recentResults .mini-badge.ucs-nc-result{background:#2563eb!important;color:#fff!important;font-size:10px}</style>
-</head>
+<style>
+#ucsProfileBoutBanners:empty{display:none}.ucs-bout-history-title{font-size:28px;color:#f12d52;text-align:center;font-weight:950;font-style:italic;margin:20px 0 28px}.ucs-profile-banner-card{position:relative;overflow:hidden;min-height:230px;margin-bottom:14px;background:#111;border:1px solid #333}.ucs-profile-banner-card img{width:100%;height:260px;object-fit:cover;display:block}.ucs-profile-banner-loser{position:absolute;right:0;top:0;bottom:0;width:42%;backdrop-filter:grayscale(1) brightness(.52);-webkit-backdrop-filter:grayscale(1) brightness(.52);pointer-events:none}.ucs-profile-banner-caption{position:absolute;left:0;right:0;bottom:0;padding:40px 20px 18px;background:linear-gradient(transparent,rgba(0,0,0,.93));text-align:center;color:#fff;text-shadow:0 2px 8px #000}.ucs-profile-banner-caption strong{font-size:25px;font-style:italic}.ucs-profile-banner-caption small{display:block;color:#ddd;font-size:12px;margin-top:6px}.ucs-profile-banner-win{color:#ffcf6e;font-size:12px;font-weight:900;display:block;margin-top:7px}
+</style></head>
 <body>
 
   <header class="topbar">
@@ -435,7 +437,7 @@
           <button type="button" class="ucs-admin-tab" id="adminEventHeroTab" role="tab" aria-controls="adminEventHeroPanel" aria-selected="false">EVENT POSTER & COUNTDOWN</button>
           <button type="button" class="ucs-admin-tab" id="adminNewsTab" role="tab" aria-controls="adminNewsPanel" aria-selected="false">NEWS EDITOR</button>
         </div>
-        <section id="adminContractFightsPanel" role="tabpanel" aria-labelledby="adminContractFightsTab" class="hidden" aria-hidden="true" style="padding:22px 0"><h2>🏆 CONTRACT FIGHTS</h2><p>Manage the championship on the line for any accepted Discord contract. Past and cancelled contracts are shown for reference. This does not change official champions or records.</p><div id="ucsAdminContractFightsList" style="display:grid;gap:14px;margin-top:18px">Open this tab to load contracts.</div></section>
+        <section id="ucsProfileBannerAdmin" style="padding:20px;margin:18px 0;border:1px solid #45414a;border-radius:10px"><h3>PROFILE BOUT HISTORY BANNERS</h3><p>Upload a 16:9 fight banner for a completed PRO bout. The defeated fighter is dimmed on the right side of the banner.</p><form id="ucsProfileBannerForm"><label>Completed PRO fight <select id="ucsProfileBannerFight" required style="width:100%;padding:12px;margin:8px 0"></select></label><label>Banner image (JPG, PNG or WebP, up to 10MB)<input id="ucsProfileBannerFile" type="file" accept="image/jpeg,image/png,image/webp" required style="display:block;margin:12px 0"></label><button type="submit" class="mini-action">UPLOAD FIGHT BANNER</button></form><div id="ucsProfileBannerFeedback" aria-live="polite"></div></section><section id="adminContractFightsPanel" role="tabpanel" aria-labelledby="adminContractFightsTab" class="hidden" aria-hidden="true" style="padding:22px 0"><h2>🏆 CONTRACT FIGHTS</h2><p>Manage the championship on the line for any accepted Discord contract. Past and cancelled contracts are shown for reference. This does not change official champions or records.</p><div id="ucsAdminContractFightsList" style="display:grid;gap:14px;margin-top:18px">Open this tab to load contracts.</div></section>
         <div id="adminOperationsPanel" role="tabpanel" aria-labelledby="adminOperationsTab">
         <div class="admin-toolbar">
           <strong>UCS LEAGUE OPERATIONS</strong>
@@ -829,7 +831,7 @@
       </section>
 
       <section class="profile-history"><div class="profile-section-title"><span>UPCOMING FIGHTS</span></div><div id="profileUpcomingFights"></div></section>
-      <div class="ucs-reference-results"><section class="profile-history"><div class="profile-section-title"><span>PREVIOUS FIGHTS</span></div><div id="profileFightHistory"></div></section><aside class="ucs-ko-panel"><h3>KNOCKOUT PRESSURE</h3><div id="profileKnockoutPressure" class="ucs-ko-number">—</div><div class="ucs-ko-track"><span id="profileKnockoutFill" style="width:0%"></span></div><p id="profileKnockoutDescription">Official UCS results only.</p></aside></div>
+      <section class="ucs-profile-banners" id="ucsProfileBoutBanners" style="margin-top:35px"></section><div class="ucs-reference-results"><section class="profile-history"><div class="profile-section-title"><span>PREVIOUS FIGHTS</span></div><div id="profileFightHistory"></div></section><aside class="ucs-ko-panel"><h3>KNOCKOUT PRESSURE</h3><div id="profileKnockoutPressure" class="ucs-ko-number">—</div><div class="ucs-ko-track"><span id="profileKnockoutFill" style="width:0%"></span></div><p id="profileKnockoutDescription">Official UCS results only.</p></aside></div>
     </article>
   </div>
 
