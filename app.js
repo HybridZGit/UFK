@@ -2834,24 +2834,45 @@ function ucsRenderChampionPredictions(f){
  const root=$('#ucsChampionPredictions');if(!root)return;
  const champions=[...new Map((state.champions||[]).filter(c=>c.fighter_id&&c.fighter_id!==f.id&&fighterById(c.fighter_id)).map(c=>[c.fighter_id,c])).values()];
  if(!champions.length){root.innerHTML='<p style="color:#bdb7c7">No other current UCS champions available for comparison.</p>';return;}
- const strength=x=>{
-  const w=Math.max(0,Number(x.wins)||0),l=Math.max(0,Number(x.losses)||0),d=Math.max(0,Number(x.draws)||0);
-  const total=w+l+d;
-  return total?((w+0.5*d+2)/(total+4)):0.5;
+ const results=(state.results||[]).filter(r=>r.winner_id&&r.loser_id&&!/^NC$|^NO CONTEST$/i.test(String(r.method||'')));
+ const rating=id=>{
+  const fighter=fighterById(id);
+  const w=Math.max(0,Number(fighter?.wins)||0),l=Math.max(0,Number(fighter?.losses)||0),d=Math.max(0,Number(fighter?.draws)||0);
+  return (w+0.5*d+2)/(w+l+d+4);
  };
+ const performance=id=>{
+  const fighter=fighterById(id);
+  const w=Math.max(0,Number(fighter?.wins)||0),l=Math.max(0,Number(fighter?.losses)||0),d=Math.max(0,Number(fighter?.draws)||0);
+  const bouts=results.filter(r=>r.winner_id===id||r.loser_id===id).slice().sort((a,b)=>String(b.event_date||'').localeCompare(String(a.event_date||'')));
+  const recent=bouts.slice(0,6);
+  // Smoothed career form, recent momentum and strength of beaten opponents.
+  const career=(w+0.5*d+2)/(w+l+d+4);
+  const momentum=recent.length?(recent.filter(r=>r.winner_id===id).length+1)/(recent.length+2):career;
+  const victories=recent.filter(r=>r.winner_id===id);
+  const opponentQuality=victories.length?victories.reduce((sum,r)=>sum+rating(r.loser_id),0)/victories.length:0.5;
+  const stoppageRate=victories.length?victories.filter(r=>/KO|TKO|KNOCKOUT/i.test(String(r.method||''))).length/victories.length:0;
+  const score=0.25*career+0.45*momentum+0.22*opponentQuality+0.08*stoppageRate;
+  return {score,recentWins:victories.length,recentCount:recent.length};
+ };
+ const a=performance(f.id);
  root.innerHTML=champions.map(c=>{
-  const champ=fighterById(c.fighter_id);
-  const a=strength(f),b=strength(champ);
-  const probability=Math.max(15,Math.min(85,Math.round(100*a/(a+b))));
-  const likely=probability>50?'LIKELY TO BEAT':probability<50?'LIKELY TO LOSE':'TOO CLOSE TO CALL';
-  const color=probability>50?'#45d69a':probability<50?'#ff7185':'#f3c15b';
+  const champ=fighterById(c.fighter_id),b=performance(champ.id);
+  const direct=results.filter(r=>(r.winner_id===f.id&&r.loser_id===champ.id)||(r.winner_id===champ.id&&r.loser_id===f.id));
+  const directWins=direct.filter(r=>r.winner_id===f.id).length,directLosses=direct.length-directWins;
+  // Head-to-head matters, but recent form can outweigh an old loss.
+  const headToHead=direct.length?Math.max(-0.035,Math.min(0.035,(directWins-directLosses)*0.035)):0;
+  const difference=a.score-b.score+headToHead;
+  const index=Math.max(20,Math.min(80,Math.round(50+difference*110)));
+  const likely=index>=53?'LIKELY TO BEAT':index<=47?'LIKELY TO LOSE':'TOO CLOSE TO CALL';
+  const color=index>=53?'#45d69a':index<=47?'#ff7185':'#f3c15b';
   return '<article style="flex:0 0 min(300px,82vw);scroll-snap-align:start;border:1px solid #39333d;border-radius:12px;background:#15131b;padding:18px;min-height:190px">'+
    '<div style="color:#f3c15b;font-size:11px;font-weight:900">VS UCS CHAMPION</div>'+
    '<h4 style="font-size:19px;margin:12px 0">'+esc(f.name)+' <span style="color:#ff345b">VS</span> '+esc(champ.name)+'</h4>'+
    '<div style="font-size:11px;color:#bbb">PRO RECORDS: '+esc(record(f))+' / '+esc(record(champ))+'</div>'+
    '<div style="margin-top:17px;color:'+color+';font-weight:900">'+likely+'</div>'+
-   '<div style="margin-top:5px;font-size:12px;color:#c4bdc8">Estimated chance for '+esc(f.name)+': '+probability+'%</div>'+
-   '<div style="height:6px;border-radius:5px;background:#36303a;margin-top:10px;overflow:hidden"><div style="width:'+probability+'%;height:100%;background:'+color+'"></div></div>'+
+   '<div style="margin-top:5px;font-size:12px;color:#c4bdc8">Form-based matchup index for '+esc(f.name)+': '+index+'/100</div>'+
+   '<div style="margin-top:6px;font-size:11px;color:#a9a3b3">Recent PRO wins: '+a.recentWins+'/'+a.recentCount+' vs '+b.recentWins+'/'+b.recentCount+(direct.length?' · H2H '+directWins+'-'+directLosses:'')+'</div>'+
+   '<div style="height:6px;border-radius:5px;background:#36303a;margin-top:10px;overflow:hidden"><div style="width:'+index+'%;height:100%;background:'+color+'"></div></div>'+
    '</article>';
  }).join('');
 }
