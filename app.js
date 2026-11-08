@@ -2830,6 +2830,33 @@ async function ucsSavePoster(e,upcoming){
 }
 $('#ucsUpcomingPosterForm')?.addEventListener('submit',e=>ucsSavePoster(e,true));
 $('#ucsProfileBannerForm')?.addEventListener('submit',e=>ucsSavePoster(e,false));
+function ucsRenderChampionPredictions(f){
+ const root=$('#ucsChampionPredictions');if(!root)return;
+ const champions=[...new Map((state.champions||[]).filter(c=>c.fighter_id&&c.fighter_id!==f.id&&fighterById(c.fighter_id)).map(c=>[c.fighter_id,c])).values()];
+ if(!champions.length){root.innerHTML='<p style="color:#bdb7c7">No other current UCS champions available for comparison.</p>';return;}
+ const strength=x=>{
+  const w=Math.max(0,Number(x.wins)||0),l=Math.max(0,Number(x.losses)||0),d=Math.max(0,Number(x.draws)||0);
+  const total=w+l+d;
+  return total?((w+0.5*d+2)/(total+4)):0.5;
+ };
+ root.innerHTML=champions.map(c=>{
+  const champ=fighterById(c.fighter_id);
+  const a=strength(f),b=strength(champ);
+  const probability=Math.max(15,Math.min(85,Math.round(100*a/(a+b))));
+  const likely=probability>50?'LIKELY TO BEAT':probability<50?'LIKELY TO LOSE':'TOO CLOSE TO CALL';
+  const color=probability>50?'#45d69a':probability<50?'#ff7185':'#f3c15b';
+  return '<article style="flex:0 0 min(300px,82vw);scroll-snap-align:start;border:1px solid #39333d;border-radius:12px;background:#15131b;padding:18px;min-height:190px">'+
+   '<div style="color:#f3c15b;font-size:11px;font-weight:900">VS UCS CHAMPION</div>'+
+   '<h4 style="font-size:19px;margin:12px 0">'+esc(f.name)+' <span style="color:#ff345b">VS</span> '+esc(champ.name)+'</h4>'+
+   '<div style="font-size:11px;color:#bbb">PRO RECORDS: '+esc(record(f))+' / '+esc(record(champ))+'</div>'+
+   '<div style="margin-top:17px;color:'+color+';font-weight:900">'+likely+'</div>'+
+   '<div style="margin-top:5px;font-size:12px;color:#c4bdc8">Estimated chance for '+esc(f.name)+': '+probability+'%</div>'+
+   '<div style="height:6px;border-radius:5px;background:#36303a;margin-top:10px;overflow:hidden"><div style="width:'+probability+'%;height:100%;background:'+color+'"></div></div>'+
+   '</article>';
+ }).join('');
+}
+$('#ucsChampionScrollLeft')?.addEventListener('click',()=>$('#ucsChampionPredictions')?.scrollBy({left:-320,behavior:'smooth'}));
+$('#ucsChampionScrollRight')?.addEventListener('click',()=>$('#ucsChampionPredictions')?.scrollBy({left:320,behavior:'smooth'}));
 function ucsRenderMatchupsPage(){
  const select=$('#ucsMatchupFighterSelect');if(!select)return;
  const old=select.value;
@@ -2842,6 +2869,7 @@ function ucsRenderMatchupsPage(){
 function ucsUpdateMatchupsSelection(){
  const f=fighterById($('#ucsMatchupFighterSelect')?.value);if(!f)return;
  ucsRenderCommonOpponentMatchups(f);
+ ucsRenderChampionPredictions(f);
  const note=$('#ucsMatchupEditorial');if(!note)return;
  note.innerHTML='<article class="ucs-common-card"><div class="ucs-common-head">UPCOMING FIGHTS</div><p style="margin:0;color:#c9c4d0;font-size:13px">Upcoming matchups have no results yet. Performance comparisons below use completed fights against shared opponents only.</p></article>';
 }
