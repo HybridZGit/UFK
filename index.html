@@ -325,7 +325,7 @@
 <p>Find a fight by its name or @fighter. Select a video to watch.</p>
 <div class="ucs-rp-search"><input id="ucsReplaySearch" type="search" placeholder="Search @fighter or fight name" aria-label="Search replays"><select id="ucsReplayFilter" aria-label="Filter by fighter"><option value="">All fighters</option></select></div>
 <p id="ucsReplayStatus" role="status"></p><div id="ucsReplayCards" class="ucs-rp-grid"></div>
-<div id="ucsReplayPlayer" class="hidden ucs-rp-player"><button type="button" class="btn outline" id="ucsReplayBack">← ALL REPLAYS</button><h3 id="ucsReplayTitlePlaying"></h3><p id="ucsReplayMetaPlaying"></p><div class="ucs-rp-share-actions"><button type="button" id="ucsReplayCopyLink" class="btn outline">🔗 COPY REPLAY LINK</button><button type="button" id="ucsReplayCopyVideo" class="btn outline">▶ COPY VIDEO LINK</button></div><p id="ucsReplayShareStatus" role="status"></p><video id="ucsReplayVideo" controls playsinline preload="metadata" style="width:100%;max-height:75vh;background:#000"></video></div>
+<div id="ucsReplayPlayer" class="hidden ucs-rp-player"><button type="button" class="btn outline" id="ucsReplayBack">← ALL REPLAYS</button><h3 id="ucsReplayTitlePlaying"></h3><p id="ucsReplayMetaPlaying"></p><div id="ucsReplayFightDetails"></div><div class="ucs-rp-share-actions"><button type="button" id="ucsReplayCopyLink" class="btn outline">🔗 COPY REPLAY LINK</button><button type="button" id="ucsReplayCopyVideo" class="btn outline">▶ COPY VIDEO LINK</button></div><p id="ucsReplayShareStatus" role="status"></p><video id="ucsReplayVideo" controls playsinline preload="metadata" style="width:100%;max-height:75vh;background:#000"></video></div>
 </section><section class="page shell section-space ucs-events-page" id="events">
       <div class="section-kicker">OFFICIAL UCS EVENTS</div><div class="section-title-row"><h2>UCS <em>EVENTS</em></h2></div>
       <div id="ucsEventsGrid" class="ucs-events-grid"><div class="data-empty">Loading UCS events…</div></div><section id="ucsEventResultsDetail" class="ucs-event-results-detail hidden" aria-live="polite"></section>
@@ -459,6 +459,9 @@
 <label>FIGHT NAME<input id="ucsReplayFightName" required maxlength="180" placeholder="RAFA vs HYMAS — UCS #001"></label>
 <div class="ucs-rp-cols"><label>FIGHTER 1 (@TAG)<select id="ucsReplayTagA" required></select></label><label>FIGHTER 2 (@TAG)<select id="ucsReplayTagB" required></select></label></div>
 <div class="ucs-rp-cols"><label>EVENT<input id="ucsReplayEvent" maxlength="180" placeholder="UCS #001 Legacy Series"></label><label>FIGHT DATE<input id="ucsReplayFightDate" type="date"></label></div>
+<div class="ucs-rp-cols"><label>FIGHT TYPE<select id="ucsReplayBoutType"><option value="regular">REGULAR FIGHT</option><option value="main_event">MAIN EVENT</option><option value="title_fight">CHAMPIONSHIP / TITLE FIGHT</option></select></label><label>CHAMPIONSHIP / TITLE NAME<input id="ucsReplayChampionship" maxlength="160" placeholder="UCS WORLD CHAMPIONSHIP"></label></div>
+<div class="ucs-rp-cols"><label>WEIGHT CLASS<input id="ucsReplayWeightClass" maxlength="80" placeholder="Heavyweight"></label><label>SCHEDULED ROUNDS<input id="ucsReplayRounds" type="number" min="1" max="30" placeholder="12"></label></div>
+<label>FIGHT DESCRIPTION / STAKES<textarea id="ucsReplayNotes" rows="3" maxlength="1500" placeholder="UCS World Championship on the line — defending champion vs challenger..."></textarea></label>
 <label>VIDEO (MP4, WEBM, MOV — UP TO 50 MB)<input id="ucsReplayUploadFile" type="file" accept="video/mp4,video/webm,video/quicktime,.mov" required></label>
 <label class="ucs-rp-check"><input id="ucsReplayPublish" type="checkbox" checked> Publish video</label>
 <button class="btn primary" type="submit" id="ucsReplaySubmit">UPLOAD REPLAY</button><p id="ucsReplayUploadMessage" role="status"></p>
@@ -918,7 +921,7 @@
   <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=ucs-faceoff-rebalanced-20261108"></script><script src="replays.js?v=3" defer></script>
+  <script src="app.js?v=ucs-faceoff-rebalanced-20261108"></script><script src="replays.js?v=4" defer></script>
 <section id="ucsContractFights" class="shell" style="padding:30px 0 16px"><h2 style="margin-bottom:8px">🏆 CONTRACT FIGHTS</h2><p style="opacity:.75">Open a Discord contract to see its matchup and title-fight status. UCS admins can optionally put a championship belt on an accepted contract.</p><div id="ucsContractFightCards" style="display:grid;gap:12px"><p>Loading contract fights…</p></div></section>
 <section id="ucsDiscordContractsBoard" class="shell" style="padding:32px 0 50px"><h2>🥊 CONTRACT ACTIVITY</h2><p style="opacity:.75">Discord challenges, acceptances, declines, contract channels, cancellations and results. Contract results do not alter official rankings.</p><div id="ucsDiscordContractRows" style="display:grid;gap:12px">Loading contract activity…</div></section>
 <script>
