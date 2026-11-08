@@ -17,9 +17,7 @@
 #ucsProfileBoutBanners:empty{display:none}.ucs-bout-history-title{font-size:28px;color:#f12d52;text-align:center;font-weight:950;font-style:italic;margin:20px 0 28px}.ucs-profile-banner-card{position:relative;overflow:hidden;min-height:230px;margin-bottom:14px;background:#111;border:1px solid #333}.ucs-profile-banner-card img{width:100%;height:260px;object-fit:cover;display:block}.ucs-profile-banner-loser{position:absolute;right:0;top:0;bottom:0;width:42%;backdrop-filter:grayscale(1) brightness(.52);-webkit-backdrop-filter:grayscale(1) brightness(.52);pointer-events:none}.ucs-profile-banner-caption{position:absolute;left:0;right:0;bottom:0;padding:40px 20px 18px;background:linear-gradient(transparent,rgba(0,0,0,.93));text-align:center;color:#fff;text-shadow:0 2px 8px #000}.ucs-profile-banner-caption strong{font-size:25px;font-style:italic}.ucs-profile-banner-caption small{display:block;color:#ddd;font-size:12px;margin-top:6px}.ucs-profile-banner-win{color:#ffcf6e;font-size:12px;font-weight:900;display:block;margin-top:7px}
 </style><style>
 #ucsCommonOpponentMatchups:empty{display:none}.ucs-common-card{border:1px solid #34313d;border-radius:9px;padding:15px;margin:10px 0;background:#13131b}.ucs-common-head{font-weight:900;color:#f5c574;font-size:13px;margin-bottom:12px}.ucs-common-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ucs-common-side{padding:12px;border:1px solid #34313d;border-radius:7px;min-width:0}.ucs-common-side strong{display:block;font-size:14px;overflow-wrap:anywhere}.ucs-common-side small{display:block;color:#b6b2c0;margin-top:6px}.ucs-common-better{border-color:#15965d;background:#0b251b}.ucs-common-verdict{font-size:11px;font-weight:900;color:#f2c36e;margin-top:10px}.ucs-common-note{font-size:11px;color:#a8a5b1;margin-top:12px}
-</style><style>
-.ucs-replay-search{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}.ucs-replay-search input,.ucs-replay-search select,.ucs-replay-admin input,.ucs-replay-admin select{background:#17151c;border:1px solid #49404d;border-radius:7px;color:#fff;padding:12px;min-width:0}.ucs-replay-search input{flex:2;min-width:200px}.ucs-replay-search select{flex:1;min-width:170px}.ucs-replay-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}.ucs-replay-card{background:#15141a;border:1px solid #3b343f;border-radius:10px;padding:20px;text-align:left;color:#fff;cursor:pointer}.ucs-replay-card:hover,.ucs-replay-card:focus-visible{border-color:#ed174c}.ucs-replay-card strong{display:block;font-size:19px;margin:10px 0}.ucs-replay-card small{color:#bcb2c0}.ucs-replay-play{display:inline-block;color:#ff2d59;font-weight:900;margin-top:14px}.ucs-replay-player{margin-top:25px;padding:20px;background:#15131a;border:1px solid #49404d;border-radius:12px}.ucs-replay-player.hidden{display:none}.ucs-replay-admin{padding:22px;border:1px solid #a53151;border-radius:12px;margin:15px 0 25px;background:#171017}.ucs-replay-admin form{display:grid;gap:15px}.ucs-replay-admin label{display:grid;gap:7px;font-size:12px;font-weight:800}.ucs-replay-admin label input,.ucs-replay-admin label select{width:100%}.ucs-replay-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ucs-replay-admin .ucs-replay-check{display:flex;align-items:center}.ucs-replay-admin .ucs-replay-check input{width:auto}.ucs-profile-replay-section button{margin:8px 8px 8px 0}.ucs-replay-admin-row{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:12px 0;border-bottom:1px solid #41333b}@media(max-width:600px){.ucs-replay-form-grid{grid-template-columns:1fr}}
-</style></head>
+</style></style></head>
 <body>
 
   <header class="topbar">
@@ -34,7 +32,7 @@
       <a href="#rankings" data-page="rankings">Rankings</a><a href="#matchups" data-page="matchups">Matchups</a><a href="#titles" data-page="titles">Titles</a><a href="#community" data-page="community">Community</a>
       <a href="#betting" data-page="betting">Betting</a>
       <a href="#fights" data-page="fights">Fights</a>
-      <a href="#events" data-page="events">Events</a><a href="#replays" data-page="replays">FIGHT REPLAYS</a><a href="#tournaments" data-page="tournaments">Tournaments</a>
+      <a href="#events" data-page="events">Events</a><a href="#tournaments" data-page="tournaments">Tournaments</a>
       <a href="#watch" data-page="watch">WATCH LIVE</a>
       <a href="#news" data-page="news">News</a>
       <a href="#photography" data-page="photography">Photography</a>
@@ -320,14 +318,7 @@
       <p class="ucs-tournament-intro">Live Discord signups, official seeds, knockout brackets and tournament champions. Join through the reaction signup posted by UCS staff.</p>
       <div id="ucsTournamentBoard" aria-live="polite"><div class="data-empty">No tournament announced yet.</div></div>
     </section>
-    <section class="page shell section-space" id="replays">
- <div class="section-kicker">UCS VIDEO ARCHIVE</div><div class="section-title-row"><h2>FIGHT <em>REPLAYS</em></h2></div>
- <p>Watch recorded UCS fights. Search by fighter name or fight title.</p>
- <div class="ucs-replay-search"><input id="ucsReplaySearch" type="search" placeholder="Search fighter @name or fight title" aria-label="Search fight replays"><select id="ucsReplayFighter" aria-label="Filter replays by fighter"><option value="">ALL FIGHTERS</option></select></div>
- <div id="ucsReplayGrid" class="ucs-replay-grid"></div>
- <section id="ucsReplayPlayerPanel" class="ucs-replay-player hidden" aria-live="polite"><button id="ucsReplayClose" class="btn outline" type="button">← BACK TO REPLAYS</button><h3 id="ucsReplayPlayingTitle"></h3><video id="ucsReplayVideo" controls playsinline preload="metadata" controlsList="nodownload" style="width:100%;background:#000;max-height:70vh;border-radius:12px"></video><p id="ucsReplayPlayingMeta"></p></section>
-</section>
-<section class="page shell section-space ucs-events-page" id="events">
+    <section class="page shell section-space ucs-events-page" id="events">
       <div class="section-kicker">OFFICIAL UCS EVENTS</div><div class="section-title-row"><h2>UCS <em>EVENTS</em></h2></div>
       <div id="ucsEventsGrid" class="ucs-events-grid"><div class="data-empty">Loading UCS events…</div></div><section id="ucsEventResultsDetail" class="ucs-event-results-detail hidden" aria-live="polite"></section>
     </section>
@@ -454,20 +445,7 @@
 
       <div id="adminLocked" class="admin-locked">Sign in with an account marked as an admin in Supabase to unlock league controls.</div>
 
-      <div id="adminControls" class="hidden"><section id="ucsReplayAdmin" class="ucs-replay-admin">
- <h3>FIGHT REPLAY MANAGER</h3><p>Name a fight, tag both fighters and upload its video. Published replays appear in the public library and on both fighter profiles.</p>
- <form id="ucsReplayUploadForm">
- <label>FIGHT NAME<input id="ucsReplayTitle" required maxlength="180" placeholder="RAFA vs HYMAS — UCS World Championship"></label>
- <div class="ucs-replay-form-grid"><label>FIGHTER 1 (@TAG)<select id="ucsReplayFighterA" required></select></label><label>FIGHTER 2 (@TAG)<select id="ucsReplayFighterB" required></select></label></div>
- <div class="ucs-replay-form-grid"><label>EVENT NAME<input id="ucsReplayEventName" maxlength="180" placeholder="UCS #001 Legacy Series"></label><label>FIGHT DATE<input id="ucsReplayDate" type="date"></label></div>
- <label>UPLOAD VIDEO (MP4, WEBM, MOV — max 50 MB)<input id="ucsReplayFile" type="file" accept="video/mp4,video/webm,video/quicktime,.mov" required></label>
- <label class="ucs-replay-check"><input id="ucsReplayPublished" type="checkbox" checked> PUBLISH REPLAY</label>
- <button class="btn primary" type="submit" id="ucsReplayUploadBtn">UPLOAD FIGHT REPLAY</button>
- <div id="ucsReplayUploadStatus" role="status" aria-live="polite"></div>
- </form>
- <h4>UPLOADED FIGHTS</h4><div id="ucsReplayAdminList"></div>
-</section>
-        <form id="ucsOfflineChampionForm" class="hidden" style="padding:20px;margin:14px 0;border:1px solid #4a3038;border-radius:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:end">
+      <div id="adminControls" class="hidden"><form id="ucsOfflineChampionForm" class="hidden" style="padding:20px;margin:14px 0;border:1px solid #4a3038;border-radius:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:end">
           <label style="display:grid;gap:8px">UCS OFFLINE CHAMPION<select id="ucsOfflineChampionSelect" style="min-width:220px;padding:10px"><option value="">VACANT</option></select></label>
           <button class="btn primary" type="submit">SAVE OFFLINE CHAMPION</button>
         </form>
@@ -872,7 +850,6 @@
         
       </section>
 
-      <section class="profile-history ucs-profile-replay-section"><div class="profile-section-title"><span>WATCH FIGHTS</span></div><div id="ucsProfileReplayList"></div><button id="ucsProfileAllReplays" type="button" class="btn outline">WATCH ALL FIGHTS →</button></section>
       <section class="profile-history"><div class="profile-section-title"><span>UPCOMING FIGHTS</span></div><div id="profileUpcomingFights"></div></section>
       <div class="ucs-reference-results"><section class="profile-history"><div class="profile-section-title"><span>PREVIOUS FIGHTS</span></div><div id="profileFightHistory"></div></section><aside class="ucs-ko-panel"><h3>KNOCKOUT PRESSURE</h3><div id="profileKnockoutPressure" class="ucs-ko-number">—</div><div class="ucs-ko-track"><span id="profileKnockoutFill" style="width:0%"></span></div><p id="profileKnockoutDescription">Official UCS results only.</p></aside></div>
       
@@ -924,7 +901,7 @@
   <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=ucs-fight-replays-20261108"></script>
+  <script src="app.js?v=ucs-faceoff-rebalanced-20261108"></script>
 <section id="ucsContractFights" class="shell" style="padding:30px 0 16px"><h2 style="margin-bottom:8px">🏆 CONTRACT FIGHTS</h2><p style="opacity:.75">Open a Discord contract to see its matchup and title-fight status. UCS admins can optionally put a championship belt on an accepted contract.</p><div id="ucsContractFightCards" style="display:grid;gap:12px"><p>Loading contract fights…</p></div></section>
 <section id="ucsDiscordContractsBoard" class="shell" style="padding:32px 0 50px"><h2>🥊 CONTRACT ACTIVITY</h2><p style="opacity:.75">Discord challenges, acceptances, declines, contract channels, cancellations and results. Contract results do not alter official rankings.</p><div id="ucsDiscordContractRows" style="display:grid;gap:12px">Loading contract activity…</div></section>
 <script>
