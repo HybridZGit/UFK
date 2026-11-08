@@ -2843,8 +2843,7 @@ function ucsUpdateMatchupsSelection(){
  const f=fighterById($('#ucsMatchupFighterSelect')?.value);if(!f)return;
  ucsRenderCommonOpponentMatchups(f);
  const note=$('#ucsMatchupEditorial');if(!note)return;
- const hymas=String(f.name).toLowerCase()==='hymas',rafa=String(f.name).toLowerCase()==='rafa';
- note.innerHTML=hymas||rafa?'<article class="ucs-common-card"><div class="ucs-common-head">HYMAS VS RAFA — PERFORMANCE CONTEXT</div><div class="ucs-common-grid"><div class="ucs-common-side"><strong>HYMAS</strong><small>Late knockout · reportedly won every round</small></div><div class="ucs-common-side"><strong>RAFA</strong><small>Early knockout · reportedly behind on rounds</small></div></div><p class="ucs-common-note">Round-by-round details are supplied by UCS staff and have not been independently verified. An early KO does not automatically mean a better overall performance.</p></article>':'';
+ note.innerHTML='<article class="ucs-common-card"><div class="ucs-common-head">UPCOMING FIGHTS</div><p style="margin:0;color:#c9c4d0;font-size:13px">Upcoming matchups have no results yet. Performance comparisons below use completed fights against shared opponents only.</p></article>';
 }
 $('#ucsMatchupFighterSelect')?.addEventListener('change',ucsUpdateMatchupsSelection);
 function ucsRenderCommonOpponentMatchups(f){
