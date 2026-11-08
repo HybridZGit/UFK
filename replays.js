@@ -40,10 +40,10 @@ function openReplay(id,updateHash=true){
  const player=$('#ucsReplayPlayer'),video=$('#ucsReplayVideo');if(!player||!video)return;
  closePlayer();$('#ucsReplayTitlePlaying').textContent=r.title;$('#ucsReplayMetaPlaying').textContent=[name(r.fighter_a_id)+' vs '+name(r.fighter_b_id),r.event_name,date(r)].filter(Boolean).join(' · ');const details=$('#ucsReplayFightDetails');if(details){details.textContent=boutDescription(r);details.style.cssText='font-weight:800;color:#f2c266;margin:12px 0;white-space:pre-wrap';}
  if(!/^https:\/\//i.test(r.video_url)){status('Video URL is invalid');return;}
- const id=driveId(r.video_url),frame=$('#ucsReplayDriveFrame');
+ const driveFileId=driveId(r.video_url),frame=$('#ucsReplayDriveFrame');
  activeReplay=r;
- if(id&&frame){
-  video.classList.add('hidden');frame.src='https://drive.google.com/file/d/'+encodeURIComponent(id)+'/preview';
+ if(driveFileId&&frame){
+  video.classList.add('hidden');frame.src='https://drive.google.com/file/d/'+encodeURIComponent(driveFileId)+'/preview';
   frame.classList.remove('hidden');
   shareStatus('Google Drive video: make sure sharing is set to Anyone with the link → Viewer.');
  }else{
