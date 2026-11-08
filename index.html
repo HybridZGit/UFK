@@ -29,7 +29,7 @@
     <button class="menu-btn" id="menuBtn" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav">☰ <span>MENU</span></button>
     <nav id="nav">
       <a class="active" href="#home" data-page="home">Home</a>
-      <a href="#rankings" data-page="rankings">Rankings</a><a href="#titles" data-page="titles">Titles</a><a href="#community" data-page="community">Community</a>
+      <a href="#rankings" data-page="rankings">Rankings</a><a href="#matchups" data-page="matchups">Matchups</a><a href="#titles" data-page="titles">Titles</a><a href="#community" data-page="community">Community</a>
       <a href="#betting" data-page="betting">Betting</a>
       <a href="#fights" data-page="fights">Fights</a>
       <a href="#events" data-page="events">Events</a><a href="#tournaments" data-page="tournaments">Tournaments</a>
@@ -205,7 +205,16 @@
 <input name="fighter" aria-label="Search fighter" placeholder="Search fighter" style="padding:12px;min-width:160px">
 <select name="year" aria-label="Year" style="padding:12px"><option value="">All years</option></select>
 <button class="btn primary" type="submit">FILTER</button><button class="btn ghost" type="reset">RESET</button>
-</form><div id="ucsTitleCount" style="margin-bottom:12px;opacity:.75"></div><div class="panel" style="padding:24px;margin-top:24px" id="ucsTitleHistory">Loading title history…</div></section><section class="page shell section-space" id="community"><h2>VOTE YOUR P4P</h2><p class="muted">Choose and rank up to 10 fighters. Press VOTE to submit your ballot.</p><div style="display:flex;gap:10px;margin:16px 0"><button type="button" id="ucsP4pVoteTab" class="btn primary">MY P4P</button><button type="button" id="ucsP4pResultsTab" class="btn ghost">THE PEOPLE'S P4P</button></div><div id="ucsP4pVoting"><div id="ucsP4pChoices"></div><button type="button" class="btn primary" id="ucsSubmitP4p">VOTE</button><p id="ucsP4pMessage" aria-live="polite"></p></div><div id="ucsP4pResults" class="hidden"></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:36px"><div><h2>MOST FOLLOWED</h2><div id="ucsMostFollowed">Loading…</div></div><div><h2>24 HOUR TRENDING</h2><div id="ucsFollowTrending">Loading…</div></div></div><h2 style="margin-top:36px">PEOPLE I’M FOLLOWING</h2><p class="muted">Guest account · saved on this browser</p><div id="ucsGuestFollowing"></div><h3 style="margin-top:24px">FOLLOWING TIMELINE</h3><div id="ucsFollowingTimeline"></div></section><section class="page shell section-space rankings-page" id="rankings">
+</form><div id="ucsTitleCount" style="margin-bottom:12px;opacity:.75"></div><div class="panel" style="padding:24px;margin-top:24px" id="ucsTitleHistory">Loading title history…</div></section><section class="page shell section-space" id="community"><h2>VOTE YOUR P4P</h2><p class="muted">Choose and rank up to 10 fighters. Press VOTE to submit your ballot.</p><div style="display:flex;gap:10px;margin:16px 0"><button type="button" id="ucsP4pVoteTab" class="btn primary">MY P4P</button><button type="button" id="ucsP4pResultsTab" class="btn ghost">THE PEOPLE'S P4P</button></div><div id="ucsP4pVoting"><div id="ucsP4pChoices"></div><button type="button" class="btn primary" id="ucsSubmitP4p">VOTE</button><p id="ucsP4pMessage" aria-live="polite"></p></div><div id="ucsP4pResults" class="hidden"></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:36px"><div><h2>MOST FOLLOWED</h2><div id="ucsMostFollowed">Loading…</div></div><div><h2>24 HOUR TRENDING</h2><div id="ucsFollowTrending">Loading…</div></div></div><h2 style="margin-top:36px">PEOPLE I’M FOLLOWING</h2><p class="muted">Guest account · saved on this browser</p><div id="ucsGuestFollowing"></div><h3 style="margin-top:24px">FOLLOWING TIMELINE</h3><div id="ucsFollowingTimeline"></div></section><section class="page shell section-space" id="matchups">
+  <div class="section-kicker">FIGHTER COMPARISONS</div>
+  <h2>COMMON OPPONENT MATCHUPS</h2>
+  <p>Compare fighters who have faced the same opponents. Results and KO/TKO counts are verified from recorded PRO results; round-by-round context is shown separately when supplied.</p>
+  <label for="ucsMatchupFighterSelect">CHOOSE A FIGHTER</label>
+  <select id="ucsMatchupFighterSelect" style="display:block;width:100%;max-width:450px;padding:13px;background:#15141c;color:white;border:1px solid #555;border-radius:8px;margin:12px 0 25px"></select>
+  <div id="ucsMatchupEditorial" style="margin-bottom:20px"></div>
+  <div id="ucsCommonOpponentMatchups"></div>
+</section>
+<section class="page shell section-space rankings-page" id="rankings">
       <div class="ranking-sponsor-bg" aria-hidden="true"><div class="sponsor-float one"></div><div class="sponsor-float two"></div><div class="sponsor-float three"></div></div>
       <div class="ranking-head">
         <div><div class="section-kicker">OFFICIAL UCS RATINGS</div><div class="section-title-row"><h2>FIGHTER RANKINGS</h2></div></div>
@@ -834,7 +843,7 @@
 
       <section class="profile-history"><div class="profile-section-title"><span>UPCOMING FIGHTS</span></div><div id="profileUpcomingFights"></div></section>
       <div class="ucs-reference-results"><section class="profile-history"><div class="profile-section-title"><span>PREVIOUS FIGHTS</span></div><div id="profileFightHistory"></div></section><aside class="ucs-ko-panel"><h3>KNOCKOUT PRESSURE</h3><div id="profileKnockoutPressure" class="ucs-ko-number">—</div><div class="ucs-ko-track"><span id="profileKnockoutFill" style="width:0%"></span></div><p id="profileKnockoutDescription">Official UCS results only.</p></aside></div>
-      <section id="ucsCommonOpponentMatchups" class="profile-history" style="margin-top:28px"></section>
+      
       <section class="ucs-profile-banners" id="ucsProfileBoutBanners" style="margin-top:35px"></section>
     </article>
   </div>
@@ -883,7 +892,7 @@
   <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=ucs-common-opponents-20261108"></script>
+  <script src="app.js?v=ucs-dedicated-matchups-20261108"></script>
 <section id="ucsContractFights" class="shell" style="padding:30px 0 16px"><h2 style="margin-bottom:8px">🏆 CONTRACT FIGHTS</h2><p style="opacity:.75">Open a Discord contract to see its matchup and title-fight status. UCS admins can optionally put a championship belt on an accepted contract.</p><div id="ucsContractFightCards" style="display:grid;gap:12px"><p>Loading contract fights…</p></div></section>
 <section id="ucsDiscordContractsBoard" class="shell" style="padding:32px 0 50px"><h2>🥊 CONTRACT ACTIVITY</h2><p style="opacity:.75">Discord challenges, acceptances, declines, contract channels, cancellations and results. Contract results do not alter official rankings.</p><div id="ucsDiscordContractRows" style="display:grid;gap:12px">Loading contract activity…</div></section>
 <script>
