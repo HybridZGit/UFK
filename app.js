@@ -865,6 +865,7 @@ async function ucsLoadLeaderboardOfflineBouts(){
     }
     state.ucsDiscordOfflineByFighter=byFighter;
     ucsLeaderboardOfflineLoadedAt=Date.now();
+    renderTopEarners();
     renderRanks($('#fighterSearch')?.value||'');
     renderEvents();
     renderHome();
@@ -1621,7 +1622,27 @@ function ucsAllBoutRecord(f){
  const open=ucsOpenStats(f.id);
  return [Number(f.wins||0)+ow+cw+open.w,Number(f.losses||0)+ol+cl+open.l,Number(f.draws||0)+od+open.d].join('-');
 }
+let ucsEarnersContractsLoading=false;
+let ucsEarnersContractsLoadedAt=0;
+async function ucsLoadEarnersContracts(){
+ if(!db||ucsEarnersContractsLoading||Date.now()-ucsEarnersContractsLoadedAt<60000)return;
+ ucsEarnersContractsLoading=true;
+ try{
+  const {data,error}=await db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,winner_fighter_id,status').eq('status','completed').not('winner_fighter_id','is',null).limit(5000);
+  if(error)throw error;
+  const byFighter={};
+  for(const bout of data||[]){
+   for(const id of [bout.challenger_fighter_id,bout.target_fighter_id])if(id)(byFighter[id]??=[]).push(bout);
+  }
+  state.ucsCompletedContractsByFighter={...(state.ucsCompletedContractsByFighter||{}),...byFighter};
+  ucsEarnersContractsLoadedAt=Date.now();
+  renderTopEarners();
+ }catch(error){console.warn('Earnings contract records:',error.message);}
+ finally{ucsEarnersContractsLoading=false;}
+}
 function renderTopEarners(){
+  void ucsLoadLeaderboardOfflineBouts();
+  void ucsLoadEarnersContracts();
   const container=$('#ucsTopEarners');if(!container)return;
   const entries=state.fighters.map(f=>({fighter:f,earnings:Number(state.fighterEarnings.get(f.id)||0)}))
     .filter(item=>Number.isFinite(item.earnings)&&item.earnings>=0)
