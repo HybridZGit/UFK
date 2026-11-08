@@ -7,6 +7,9 @@ const client=window.supabase?.createClient&&window.UFK_SUPABASE_URL&&window.UFK_
 let fighters=[],replays=[],activeVideo=null,profileId=null;
 const name=id=>fighters.find(f=>String(f.id)===String(id))?.name||'Unknown fighter';
 const date=r=>r.fought_on||'';
+const titleLabel=r=>r.bout_type==='title_fight'?(r.championship_name||'UCS TITLE FIGHT'):r.bout_type==='main_event'?'MAIN EVENT':'';
+const boutDescription=r=>[titleLabel(r),r.weight_class,r.scheduled_rounds?r.scheduled_rounds+' ROUNDS':'',r.bout_notes].filter(Boolean).join(' · ');
+
 const visible=()=>replays.filter(r=>r.published);
 const replayLink=id=>location.origin+location.pathname+'#replay/'+encodeURIComponent(id);
 const copyText=async text=>{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text);return;}const el=document.createElement('textarea');el.value=text;document.body.append(el);el.select();document.execCommand('copy');el.remove();};
@@ -21,7 +24,7 @@ function closePlayer(){if(activeVideo){activeVideo.pause();activeVideo.removeAtt
 function openReplay(id,updateHash=true){
  const r=visible().find(x=>x.id===id);if(!r)return;
  const player=$('#ucsReplayPlayer'),video=$('#ucsReplayVideo');if(!player||!video)return;
- closePlayer();$('#ucsReplayTitlePlaying').textContent=r.title;$('#ucsReplayMetaPlaying').textContent=[name(r.fighter_a_id)+' vs '+name(r.fighter_b_id),r.event_name,date(r)].filter(Boolean).join(' · ');
+ closePlayer();$('#ucsReplayTitlePlaying').textContent=r.title;$('#ucsReplayMetaPlaying').textContent=[name(r.fighter_a_id)+' vs '+name(r.fighter_b_id),r.event_name,date(r)].filter(Boolean).join(' · ');const details=$('#ucsReplayFightDetails');if(details){details.textContent=boutDescription(r);details.style.cssText='font-weight:800;color:#f2c266;margin:12px 0;white-space:pre-wrap';}
  if(!/^https:\/\//i.test(r.video_url)){status('Video URL is invalid');return;}
  video.src=r.video_url;activeVideo=video;player.classList.remove('hidden');$('#ucsReplayCards').classList.add('hidden');if(updateHash)history.replaceState(null,'','#replay/'+encodeURIComponent(id));player.scrollIntoView({block:'start',behavior:'smooth'});
 }
@@ -39,7 +42,7 @@ function renderProfile(){
 }
 function renderAdmin(){
  const root=$('#ucsReplayManage');if(!root)return;
- root.innerHTML=replays.length?replays.map(r=>'<div class="ucs-rp-row"><span>'+escapeHtml(r.title)+' <small>('+escapeHtml(r.published?'Published':'Hidden')+')</small></span><span><button type="button" data-toggle-replay="'+escapeHtml(r.id)+'">'+(r.published?'Unpublish':'Publish')+'</button> <button type="button" data-delete-replay="'+escapeHtml(r.id)+'">Delete</button></span></div>').join(''):'<p>No replays uploaded.</p>';
+ root.innerHTML=replays.length?replays.map(r=>'<div class="ucs-rp-row"><span>'+escapeHtml(r.title)+' <small>'+escapeHtml(titleLabel(r))+' ('+escapeHtml(r.published?'Published':'Hidden')+')</small></span><span><button type="button" data-toggle-replay="'+escapeHtml(r.id)+'">'+(r.published?'Unpublish':'Publish')+'</button> <button type="button" data-delete-replay="'+escapeHtml(r.id)+'">Delete</button></span></div>').join(''):'<p>No replays uploaded.</p>';
 }
 async function load(){
  if(!client)return status('Replay service is not configured.');
@@ -60,7 +63,7 @@ async function upload(e){
   const uploaded=await client.storage.from('ucs-fight-replays').upload(path,file,{contentType:file.type,upsert:false});
   if(uploaded.error)throw uploaded.error;
   const url=client.storage.from('ucs-fight-replays').getPublicUrl(path).data.publicUrl;
-  const inserted=await client.from('ucs_fight_replays').insert({title,fighter_a_id:a,fighter_b_id:b,event_name:$('#ucsReplayEvent').value.trim()||null,fought_on:$('#ucsReplayFightDate').value||null,video_url:url,storage_path:path,published:$('#ucsReplayPublish').checked});
+  const inserted=await client.from('ucs_fight_replays').insert({title,fighter_a_id:a,fighter_b_id:b,event_name:$('#ucsReplayEvent').value.trim()||null,fought_on:$('#ucsReplayFightDate').value||null,bout_type:$('#ucsReplayBoutType').value,championship_name:$('#ucsReplayChampionship').value.trim()||null,weight_class:$('#ucsReplayWeightClass').value.trim()||null,scheduled_rounds:$('#ucsReplayRounds').value?Number($('#ucsReplayRounds').value):null,bout_notes:$('#ucsReplayNotes').value.trim()||null,video_url:url,storage_path:path,published:$('#ucsReplayPublish').checked});
   if(inserted.error){await client.storage.from('ucs-fight-replays').remove([path]);throw inserted.error;}
   form.reset();message.textContent='Replay uploaded successfully.';await load();
  }catch(err){message.textContent='Upload failed: '+(err.message||err);}
