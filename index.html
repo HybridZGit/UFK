@@ -210,7 +210,7 @@
   <h2>COMMON OPPONENT MATCHUPS</h2>
   <section id="ucsChampionPredictionSection" style="margin:18px 0 28px">
     <h3 style="color:#f3c15b;margin:0 0 6px">WHO'S LIKELY TO WIN?</h3>
-    <p style="color:#bdb7c7;font-size:13px;margin:0 0 12px">Selected fighter vs current UCS champions · hypothetical predictions, not fight results.</p>
+    <p style="color:#bdb7c7;font-size:13px;margin:0 0 12px">Selected fighter vs current UCS champions · form-based matchup index using recent PRO results, opponent quality, stoppages and head-to-head. Not a verified win probability.</p>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <button type="button" id="ucsChampionScrollLeft" aria-label="Scroll champion matchups left" style="padding:8px 14px">←</button>
       <span style="font-size:12px;color:#bdb7c7">SCROLL CHAMPION MATCHUPS</span>
@@ -902,7 +902,7 @@
   <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="app.js?v=ucs-champion-predictions-20261108"></script>
+  <script src="app.js?v=ucs-champion-form-model-20261108"></script>
 <section id="ucsContractFights" class="shell" style="padding:30px 0 16px"><h2 style="margin-bottom:8px">🏆 CONTRACT FIGHTS</h2><p style="opacity:.75">Open a Discord contract to see its matchup and title-fight status. UCS admins can optionally put a championship belt on an accepted contract.</p><div id="ucsContractFightCards" style="display:grid;gap:12px"><p>Loading contract fights…</p></div></section>
 <section id="ucsDiscordContractsBoard" class="shell" style="padding:32px 0 50px"><h2>🥊 CONTRACT ACTIVITY</h2><p style="opacity:.75">Discord challenges, acceptances, declines, contract channels, cancellations and results. Contract results do not alter official rankings.</p><div id="ucsDiscordContractRows" style="display:grid;gap:12px">Loading contract activity…</div></section>
 <script>
