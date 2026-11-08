@@ -1086,7 +1086,7 @@ async function ucsRenderProfileCallouts(f){
  const root=$('#profileUpcomingFights');if(!db||!root)return;
  const token=String(f.id);root.dataset.ucsCalloutFighter=token;
  try{
-  const {data,error}=await db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,status,created_at,responded_at,title_belt_division,winner_fighter_id,result_method,concluded_at,is_good_win,profile_poster_url').or('challenger_fighter_id.eq.'+token+',target_fighter_id.eq.'+token).order('created_at',{ascending:false}).limit(30);
+  const {data,error}=await db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,status,created_at,responded_at,title_belt_division,winner_fighter_id,result_method,concluded_at,is_good_win,opponent_prefight_record_override,profile_poster_url').or('challenger_fighter_id.eq.'+token+',target_fighter_id.eq.'+token).order('created_at',{ascending:false}).limit(30);
   if(error||root.dataset.ucsCalloutFighter!==token)return;
   state.ucsCompletedContractsByFighter=state.ucsCompletedContractsByFighter||{};
   state.ucsCompletedContractsByFighter[token]=(data||[]).filter(x=>x.status==='completed'&&x.winner_fighter_id);
@@ -2859,7 +2859,7 @@ function ucsRenderDossierRecords(f){
   const opponentId=r.challenger_fighter_id===f.id?r.target_fighter_id:r.challenger_fighter_id;
   const opp=fighterById(opponentId),won=r.winner_fighter_id===f.id;
   const date=r.concluded_at||r.responded_at||r.created_at;
-  entries.push({date,opponentId:opp?.id,result:won?'W':'L',html:`<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind offline">CONTRACT</b> ${esc(r.result_method||'Result')} · ${esc(fmtDate(date))}</small><small>📍 UCS Discord · Online · UCS Discord Contract Bout${r.title_belt_division?' · 🏆 '+esc(r.title_belt_division)+' CHAMPIONSHIP':''}</small>${won&&r.is_good_win?'<div class="ucs-good-win-tag">★ BIG WIN · RANKINGS BOOST</div>':''}</div></div>`});
+  entries.push({date,opponentId:opp?.id,prefightOverride:won?r.opponent_prefight_record_override:null,result:won?'W':'L',html:`<div class="profile-fight-row"><span class="result-pill ${won?'win':'loss'}">${won?'W':'L'}</span><div><strong>vs ${esc(opp?.name||'Unknown')}</strong><small><b class="ucs-bout-kind offline">CONTRACT</b> ${esc(r.result_method||'Result')} · ${esc(fmtDate(date))}</small><small>📍 UCS Discord · Online · UCS Discord Contract Bout${r.title_belt_division?' · 🏆 '+esc(r.title_belt_division)+' CHAMPIONSHIP':''}</small>${won&&r.is_good_win?'<div class="ucs-good-win-tag">★ BIG WIN · RANKINGS BOOST</div>':''}</div></div>`});
  }
  if(mode==='open'||mode==='all')for(const r of ucsOpenResults().filter(r=>r.fighter_a_id===f.id||r.fighter_b_id===f.id)){
   const opponentId=r.fighter_a_id===f.id?r.fighter_b_id:r.fighter_a_id,opp=fighterById(opponentId);
@@ -2869,7 +2869,7 @@ function ucsRenderDossierRecords(f){
  // Display the OPPONENT'S pre-fight record, never the viewed fighter's.
  entries.sort((x,y)=>String(y.date||'').localeCompare(String(x.date||'')));
  entries.forEach(entry=>{
-  const prior=ucsOpponentPreFightRecord(entry.opponentId,entry.date);
+  const prior=entry.prefightOverride?{text:entry.prefightOverride,debut:false}:ucsOpponentPreFightRecord(entry.opponentId,entry.date);
   if(!prior)return;
   const label='<div class="ucs-historical-record" style="font-size:11px;color:#e8c98a;font-weight:800;margin-top:5px">'+
    (prior.debut?'<span style="color:#f3a83d">★ DEBUT</span>':'<span>'+esc(prior.text)+'</span>')+'</div>';
