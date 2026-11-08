@@ -52,19 +52,21 @@ async function load(){
 }
 async function upload(e){
  e.preventDefault();const form=e.currentTarget,button=$('#ucsReplaySubmit'),message=$('#ucsReplayUploadMessage');
- const file=$('#ucsReplayUploadFile').files?.[0],a=$('#ucsReplayTagA').value,b=$('#ucsReplayTagB').value,title=$('#ucsReplayFightName').value.trim();
- if(!file||!a||!b||a===b||title.length<3){message.textContent='Enter a fight name, two different fighters and a video.';return;}
- const mime={'video/mp4':'mp4','video/webm':'webm','video/quicktime':'mov'}[file.type];
- if(!mime||file.size>50*1024*1024){message.textContent='Use MP4, WebM or MOV under 50 MB.';return;}
+ const file=$('#ucsReplayUploadFile').files?.[0],external=$('#ucsReplayExternalUrl').value.trim(),a=$('#ucsReplayTagA').value,b=$('#ucsReplayTagB').value,title=$('#ucsReplayFightName').value.trim();
+ if((!file&&!external)||!a||!b||a===b||title.length<3){message.textContent='Enter a fight name, two different fighters and a video.';return;}
+ const mime=file?({'video/mp4':'mp4','video/webm':'webm','video/quicktime':'mov'}[file.type]||(/\.mp4$/i.test(file.name)?'mp4':/\.webm$/i.test(file.name)?'webm':/\.mov$/i.test(file.name)?'mov':null)):null;
+ if(file&&(!mime||file.size>50*1024*1024)&&!external){message.textContent='This file cannot be uploaded: use MP4/WebM/MOV under 50 MB, or paste a direct video URL for larger fights.';return;}
+ if(external&&!/^https:\/\/[^\s]+$/i.test(external)){message.textContent='Enter a valid HTTPS direct video URL.';return;}
  button.disabled=true;message.textContent='Uploading video, please keep this page open…';
  let path='';
  try{
-  path='replays/'+crypto.randomUUID()+'.'+mime;
-  const uploaded=await client.storage.from('ucs-fight-replays').upload(path,file,{contentType:file.type,upsert:false});
-  if(uploaded.error)throw uploaded.error;
-  const url=client.storage.from('ucs-fight-replays').getPublicUrl(path).data.publicUrl;
+  let url=external;
+  if(!external){path='replays/'+crypto.randomUUID()+'.'+mime;
+   const uploaded=await client.storage.from('ucs-fight-replays').upload(path,file,{contentType:file.type,upsert:false});
+   if(uploaded.error)throw uploaded.error;
+   url=client.storage.from('ucs-fight-replays').getPublicUrl(path).data.publicUrl;}
   const inserted=await client.from('ucs_fight_replays').insert({title,fighter_a_id:a,fighter_b_id:b,event_name:$('#ucsReplayEvent').value.trim()||null,fought_on:$('#ucsReplayFightDate').value||null,bout_type:$('#ucsReplayBoutType').value,championship_name:$('#ucsReplayChampionship').value.trim()||null,weight_class:$('#ucsReplayWeightClass').value.trim()||null,scheduled_rounds:$('#ucsReplayRounds').value?Number($('#ucsReplayRounds').value):null,bout_notes:$('#ucsReplayNotes').value.trim()||null,video_url:url,storage_path:path,published:$('#ucsReplayPublish').checked});
-  if(inserted.error){await client.storage.from('ucs-fight-replays').remove([path]);throw inserted.error;}
+  if(inserted.error){if(path)await client.storage.from('ucs-fight-replays').remove([path]);throw inserted.error;}
   form.reset();message.textContent='Replay uploaded successfully.';await load();
  }catch(err){message.textContent='Upload failed: '+(err.message||err);}
  finally{button.disabled=false;}
