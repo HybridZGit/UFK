@@ -668,7 +668,7 @@ function ucsRenderTournament(){
  const bracket=rows.length?'<div class="ucs-tournament-bracket">'+rows.map((round,ri)=>'<div class="ucs-tournament-round"><h4>'+names[ri]+'</h4>'+round.map((m,mi)=>'<div class="ucs-tournament-match"><small>MATCH '+(mi+1)+(m.method?' · '+esc(m.method):'')+'</small><div class="'+(m.winner&&m.winner.fighter_id===m.a?.fighter_id?'winner':'')+'">'+player(m.a)+(m.winner&&m.winner.fighter_id===m.a?.fighter_id?' <span>✓</span>':'')+'</div><div class="'+(m.winner&&m.winner.fighter_id===m.b?.fighter_id?'winner':'')+'">'+player(m.b)+(m.winner&&m.winner.fighter_id===m.b?.fighter_id?' <span>✓</span>':'')+'</div></div>').join('')+'</div>').join('')+'</div>':'<div class="ucs-tournament-waiting">React with ✅ on the tournament announcement in Discord to claim a slot. The bracket is generated when eight fighters join.</div>';
  box.innerHTML=headline+seeds+bracket;
 }
-function renderAll(){ ucsRenderTournament(); ucsRenderOpenAdmin(); ucsRenderCommunity(); ucsRenderP4p(); renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); ucsPopulateProfileBannerAdmin(); updateAccountUI(); }
+function renderAll(){ ucsRenderTournament(); ucsRenderOpenAdmin(); ucsRenderCommunity(); ucsRenderP4p(); renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); ucsPopulateProfileBannerAdmin(); void ucsPopulateUpcomingPosterAdmin(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -1086,7 +1086,7 @@ async function ucsRenderProfileCallouts(f){
  const root=$('#profileUpcomingFights');if(!db||!root)return;
  const token=String(f.id);root.dataset.ucsCalloutFighter=token;
  try{
-  const {data,error}=await db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,status,created_at,responded_at,title_belt_division,winner_fighter_id,result_method,concluded_at,is_good_win').or('challenger_fighter_id.eq.'+token+',target_fighter_id.eq.'+token).order('created_at',{ascending:false}).limit(30);
+  const {data,error}=await db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,status,created_at,responded_at,title_belt_division,winner_fighter_id,result_method,concluded_at,is_good_win,profile_poster_url').or('challenger_fighter_id.eq.'+token+',target_fighter_id.eq.'+token).order('created_at',{ascending:false}).limit(30);
   if(error||root.dataset.ucsCalloutFighter!==token)return;
   state.ucsCompletedContractsByFighter=state.ucsCompletedContractsByFighter||{};
   state.ucsCompletedContractsByFighter[token]=(data||[]).filter(x=>x.status==='completed'&&x.winner_fighter_id);
@@ -1098,7 +1098,8 @@ async function ucsRenderProfileCallouts(f){
    const title=x.title_belt_division?'<div style="margin-top:9px;color:#f4c568;font-size:12px;font-weight:800">🏆 '+esc(x.title_belt_division.toUpperCase())+' CHAMPIONSHIP ON THE LINE</div>':'';
    const photo=opponent?[opponent.avatar_url,opponent.profile_image_url,opponent.showcase_image_url].find(safeHttps):null;
    const avatar=photo?'<img src="'+esc(photo)+'" alt="" loading="lazy" style="width:52px;height:52px;object-fit:cover;border-radius:10px">':'<span style="width:52px;height:52px;display:inline-grid;place-items:center;background:#252530;border-radius:10px">🥊</span>';
-   return '<article class="ucs-upcoming-card" data-ucs-callout="'+esc(x.id)+'" style="padding:16px;margin:10px 0"><div class="ucs-upcoming-main"><div class="ucs-upcoming-fighter"><div class="ucs-upcoming-avatar">'+avatar+'</div><div class="ucs-upcoming-fighter-info"><small>DISCORD CONTRACT BOUT · ACCEPTED</small><strong>'+esc(opponent?.name||'Opponent')+'</strong><span>10 ROUNDS · 1.5× Relative Time · 1.0 Damage</span>'+title+'</div></div><div class="ucs-upcoming-meta"><strong>DATE TBA</strong><span class="ucs-inline-status">● ACCEPTED · AWAITING SCHEDULING</span></div></div></article>';
+   const poster=x.profile_poster_url?'<div style="position:relative;margin-bottom:12px"><img src="'+esc(x.profile_poster_url)+'" alt="Upcoming fight poster" loading="lazy" style="width:100%;max-height:360px;object-fit:cover;border-radius:8px"><div style="position:absolute;bottom:4px;left:0;right:0;padding:20px;background:linear-gradient(transparent,#000e);text-align:center;color:#fff;font-weight:900">UPCOMING BOUT · '+esc(f.name)+' VS '+esc(opponent?.name||'Opponent')+'</div></div>':'';
+   return '<article class="ucs-upcoming-card" data-ucs-callout="'+esc(x.id)+'" style="padding:16px;margin:10px 0">'+poster+'<div class="ucs-upcoming-main"><div class="ucs-upcoming-fighter"><div class="ucs-upcoming-avatar">'+avatar+'</div><div class="ucs-upcoming-fighter-info"><small>DISCORD CONTRACT BOUT · ACCEPTED</small><strong>'+esc(opponent?.name||'Opponent')+'</strong><span>10 ROUNDS · 1.5× Relative Time · 1.0 Damage</span>'+title+'</div></div><div class="ucs-upcoming-meta"><strong>DATE TBA</strong><span class="ucs-inline-status">● ACCEPTED · AWAITING SCHEDULING</span></div></div></article>';
   }).join('');
   if(cards){if(root.textContent.includes('No upcoming'))root.innerHTML=cards;else root.insertAdjacentHTML('beforeend',cards);}
  }catch(e){console.warn('UCS callout profile:',e.message);}
@@ -2757,6 +2758,35 @@ function ucsRenderProfileBoutBanners(f){
   return '<article class="ucs-profile-banner-card"><img loading="lazy" src="'+esc(r.profile_banner_url)+'" alt="'+esc((winner?.name||'Winner')+' vs '+(loser?.name||'Opponent'))+' fight banner"><div class="ucs-profile-banner-loser"></div><div class="ucs-profile-banner-caption"><small>'+esc(String(title).toUpperCase())+'</small><strong>'+esc(winner?.name||'Winner')+' <span style="color:#f14">VS</span> '+esc(loser?.name||'Opponent')+'</strong><span class="ucs-profile-banner-win">🏆 WINNER | '+esc(winner?.name||'Winner')+'</span><small>'+esc(fmtDate(r.event_date))+'</small></div></article>';
  }).join('');
 }
+async function ucsPopulateUpcomingPosterAdmin(){
+ const el=$('#ucsUpcomingPosterFight');if(!el||!db||!state.isAdmin)return;
+ const {data,error}=await db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,profile_poster_url').eq('status','accepted').order('created_at',{ascending:false}).limit(500);
+ if(error){console.warn('Upcoming posters:',error.message);return;}
+ const current=el.value;
+ el.innerHTML='<option value="">SELECT ACCEPTED CONTRACT</option>'+(data||[]).map(r=>'<option value="'+esc(r.id)+'">'+esc((fighterById(r.challenger_fighter_id)?.name||'Challenger')+' vs '+(fighterById(r.target_fighter_id)?.name||'Opponent'))+(r.profile_poster_url?' · POSTER UPLOADED':'')+'</option>').join('');
+ if((data||[]).some(r=>r.id===current))el.value=current;
+}
+$('#ucsUpcomingPosterForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();if(!db||!state.isAdmin||!state.user)return toast('Admin permission required',true);
+ const id=$('#ucsUpcomingPosterFight')?.value,file=$('#ucsUpcomingPosterFile')?.files?.[0];
+ const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[file?.type];
+ if(!id||!file||!ext||file.size>10*1024*1024)return toast('Choose a bout and JPG, PNG or WebP under 10MB',true);
+ const button=e.currentTarget.querySelector('[type=submit]');button.disabled=true;
+ try{
+  const path='upcoming-bout-posters/'+id+'-'+crypto.randomUUID()+'.'+ext;
+  const {error:uploadError}=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type});
+  if(uploadError)throw uploadError;
+  const url=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
+  const {data,error}=await db.from('ucs_callouts').update({profile_poster_url:url}).eq('id',id).eq('status','accepted').select('id');
+  if(error)throw error;
+  if(!data?.length)throw Error('Contract is no longer accepted.');
+  $('#ucsUpcomingPosterFile').value='';
+  await ucsPopulateUpcomingPosterAdmin();
+  if(state.ucsCurrentProfile){const f=fighterById(state.ucsCurrentProfile);if(f)await ucsRenderProfileCallouts(f);}
+  toast('UPCOMING BOUT POSTER PUBLISHED');
+ }catch(error){toast(error.message||'Poster upload failed',true);}
+ finally{button.disabled=false;}
+});
 function ucsPopulateProfileBannerAdmin(){
  const el=$('#ucsProfileBannerFight');if(!el||!state.isAdmin)return;
  const current=el.value;
