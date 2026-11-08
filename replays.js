@@ -70,9 +70,10 @@ async function upload(e){
  finally{button.disabled=false;}
 }
 async function manage(e){
- const toggle=e.target.closest('[data-toggle-replay]'),del=e.target.closest('[data-delete-replay]');if(!toggle&&!del)return;
- const id=toggle?.dataset.toggleReplay||del?.dataset.deleteReplay,r=replays.find(x=>x.id===id);if(!r)return;
+ const edit=e.target.closest('[data-edit-replay]'),toggle=e.target.closest('[data-toggle-replay]'),del=e.target.closest('[data-delete-replay]');if(!edit&&!toggle&&!del)return;
+ const id=edit?.dataset.editReplay||toggle?.dataset.toggleReplay||del?.dataset.deleteReplay,r=replays.find(x=>x.id===id);if(!r)return;
  if(del&&!confirm('Delete this replay permanently?'))return;
+ if(edit){const type=prompt('Fight type: regular, main_event, or title_fight',r.bout_type||'regular');if(type===null)return;if(!['regular','main_event','title_fight'].includes(type))return alert('Invalid fight type');const championship=prompt('Championship name (e.g. UCS WORLD CHAMPIONSHIP)',r.championship_name||'');if(championship===null)return;const weight=prompt('Weight class',r.weight_class||'');if(weight===null)return;const rounds=prompt('Scheduled rounds (leave blank if unknown)',r.scheduled_rounds||'');if(rounds===null)return;if(rounds&&(!Number.isInteger(Number(rounds))||Number(rounds)<1||Number(rounds)>30))return alert('Rounds must be between 1 and 30');const notes=prompt('Fight description / stakes',r.bout_notes||'');if(notes===null)return;const changed=await client.from('ucs_fight_replays').update({bout_type:type,championship_name:championship.trim()||null,weight_class:weight.trim()||null,scheduled_rounds:rounds?Number(rounds):null,bout_notes:notes.trim()||null}).eq('id',id);if(changed.error){$('#ucsReplayUploadMessage').textContent=changed.error.message;return;}await load();return;}
  let response;
  if(toggle)response=await client.from('ucs_fight_replays').update({published:!r.published}).eq('id',id);
  else response=await client.from('ucs_fight_replays').delete().eq('id',id);
