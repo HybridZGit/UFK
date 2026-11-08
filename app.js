@@ -1136,6 +1136,7 @@ function ucsUpdateWarpathBadge(f){
 }
 function openFighterProfile(id){
   const f=fighterById(id); if(!f)return;
+  window.ucsReplayProfile?.(f.id);
   const publicId=$('#ucsPublicFighterIdValue'),copyId=$('#ucsCopyFighterId');
   if(publicId)publicId.textContent=String(f.id);
   if(copyId){copyId.textContent='COPY ID';copyId.onclick=()=>{navigator.clipboard.writeText(String(f.id)).then(()=>{copyId.textContent='COPIED ✓';}).catch(()=>{copyId.textContent='SELECT ID ABOVE';});};}
