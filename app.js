@@ -67,6 +67,7 @@ $('#ucsHomeTwitchDetails')?.addEventListener('toggle',e=>{
 });
 
 function showPage(id){
+  if(id!=='replays'&&typeof ucsCloseReplay==='function')ucsCloseReplay();
   document.body.classList.remove('ucs-cinema-navigating');
   void document.body.offsetWidth;
   document.body.classList.add('ucs-cinema-navigating');
@@ -733,8 +734,8 @@ $('#ucsReplaySearch')?.addEventListener('input',ucsRenderReplays);
 $('#ucsReplayFighter')?.addEventListener('change',ucsRenderReplays);
 $('#ucsReplayGrid')?.addEventListener('click',e=>{const el=e.target.closest('[data-replay-open]');if(el)ucsOpenReplay(el.dataset.replayOpen);});
 $('#ucsReplayClose')?.addEventListener('click',ucsCloseReplay);
-$('#ucsProfileReplayList')?.addEventListener('click',e=>{const el=e.target.closest('[data-profile-replay]');if(!el)return;$('#ucsReplayFighter').value='';$('#ucsReplaySearch').value='';ucsRenderReplays();showPage('replays');history.replaceState(null,'','#replays');ucsOpenReplay(el.dataset.profileReplay);});
-$('#ucsProfileAllReplays')?.addEventListener('click',e=>{const id=e.currentTarget.dataset.fighterId;$('#ucsReplaySearch').value='';$('#ucsReplayFighter').value=id;ucsRenderReplays();showPage('replays');history.replaceState(null,'','#replays');});
+$('#ucsProfileReplayList')?.addEventListener('click',e=>{const el=e.target.closest('[data-profile-replay]');if(!el)return;$('#ucsReplayFighter').value='';$('#ucsReplaySearch').value='';ucsRenderReplays();closeFighterProfile();showPage('replays');history.replaceState(null,'','#replays');ucsOpenReplay(el.dataset.profileReplay);});
+$('#ucsProfileAllReplays')?.addEventListener('click',e=>{const id=e.currentTarget.dataset.fighterId;$('#ucsReplaySearch').value='';$('#ucsReplayFighter').value=id;ucsRenderReplays();closeFighterProfile();showPage('replays');history.replaceState(null,'','#replays');});
 $('#ucsReplayUploadForm')?.addEventListener('submit',async e=>{
  e.preventDefault();if(!state.isAdmin||!state.user||!db)return toast('Admin sign-in required',true);
  const title=$('#ucsReplayTitle').value.trim(),a=$('#ucsReplayFighterA').value,b=$('#ucsReplayFighterB').value,file=$('#ucsReplayFile').files?.[0];
