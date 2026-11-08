@@ -668,7 +668,7 @@ function ucsRenderTournament(){
  const bracket=rows.length?'<div class="ucs-tournament-bracket">'+rows.map((round,ri)=>'<div class="ucs-tournament-round"><h4>'+names[ri]+'</h4>'+round.map((m,mi)=>'<div class="ucs-tournament-match"><small>MATCH '+(mi+1)+(m.method?' · '+esc(m.method):'')+'</small><div class="'+(m.winner&&m.winner.fighter_id===m.a?.fighter_id?'winner':'')+'">'+player(m.a)+(m.winner&&m.winner.fighter_id===m.a?.fighter_id?' <span>✓</span>':'')+'</div><div class="'+(m.winner&&m.winner.fighter_id===m.b?.fighter_id?'winner':'')+'">'+player(m.b)+(m.winner&&m.winner.fighter_id===m.b?.fighter_id?' <span>✓</span>':'')+'</div></div>').join('')+'</div>').join('')+'</div>':'<div class="ucs-tournament-waiting">React with ✅ on the tournament announcement in Discord to claim a slot. The bracket is generated when eight fighters join.</div>';
  box.innerHTML=headline+seeds+bracket;
 }
-function renderAll(){ ucsRenderTournament(); ucsRenderOpenAdmin(); ucsRenderCommunity(); ucsRenderP4p(); renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); ucsPopulateProfileBannerAdmin(); void ucsPopulateUpcomingPosterAdmin(); updateAccountUI(); }
+function renderAll(){ ucsRenderTournament(); ucsRenderOpenAdmin(); ucsRenderCommunity(); ucsRenderP4p(); renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); ucsRenderMatchupsPage(); ucsPopulateProfileBannerAdmin(); void ucsPopulateUpcomingPosterAdmin(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -2830,6 +2830,23 @@ async function ucsSavePoster(e,upcoming){
 }
 $('#ucsUpcomingPosterForm')?.addEventListener('submit',e=>ucsSavePoster(e,true));
 $('#ucsProfileBannerForm')?.addEventListener('submit',e=>ucsSavePoster(e,false));
+function ucsRenderMatchupsPage(){
+ const select=$('#ucsMatchupFighterSelect');if(!select)return;
+ const old=select.value;
+ const sorted=[...state.fighters].sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+ select.innerHTML=sorted.map(f=>'<option value="'+esc(f.id)+'">'+esc(f.name)+'</option>').join('');
+ const preferred=sorted.find(f=>String(f.name).toLowerCase()==='hymas');
+ select.value=sorted.some(f=>f.id===old)?old:(preferred?.id||sorted[0]?.id||'');
+ ucsUpdateMatchupsSelection();
+}
+function ucsUpdateMatchupsSelection(){
+ const f=fighterById($('#ucsMatchupFighterSelect')?.value);if(!f)return;
+ ucsRenderCommonOpponentMatchups(f);
+ const note=$('#ucsMatchupEditorial');if(!note)return;
+ const hymas=String(f.name).toLowerCase()==='hymas',rafa=String(f.name).toLowerCase()==='rafa';
+ note.innerHTML=hymas||rafa?'<article class="ucs-common-card"><div class="ucs-common-head">HYMAS VS RAFA — PERFORMANCE CONTEXT</div><div class="ucs-common-grid"><div class="ucs-common-side"><strong>HYMAS</strong><small>Late knockout · reportedly won every round</small></div><div class="ucs-common-side"><strong>RAFA</strong><small>Early knockout · reportedly behind on rounds</small></div></div><p class="ucs-common-note">Round-by-round details are supplied by UCS staff and have not been independently verified. An early KO does not automatically mean a better overall performance.</p></article>':'';
+}
+$('#ucsMatchupFighterSelect')?.addEventListener('change',ucsUpdateMatchupsSelection);
 function ucsRenderCommonOpponentMatchups(f){
  const root=$('#ucsCommonOpponentMatchups');if(!root)return;
  const fights=state.results||[];
@@ -2857,9 +2874,9 @@ function ucsRenderCommonOpponentMatchups(f){
  if(!unique.length){root.innerHTML='';return;}
  const renderSide=(name,stats,rows,better)=>'<div class="ucs-common-side'+(better?' ucs-common-better':'')+'"><strong>'+esc(name)+'</strong><small>'+esc(stats.record)+' vs shared opponent · '+stats.kos+' KO/TKO win'+(stats.kos===1?'':'s')+'</small><small>'+rows.map(r=>esc((r.winner_id=== (name===f.name?f.id:undefined)?'W':'')||r.method||'Result')+' · '+esc(fmtDate(r.event_date))).join(' · ')+'</small></div>';
  root.innerHTML='<div class="profile-section-title"><span>COMMON OPPONENT MATCHUPS</span></div>'+unique.map(c=>{
-  const leftBetter=c.edge>0,rightBetter=c.edge<0;
+  const leftBetter=c.edge>0&&!(c.a.wins&&c.b.wins),rightBetter=c.edge<0&&!(c.a.wins&&c.b.wins);
   const side=(name,stats,rows,id,better)=>'<div class="ucs-common-side'+(better?' ucs-common-better':'')+'"><strong>'+esc(name)+'</strong><small>'+stats.record+' vs opponent · '+stats.kos+' KO/TKO wins</small><small>'+rows.map(r=>(r.winner_id===id?'W':'L')+' ('+esc(r.method||'Result')+')').join(' · ')+'</small></div>';
-  return '<article class="ucs-common-card"><div class="ucs-common-head">SHARED OPPONENT: '+esc(c.opponent.name)+'</div><div class="ucs-common-grid">'+side(f.name,c.a,c.own,f.id,leftBetter)+side(c.other.name,c.b,c.theirs,c.other.id,rightBetter)+'</div><div class="ucs-common-verdict">'+(c.edge===0?'EVEN RESULTS':esc((leftBetter?f.name:c.other.name)+' performed better by results and stoppages'))+'</div></article>';
+  return '<article class="ucs-common-card"><div class="ucs-common-head">SHARED OPPONENT: '+esc(c.opponent.name)+'</div><div class="ucs-common-grid">'+side(f.name,c.a,c.own,f.id,leftBetter)+side(c.other.name,c.b,c.theirs,c.other.id,rightBetter)+'</div><div class="ucs-common-verdict">'+(c.a.wins&&c.b.wins?'BOTH WON — compare timing, rounds and fight control':c.edge===0?'EVEN RESULTS':esc((leftBetter?f.name:c.other.name)+' has the stronger recorded result'))+'</div></article>';
  }).join('')+'<p class="ucs-common-note">PRO results only. Comparison scores prioritize wins, then KO/TKO wins; they do not account for opponent form, fight circumstances or quality of opposition.</p>';
 }
 function ucsRenderDossierRecords(f){
@@ -2910,8 +2927,8 @@ function ucsRenderDossierRecords(f){
  });
  const root=$('#profileFightHistory');if(root)root.innerHTML=entries.length?entries.map(x=>x.html).join(''):empty('No recorded bouts yet.');
  ucsRenderProfileBoutBanners(f);
- ucsRenderCommonOpponentMatchups(f);
 }
+
 $('#ucsDossierTabs')?.addEventListener('click',e=>{const b=e.target.closest('[data-ucs-record-tab]');if(!b||!state.ucsCurrentProfile)return;state.ucsRecordTab=b.dataset.ucsRecordTab;const f=fighterById(state.ucsCurrentProfile);if(f)ucsRenderDossierRecords(f);});
 function ucsRenderOfflineAdminList(){
  const root=$('#ucsOfflineAdminList');if(!root)return;
