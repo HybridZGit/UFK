@@ -1090,8 +1090,15 @@ async function ucsRenderProfileCallouts(f){
   if(error||root.dataset.ucsCalloutFighter!==token)return;
   state.ucsCompletedContractsByFighter=state.ucsCompletedContractsByFighter||{};
   state.ucsCompletedContractsByFighter[token]=(data||[]).filter(x=>x.status==='completed'&&x.winner_fighter_id);
-  if(state.ucsCurrentProfile===token)ucsRenderDossierRecords(f);
+  if(state.ucsCurrentProfile===token)ucsRenderDossierRecords(f);  if(state.ucsCurrentProfile===token)ucsRenderProfileBoutBanners(f);
   root.querySelectorAll('[data-ucs-callout]').forEach(el=>el.remove());
+  root.querySelectorAll('[data-ucs-signup-poster]').forEach(el=>el.remove());
+  await ucsFetchPosterBouts();
+  const signupCards=ucsPosterCache.upcoming.filter(r=>r.source==='signup'&&(r.a===token||r.b===token)&&r.poster).map(r=>{
+   const opponent=fighterById(r.a===token?r.b:r.a);
+   return '<article data-ucs-signup-poster="'+esc(r.id)+'" class="ucs-upcoming-card" style="padding:12px;margin:10px 0"><img src="'+esc(r.poster)+'" alt="Upcoming bout poster" loading="lazy" style="width:100%;max-height:360px;object-fit:cover;border-radius:8px"><strong style="display:block;text-align:center;margin:10px">'+esc(f.name)+' VS '+esc(opponent?.name||'Opponent')+' · '+esc(r.kind.toUpperCase())+' UPCOMING BOUT</strong></article>';
+  }).join('');
+  if(signupCards)root.insertAdjacentHTML('beforeend',signupCards);
   const accepted=(data||[]).filter(x=>x.status==='accepted');
   const cards=accepted.map(x=>{
    const opponent=fighterById(x.challenger_fighter_id===token?x.target_fighter_id:x.challenger_fighter_id);
@@ -1101,7 +1108,7 @@ async function ucsRenderProfileCallouts(f){
    const poster=x.profile_poster_url?'<div style="position:relative;margin-bottom:12px"><img src="'+esc(x.profile_poster_url)+'" alt="Upcoming fight poster" loading="lazy" style="width:100%;max-height:360px;object-fit:cover;border-radius:8px"><div style="position:absolute;bottom:4px;left:0;right:0;padding:20px;background:linear-gradient(transparent,#000e);text-align:center;color:#fff;font-weight:900">UPCOMING BOUT · '+esc(f.name)+' VS '+esc(opponent?.name||'Opponent')+'</div></div>':'';
    return '<article class="ucs-upcoming-card" data-ucs-callout="'+esc(x.id)+'" style="padding:16px;margin:10px 0">'+poster+'<div class="ucs-upcoming-main"><div class="ucs-upcoming-fighter"><div class="ucs-upcoming-avatar">'+avatar+'</div><div class="ucs-upcoming-fighter-info"><small>DISCORD CONTRACT BOUT · ACCEPTED</small><strong>'+esc(opponent?.name||'Opponent')+'</strong><span>10 ROUNDS · 1.5× Relative Time · 1.0 Damage</span>'+title+'</div></div><div class="ucs-upcoming-meta"><strong>DATE TBA</strong><span class="ucs-inline-status">● ACCEPTED · AWAITING SCHEDULING</span></div></div></article>';
   }).join('');
-  if(cards){if(root.textContent.includes('No upcoming'))root.innerHTML=cards;else root.insertAdjacentHTML('beforeend',cards);}
+  if(cards){if(root.textContent.includes('No upcoming')&&!signupCards)root.innerHTML=cards;else root.insertAdjacentHTML('beforeend',cards);}
  }catch(e){console.warn('UCS callout profile:',e.message);}
 }
 function ucsUpdateWarpathBadge(f){
@@ -2748,73 +2755,79 @@ function ucsOpponentPreFightRecord(opponentId,date){
  const w=baseline.W+before.W,l=baseline.L+before.L,d=baseline.D+before.D;
  return {text:w+'-'+l+'-'+d,debut:w+l+d===0};
 }
+const ucsPosterCache={upcoming:[],history:[]};
+async function ucsFetchPosterBouts(){
+ if(!db)return;
+ const [up,co]=await Promise.all([
+  db.from('ucs_signup_matches').select('id,kind,red_fighter_id,blue_fighter_id,winner_fighter_id,completed_at,created_at,status,profile_poster_url').in('status',['upcoming','completed']).limit(2000),
+  db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,winner_fighter_id,concluded_at,created_at,status,profile_poster_url,profile_banner_url').in('status',['accepted','completed']).limit(2000)
+ ]);
+ if(up.error||co.error){console.warn('Poster bouts:',up.error||co.error);return;}
+ const signups=(up.data||[]).map(r=>({source:'signup',id:r.id,status:r.status,kind:r.kind,a:r.red_fighter_id,b:r.blue_fighter_id,winner:r.winner_fighter_id,date:r.completed_at||r.created_at,poster:r.profile_poster_url}));
+ const contracts=(co.data||[]).map(r=>({source:'contract',id:r.id,status:r.status,kind:'contract',a:r.challenger_fighter_id,b:r.target_fighter_id,winner:r.winner_fighter_id,date:r.concluded_at||r.created_at,poster:r.status==='completed'?r.profile_banner_url:r.profile_poster_url}));
+ ucsPosterCache.upcoming=[...signups.filter(r=>r.status==='upcoming'),...contracts.filter(r=>r.status==='accepted')];
+ ucsPosterCache.history=[...signups.filter(r=>r.status==='completed'&&r.winner),...contracts.filter(r=>r.status==='completed'&&r.winner)];
+}
+function ucsPosterOption(r){
+ const a=fighterById(r.a)?.name||'Fighter A',b=fighterById(r.b)?.name||'Fighter B';
+ return '<option value="'+esc(r.source+':'+r.id)+'">['+esc(r.kind.toUpperCase())+'] '+esc(a+' vs '+b)+(r.poster?' · POSTER UPLOADED':'')+'</option>';
+}
 function ucsRenderProfileBoutBanners(f){
  const root=$('#ucsProfileBoutBanners');if(!root)return;
- const rows=fighterResults(f).filter(r=>r.profile_banner_url&&(r.winner_id===f.id||r.loser_id===f.id)).sort((a,b)=>String(b.event_date||'').localeCompare(String(a.event_date||'')));
+ const pro=fighterResults(f).filter(r=>r.profile_banner_url&&(r.winner_id===f.id||r.loser_id===f.id)).map(r=>({winner:r.winner_id,loser:r.loser_id,poster:r.profile_banner_url,date:r.event_date,kind:r.fight_title||r.belt||'PRO UNDERCARD'}));
+ const others=ucsPosterCache.history.filter(r=>r.poster&&(r.a===f.id||r.b===f.id)).map(r=>({winner:r.winner,loser:r.winner===r.a?r.b:r.a,poster:r.poster,date:r.date,kind:r.kind.toUpperCase()+' BOUT'}));
+ const rows=[...pro,...others].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
  if(!rows.length){root.innerHTML='';return;}
  root.innerHTML='<h2 class="ucs-bout-history-title">BOUT HISTORY</h2>'+rows.map(r=>{
-  const winner=fighterById(r.winner_id),loser=fighterById(r.loser_id);
-  const title=r.fight_title||r.belt||'UCS PRO BOUT';
-  return '<article class="ucs-profile-banner-card"><img loading="lazy" src="'+esc(r.profile_banner_url)+'" alt="'+esc((winner?.name||'Winner')+' vs '+(loser?.name||'Opponent'))+' fight banner"><div class="ucs-profile-banner-loser"></div><div class="ucs-profile-banner-caption"><small>'+esc(String(title).toUpperCase())+'</small><strong>'+esc(winner?.name||'Winner')+' <span style="color:#f14">VS</span> '+esc(loser?.name||'Opponent')+'</strong><span class="ucs-profile-banner-win">🏆 WINNER | '+esc(winner?.name||'Winner')+'</span><small>'+esc(fmtDate(r.event_date))+'</small></div></article>';
+  const winner=fighterById(r.winner),loser=fighterById(r.loser);
+  return '<article class="ucs-profile-banner-card"><img loading="lazy" src="'+esc(r.poster)+'" alt="Fight poster"><div class="ucs-profile-banner-loser"></div><div class="ucs-profile-banner-caption"><small>'+esc(r.kind)+'</small><strong>'+esc(winner?.name||'Winner')+' <span style="color:#f14">VS</span> '+esc(loser?.name||'Opponent')+'</strong><span class="ucs-profile-banner-win">🏆 WINNER | '+esc(winner?.name||'Winner')+'</span><small>'+esc(fmtDate(r.date))+'</small></div></article>';
  }).join('');
 }
 async function ucsPopulateUpcomingPosterAdmin(){
  const el=$('#ucsUpcomingPosterFight');if(!el||!db||!state.isAdmin)return;
- const {data,error}=await db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,profile_poster_url').eq('status','accepted').order('created_at',{ascending:false}).limit(500);
- if(error){console.warn('Upcoming posters:',error.message);return;}
- const current=el.value;
- el.innerHTML='<option value="">SELECT ACCEPTED CONTRACT</option>'+(data||[]).map(r=>'<option value="'+esc(r.id)+'">'+esc((fighterById(r.challenger_fighter_id)?.name||'Challenger')+' vs '+(fighterById(r.target_fighter_id)?.name||'Opponent'))+(r.profile_poster_url?' · POSTER UPLOADED':'')+'</option>').join('');
- if((data||[]).some(r=>r.id===current))el.value=current;
+ await ucsFetchPosterBouts();const current=el.value;
+ el.innerHTML='<option value="">SELECT UPCOMING BOUT</option>'+ucsPosterCache.upcoming.map(ucsPosterOption).join('');
+ if(ucsPosterCache.upcoming.some(r=>r.source+':'+r.id===current))el.value=current;
 }
-$('#ucsUpcomingPosterForm')?.addEventListener('submit',async e=>{
+async function ucsPopulateProfileBannerAdmin(){
+ const el=$('#ucsProfileBannerFight');if(!el||!db||!state.isAdmin)return;
+ await ucsFetchPosterBouts();const current=el.value;
+ const pro=state.results.filter(r=>r.winner_id&&r.loser_id).map(r=>({source:'pro',id:r.id,kind:'pro',a:r.winner_id,b:r.loser_id,poster:r.profile_banner_url}));
+ const all=[...pro,...ucsPosterCache.history];el.innerHTML='<option value="">SELECT COMPLETED BOUT</option>'+all.map(ucsPosterOption).join('');
+ if(all.some(r=>r.source+':'+r.id===current))el.value=current;
+}
+async function ucsSavePoster(e,upcoming){
  e.preventDefault();if(!db||!state.isAdmin||!state.user)return toast('Admin permission required',true);
- const id=$('#ucsUpcomingPosterFight')?.value,file=$('#ucsUpcomingPosterFile')?.files?.[0];
+ const selected=$(upcoming?'#ucsUpcomingPosterFight':'#ucsProfileBannerFight')?.value||'';
+ const file=$(upcoming?'#ucsUpcomingPosterFile':'#ucsProfileBannerFile')?.files?.[0];
  const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[file?.type];
- if(!id||!file||!ext||file.size>10*1024*1024)return toast('Choose a bout and JPG, PNG or WebP under 10MB',true);
+ if(!selected||!file||!ext||file.size>10*1024*1024)return toast('Choose a bout and JPG, PNG or WebP under 10MB',true);
+ const [source,id]=selected.split(':');
+ const table=source==='pro'?'results':source==='contract'?'ucs_callouts':'ucs_signup_matches';
+ const column=source==='pro'?'profile_banner_url':source==='contract'&&!upcoming?'profile_banner_url':'profile_poster_url';
+ const status=source==='contract'?(upcoming?'accepted':'completed'):(upcoming?'upcoming':'completed');
  const button=e.currentTarget.querySelector('[type=submit]');button.disabled=true;
  try{
-  const path='upcoming-bout-posters/'+id+'-'+crypto.randomUUID()+'.'+ext;
+  const folder=upcoming?'upcoming-bout-posters':'profile-bout-banners';
+  const path=folder+'/'+id+'-'+crypto.randomUUID()+'.'+ext;
   const {error:uploadError}=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type});
   if(uploadError)throw uploadError;
   const url=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
-  const {data,error}=await db.from('ucs_callouts').update({profile_poster_url:url}).eq('id',id).eq('status','accepted').select('id');
-  if(error)throw error;
-  if(!data?.length)throw Error('Contract is no longer accepted.');
-  $('#ucsUpcomingPosterFile').value='';
-  await ucsPopulateUpcomingPosterAdmin();
-  if(state.ucsCurrentProfile){const f=fighterById(state.ucsCurrentProfile);if(f)await ucsRenderProfileCallouts(f);}
-  toast('UPCOMING BOUT POSTER PUBLISHED');
+  let query=db.from(table).update({[column]:url}).eq('id',id);
+  if(source!=='pro')query=query.eq('status',status);
+  const {data,error}=await query.select('id');if(error)throw error;
+  if(!data?.length)throw Error('Bout status changed. Please refresh.');
+  if(source==='pro'){const fight=state.results.find(r=>r.id===id);if(fight)fight.profile_banner_url=url;}
+  e.currentTarget.reset();
+  await ucsFetchPosterBouts();
+  if(upcoming)await ucsPopulateUpcomingPosterAdmin();else await ucsPopulateProfileBannerAdmin();
+  if(state.ucsCurrentProfile){const f=fighterById(state.ucsCurrentProfile);if(f){ucsRenderProfileBoutBanners(f);if(upcoming)await ucsRenderProfileCallouts(f);}}
+  toast('BOUT POSTER PUBLISHED');
  }catch(error){toast(error.message||'Poster upload failed',true);}
  finally{button.disabled=false;}
-});
-function ucsPopulateProfileBannerAdmin(){
- const el=$('#ucsProfileBannerFight');if(!el||!state.isAdmin)return;
- const current=el.value;
- el.innerHTML='<option value="">SELECT COMPLETED PRO BOUT</option>'+state.results.filter(r=>r.winner_id&&r.loser_id).map(r=>'<option value="'+esc(r.id)+'">'+esc((fighterById(r.winner_id)?.name||'Winner')+' vs '+(fighterById(r.loser_id)?.name||'Opponent')+' · '+fmtDate(r.event_date))+(r.profile_banner_url?' · BANNER UPLOADED':'')+'</option>').join('');
- el.value=current||'';
 }
-$('#ucsProfileBannerForm')?.addEventListener('submit',async e=>{
- e.preventDefault();if(!db||!state.isAdmin||!state.user)return toast('Admin permission required',true);
- const id=$('#ucsProfileBannerFight')?.value,file=$('#ucsProfileBannerFile')?.files?.[0];
- if(!id||!file)return toast('Select a fight and banner',true);
- const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[file.type];
- if(!ext||file.size>10*1024*1024)return toast('Use JPG, PNG or WebP under 10MB',true);
- const button=e.currentTarget.querySelector('[type=submit]');button.disabled=true;
- try{
-  const path='profile-bout-banners/'+id+'-'+crypto.randomUUID()+'.'+ext;
-  const {error:uploadError}=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type});
-  if(uploadError)throw uploadError;
-  const url=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
-  const {error:saveError}=await db.from('results').update({profile_banner_url:url}).eq('id',id);
-  if(saveError)throw saveError;
-  const fight=state.results.find(r=>r.id===id);if(fight)fight.profile_banner_url=url;
-  $('#ucsProfileBannerFile').value='';
-  ucsPopulateProfileBannerAdmin();
-  if(state.ucsCurrentProfile){const f=fighterById(state.ucsCurrentProfile);if(f)ucsRenderProfileBoutBanners(f);}
-  toast('FIGHT BANNER PUBLISHED');
- }catch(error){toast(error.message||'Banner upload failed',true);}
- finally{button.disabled=false;}
-});
+$('#ucsUpcomingPosterForm')?.addEventListener('submit',e=>ucsSavePoster(e,true));
+$('#ucsProfileBannerForm')?.addEventListener('submit',e=>ucsSavePoster(e,false));
 function ucsRenderDossierRecords(f){
  const mode=state.ucsRecordTab||'pro',offline=ucsOfflineFor(f),pro=fighterResults(f);
  const ow=offline.filter(r=>(r.fighter_id===f.id?r.result:r.result==='W'?'L':r.result==='L'?'W':'D')==='W').length;
