@@ -682,17 +682,27 @@ function marqueePlatformCompatible(a,b){
   return !aPlatforms.length||!bPlatforms.length||aPlatforms.some(p=>bPlatforms.includes(p));
 }
 function marqueeCandidates(){
-  // Mirror the UCS World leaderboard: rank 1 vs rank 2, 3 vs 4, etc.
-  // Losses and draws are allowed; official score decides ranking order.
+  // Match on combined UCS results, not the old PRO-only leaderboard score.
   const championIds=new Set(state.champions.filter(c=>c.fighter_id).map(c=>String(c.fighter_id)));
-  const ranked=[...state.fighters].filter(f=>f.active!==false&&!championIds.has(String(f.id)))
-    .sort((a,b)=>Number(b.score||0)-Number(a.score||0)
-      ||Number(b.wins||0)-Number(a.wins||0)
-      ||String(a.name||'').localeCompare(String(b.name||'')));
-  const selected=[];
-  for(let i=0;i+1<ranked.length&&selected.length<5;i+=2){
-    const a=ranked[i],b=ranked[i+1];
-    selected.push({a,b,rankA:i+1,rankB:i+2,key:[a.id,b.id].join(':')});
+  const info=f=>{
+    const [w,l,d]=marqueeRecord(f).split('-').map(Number);
+    const total=w+l+d;
+    const pct=(w+0.5*d+2)/(total+4);
+    return {f,w,l,d,total,pct,quality:100*pct+Math.min(total,20)*0.8};
+  };
+  const ranked=state.fighters.filter(f=>f.active!==false&&!championIds.has(String(f.id)))
+    .map(info).filter(x=>x.total>0)
+    .sort((a,b)=>b.quality-a.quality||b.total-a.total||String(a.f.name).localeCompare(String(b.f.name)));
+  const used=new Set(),selected=[];
+  for(let i=0;i<ranked.length&&selected.length<5;i++){
+    const a=ranked[i];if(used.has(a.f.id))continue;
+    const options=ranked.filter(b=>b.f.id!==a.f.id&&!used.has(b.f.id)&&marqueePlatformCompatible(a.f,b.f))
+      .map(b=>({b,gap:Math.abs(a.pct-b.pct),experience:Math.abs(a.total-b.total),quality:Math.abs(a.quality-b.quality)}))
+      .filter(x=>x.gap<=0.18&&x.experience<=Math.max(4,Math.ceil(Math.max(a.total,x.b.total)*0.4)))
+      .sort((x,y)=>x.quality-y.quality||x.experience-y.experience);
+    if(!options.length)continue;
+    const b=options[0].b;used.add(a.f.id);used.add(b.f.id);
+    selected.push({a:a.f,b:b.f,rankA:ranked.indexOf(a)+1,rankB:ranked.indexOf(b)+1,key:[a.f.id,b.f.id].join(':')});
   }
   return selected;
 }
@@ -710,7 +720,7 @@ function renderMarquee(){
     return;
   }
   marqueeIndex=(marqueeIndex+next.length)%next.length;
-  const pair=next[marqueeIndex],label=`WORLD RANK #${pair.rankA} VS #${pair.rankB}`;
+  const pair=next[marqueeIndex],label=`FORM RANK #${pair.rankA} VS #${pair.rankB}`;
   const side=(f,sideName)=>`<div class="ucs-marquee-fighter">
     <div class="ucs-marquee-avatar">${avatarHtml(f,'ucs-marquee-profile-pic')}</div>
     <span class="ucs-marquee-corner">${sideName}</span>
@@ -722,7 +732,7 @@ function renderMarquee(){
   stage.innerHTML=`<div class="ucs-marquee-slide" key="${esc(pair.key)}">
     <div class="ucs-marquee-tag"><span class="ucs-marquee-pulse"></span> ${label} · MATCHUP PICK ${marqueeIndex+1}/${next.length}</div>
     <div class="ucs-marquee-versus">${side(pair.a,'RED CORNER')}<div class="ucs-marquee-middle"><small>UCS</small><strong class="ucs-red-vs-logo" role="img" aria-label="VS"></strong><span>AI-STYLE MATCHUP PICK</span></div>${side(pair.b,'BLUE CORNER')}</div>
-    <div class="ucs-marquee-bottom">Paired by live UCS World rankings · Losses allowed · Not an official booked fight</div>
+    <div class="ucs-marquee-bottom">Paired by combined UCS records, win rate and experience · Not an official booked fight</div>
   </div>`;
   dots.innerHTML=next.map((p,i)=>`<button type="button" class="${i===marqueeIndex?'active':''}" data-marquee-index="${i}" aria-label="Show matchup ${i+1}" aria-pressed="${i===marqueeIndex}"></button>`).join('');
   $('#ucsMarqueePrev').disabled=next.length<2;$('#ucsMarqueeNext').disabled=next.length<2;
