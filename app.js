@@ -668,7 +668,7 @@ function ucsRenderTournament(){
  const bracket=rows.length?'<div class="ucs-tournament-bracket">'+rows.map((round,ri)=>'<div class="ucs-tournament-round"><h4>'+names[ri]+'</h4>'+round.map((m,mi)=>'<div class="ucs-tournament-match"><small>MATCH '+(mi+1)+(m.method?' · '+esc(m.method):'')+'</small><div class="'+(m.winner&&m.winner.fighter_id===m.a?.fighter_id?'winner':'')+'">'+player(m.a)+(m.winner&&m.winner.fighter_id===m.a?.fighter_id?' <span>✓</span>':'')+'</div><div class="'+(m.winner&&m.winner.fighter_id===m.b?.fighter_id?'winner':'')+'">'+player(m.b)+(m.winner&&m.winner.fighter_id===m.b?.fighter_id?' <span>✓</span>':'')+'</div></div>').join('')+'</div>').join('')+'</div>':'<div class="ucs-tournament-waiting">React with ✅ on the tournament announcement in Discord to claim a slot. The bracket is generated when eight fighters join.</div>';
  box.innerHTML=headline+seeds+bracket;
 }
-function renderAll(){ ucsRenderTournament(); ucsRenderOpenAdmin(); ucsRenderCommunity(); ucsRenderP4p(); renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); updateAccountUI(); }
+function renderAll(){ ucsRenderTournament(); ucsRenderOpenAdmin(); ucsRenderCommunity(); ucsRenderP4p(); renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); ucsPopulateProfileBannerAdmin(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -2747,6 +2747,44 @@ function ucsOpponentPreFightRecord(opponentId,date){
  const w=baseline.W+before.W,l=baseline.L+before.L,d=baseline.D+before.D;
  return {text:w+'-'+l+'-'+d,debut:w+l+d===0};
 }
+function ucsRenderProfileBoutBanners(f){
+ const root=$('#ucsProfileBoutBanners');if(!root)return;
+ const rows=fighterResults(f).filter(r=>r.profile_banner_url&&(r.winner_id===f.id||r.loser_id===f.id)).sort((a,b)=>String(b.event_date||'').localeCompare(String(a.event_date||'')));
+ if(!rows.length){root.innerHTML='';return;}
+ root.innerHTML='<h2 class="ucs-bout-history-title">BOUT HISTORY</h2>'+rows.map(r=>{
+  const winner=fighterById(r.winner_id),loser=fighterById(r.loser_id);
+  const title=r.fight_title||r.belt||'UCS PRO BOUT';
+  return '<article class="ucs-profile-banner-card"><img loading="lazy" src="'+esc(r.profile_banner_url)+'" alt="'+esc((winner?.name||'Winner')+' vs '+(loser?.name||'Opponent'))+' fight banner"><div class="ucs-profile-banner-loser"></div><div class="ucs-profile-banner-caption"><small>'+esc(String(title).toUpperCase())+'</small><strong>'+esc(winner?.name||'Winner')+' <span style="color:#f14">VS</span> '+esc(loser?.name||'Opponent')+'</strong><span class="ucs-profile-banner-win">🏆 WINNER | '+esc(winner?.name||'Winner')+'</span><small>'+esc(fmtDate(r.event_date))+'</small></div></article>';
+ }).join('');
+}
+function ucsPopulateProfileBannerAdmin(){
+ const el=$('#ucsProfileBannerFight');if(!el||!state.isAdmin)return;
+ const current=el.value;
+ el.innerHTML='<option value="">SELECT COMPLETED PRO BOUT</option>'+state.results.filter(r=>r.winner_id&&r.loser_id).map(r=>'<option value="'+esc(r.id)+'">'+esc((fighterById(r.winner_id)?.name||'Winner')+' vs '+(fighterById(r.loser_id)?.name||'Opponent')+' · '+fmtDate(r.event_date))+(r.profile_banner_url?' · BANNER UPLOADED':'')+'</option>').join('');
+ el.value=current||'';
+}
+$('#ucsProfileBannerForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();if(!db||!state.isAdmin||!state.user)return toast('Admin permission required',true);
+ const id=$('#ucsProfileBannerFight')?.value,file=$('#ucsProfileBannerFile')?.files?.[0];
+ if(!id||!file)return toast('Select a fight and banner',true);
+ const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[file.type];
+ if(!ext||file.size>10*1024*1024)return toast('Use JPG, PNG or WebP under 10MB',true);
+ const button=e.currentTarget.querySelector('[type=submit]');button.disabled=true;
+ try{
+  const path='profile-bout-banners/'+id+'-'+crypto.randomUUID()+'.'+ext;
+  const {error:uploadError}=await db.storage.from('fighter-avatars').upload(path,file,{contentType:file.type});
+  if(uploadError)throw uploadError;
+  const url=db.storage.from('fighter-avatars').getPublicUrl(path).data.publicUrl;
+  const {error:saveError}=await db.from('results').update({profile_banner_url:url}).eq('id',id);
+  if(saveError)throw saveError;
+  const fight=state.results.find(r=>r.id===id);if(fight)fight.profile_banner_url=url;
+  $('#ucsProfileBannerFile').value='';
+  ucsPopulateProfileBannerAdmin();
+  if(state.ucsCurrentProfile){const f=fighterById(state.ucsCurrentProfile);if(f)ucsRenderProfileBoutBanners(f);}
+  toast('FIGHT BANNER PUBLISHED');
+ }catch(error){toast(error.message||'Banner upload failed',true);}
+ finally{button.disabled=false;}
+});
 function ucsRenderDossierRecords(f){
  const mode=state.ucsRecordTab||'pro',offline=ucsOfflineFor(f),pro=fighterResults(f);
  const ow=offline.filter(r=>(r.fighter_id===f.id?r.result:r.result==='W'?'L':r.result==='L'?'W':'D')==='W').length;
@@ -2794,6 +2832,7 @@ function ucsRenderDossierRecords(f){
   if(last>=0)entry.html=entry.html.slice(0,last)+label+entry.html.slice(last);
  });
  const root=$('#profileFightHistory');if(root)root.innerHTML=entries.length?entries.map(x=>x.html).join(''):empty('No recorded bouts yet.');
+ ucsRenderProfileBoutBanners(f);
 }
 $('#ucsDossierTabs')?.addEventListener('click',e=>{const b=e.target.closest('[data-ucs-record-tab]');if(!b||!state.ucsCurrentProfile)return;state.ucsRecordTab=b.dataset.ucsRecordTab;const f=fighterById(state.ucsCurrentProfile);if(f)ucsRenderDossierRecords(f);});
 function ucsRenderOfflineAdminList(){
