@@ -170,7 +170,7 @@ async function loadPublicData(){
   state.photos=results[10].data||[];
   state.formerChampionships=results[11].data||[];
   ucsApplyRafaAvatar();
-  renderAll();ucsRenderOfflineAdminList();renderChampionShowcase();void ucsRenderOfflineStandings(true);ucsPopulateOfflineChampionSelect();ucsRenderHomeChampion();ucsFillBeltArtForm();ucsPosterFill();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
+  renderAll();void ucsLoadReplays();ucsRenderOfflineAdminList();renderChampionShowcase();void ucsRenderOfflineStandings(true);ucsPopulateOfflineChampionSelect();ucsRenderHomeChampion();ucsFillBeltArtForm();ucsPosterFill();ucsRenderEventHero();ucsUpdateFightCountdown();ucsRenderEventTags();
 }
 
 // Optional live Discord avatar for RAFA. Lanyard only returns profiles for users
@@ -668,7 +668,110 @@ function ucsRenderTournament(){
  const bracket=rows.length?'<div class="ucs-tournament-bracket">'+rows.map((round,ri)=>'<div class="ucs-tournament-round"><h4>'+names[ri]+'</h4>'+round.map((m,mi)=>'<div class="ucs-tournament-match"><small>MATCH '+(mi+1)+(m.method?' · '+esc(m.method):'')+'</small><div class="'+(m.winner&&m.winner.fighter_id===m.a?.fighter_id?'winner':'')+'">'+player(m.a)+(m.winner&&m.winner.fighter_id===m.a?.fighter_id?' <span>✓</span>':'')+'</div><div class="'+(m.winner&&m.winner.fighter_id===m.b?.fighter_id?'winner':'')+'">'+player(m.b)+(m.winner&&m.winner.fighter_id===m.b?.fighter_id?' <span>✓</span>':'')+'</div></div>').join('')+'</div>').join('')+'</div>':'<div class="ucs-tournament-waiting">React with ✅ on the tournament announcement in Discord to claim a slot. The bracket is generated when eight fighters join.</div>';
  box.innerHTML=headline+seeds+bracket;
 }
-function renderAll(){ ucsRenderTournament(); ucsRenderOpenAdmin(); ucsRenderCommunity(); ucsRenderP4p(); renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); ucsRenderMatchupsPage(); ucsPopulateProfileBannerAdmin(); void ucsPopulateUpcomingPosterAdmin(); updateAccountUI(); }
+// UCS fight replay library. Video metadata is public; uploads and edits require database admin RLS.
+let ucsReplayRows=[];
+let ucsReplaySelected=null;
+const ucsReplayLabel=id=>fighterById(id)?.name||'Unknown fighter';
+const ucsReplayDate=x=>x.fought_on?new Date(x.fought_on+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'';
+async function ucsLoadReplays(){
+ if(!db)return;
+ const {data,error}=await db.from('ucs_fight_replays').select('id,title,fighter_a_id,fighter_b_id,event_name,fought_on,video_url,storage_path,published,created_at').order('created_at',{ascending:false}).limit(500);
+ if(error){console.warn('UCS replay load:',error.message);return;}
+ ucsReplayRows=data||[];
+ ucsRenderReplays();
+ ucsRenderReplayAdmin();
+ if(state.ucsCurrentProfile)ucsRenderProfileReplays(state.ucsCurrentProfile);
+}
+function ucsReplayFighterOptions(){
+ const fighters=[...state.fighters].sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+ for(const id of ['ucsReplayFighter','ucsReplayFighterA','ucsReplayFighterB']){
+  const select=$('#'+id);if(!select)return;
+  const old=select.value;
+  select.innerHTML=(id==='ucsReplayFighter'?'<option value="">ALL FIGHTERS</option>':'<option value="">SELECT FIGHTER</option>')+fighters.map(f=>'<option value="'+esc(f.id)+'">@'+esc(f.name)+'</option>').join('');
+  select.value=old;
+ }
+}
+function ucsRenderReplays(){
+ const const grid=$('#ucsReplayGrid');if(!grid)return;
+ const term=String($('#ucsReplaySearch')?.value||'').trim().replace(/^@/,'').toLowerCase();
+ const fighter=$('#ucsReplayFighter')?.value||'';
+ const rows=ucsReplayRows.filter(r=>r.published).filter(r=>(!fighter||r.fighter_a_id===fighter||r.fighter_b_id===fighter)&&(!term||[r.title,r.event_name,ucsReplayLabel(r.fighter_a_id),ucsReplayLabel(r.fighter_b_id)].some(x=>String(x||'').toLowerCase().includes(term))));
+ grid.innerHTML=rows.length?rows.map(r=>'<button class="ucs-replay-card" type="button" data-replay-open="'+esc(r.id)+'"><small>▶ UCS FIGHT REPLAY</small><strong>'+esc(r.title)+'</strong><small>@'+esc(ucsReplayLabel(r.fighter_a_id))+' vs @'+esc(ucsReplayLabel(r.fighter_b_id))+'</small><small style="display:block;margin-top:6px">'+esc([r.event_name,ucsReplayDate(r)].filter(Boolean).join(' · '))+'</small><span class="ucs-replay-play">▶ WATCH FIGHT</span></button>').join(''):empty('No fight replays match this search yet.');
+}
+function ucsOpenReplay(id){
+ const r=ucsReplayRows.find(x=>x.id===id&&x.published);
+ if(!r)return toast('Replay not available',true);
+ const panel=$('#ucsReplayPlayerPanel'),video=$('#ucsReplayVideo');
+ if(!panel||!video)return;
+ ucsReplaySelected=id;
+ video.pause();video.removeAttribute('src');video.load();
+ if(!safeHttps(r.video_url))return toast('Invalid replay URL',true);
+ video.src=r.video_url;video.load();
+ $('#ucsReplayPlayingTitle').textContent=r.title;
+ $('#ucsReplayPlayingMeta').textContent=[r.event_name,ucsReplayDate(r),'@'+ucsReplayLabel(r.fighter_a_id)+' vs @'+ucsReplayLabel(r.fighter_b_id)].filter(Boolean).join(' · ');
+ grid=$('#ucsReplayGrid');
+ if(grid)grid.classList.add('hidden');
+ panel.classList.remove('hidden');panel.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function ucsCloseReplay(){
+ const video=$('#ucsReplayVideo');if(video){video.pause();video.removeAttribute('src');video.load();}
+ $('#ucsReplayPlayerPanel')?.classList.add('hidden');
+ $('#ucsReplayGrid')?.classList.remove('hidden');
+ ucsReplaySelected=null;
+}
+function ucsRenderProfileReplays(fighterId){
+ const list=$('#ucsProfileReplayList'),btn=$('#ucsProfileAllReplays');if(!list)return;
+ const rows=ucsReplayRows.filter(r=>r.published&&(r.fighter_a_id===fighterId||r.fighter_b_id===fighterId));
+ list.innerHTML=rows.length?rows.slice(0,6).map(r=>'<button type="button" class="mini-action" data-profile-replay="'+esc(r.id)+'">▶ '+esc(r.title)+'</button>').join(''):empty('No fight replays uploaded yet.');
+ if(btn){btn.dataset.fighterId=fighterId;btn.textContent='WATCH '+rows.length+' FIGHT'+(rows.length===1?'':'S')+' →';}
+}
+function ucsRenderReplayAdmin(){
+ const root=$('#ucsReplayAdminList');if(!root||!state.isAdmin)return;
+ root.innerHTML=ucsReplayRows.length?ucsReplayRows.map(r=>'<div class="ucs-replay-admin-row"><div><strong>'+esc(r.title)+'</strong><small style="display:block;color:#bcb2c0">'+esc(r.published?'Published':'Unpublished')+' · '+esc(ucsReplayLabel(r.fighter_a_id))+' vs '+esc(ucsReplayLabel(r.fighter_b_id))+'</small></div><div><button class="mini-action" data-replay-toggle="'+esc(r.id)+'">'+(r.published?'UNPUBLISH':'PUBLISH')+'</button> <button class="mini-action danger" data-replay-delete="'+esc(r.id)+'">DELETE</button></div></div>').join(''):empty('No replays uploaded.');
+}
+$('#ucsReplaySearch')?.addEventListener('input',ucsRenderReplays);
+$('#ucsReplayFighter')?.addEventListener('change',ucsRenderReplays);
+$('#ucsReplayGrid')?.addEventListener('click',e=>{const el=e.target.closest('[data-replay-open]');if(el)ucsOpenReplay(el.dataset.replayOpen);});
+$('#ucsReplayClose')?.addEventListener('click',ucsCloseReplay);
+$('#ucsProfileReplayList')?.addEventListener('click',e=>{const el=e.target.closest('[data-profile-replay]');if(!el)return;$('#ucsReplayFighter').value='';$('#ucsReplaySearch').value='';ucsRenderReplays();showPage('replays');history.replaceState(null,'','#replays');ucsOpenReplay(el.dataset.profileReplay);});
+$('#ucsProfileAllReplays')?.addEventListener('click',e=>{const id=e.currentTarget.dataset.fighterId;$('#ucsReplaySearch').value='';$('#ucsReplayFighter').value=id;ucsRenderReplays();showPage('replays');history.replaceState(null,'','#replays');});
+$('#ucsReplayUploadForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();if(!state.isAdmin||!state.user||!db)return toast('Admin sign-in required',true);
+ const title=$('#ucsReplayTitle').value.trim(),a=$('#ucsReplayFighterA').value,b=$('#ucsReplayFighterB').value,file=$('#ucsReplayFile').files?.[0];
+ const mime={'video/mp4':'mp4','video/webm':'webm','video/quicktime':'mov'}[file?.type];
+ if(title.length<3||!a||!b||a===b)return toast('Name the fight and select two different fighters',true);
+ if(!file||!mime||file.size>50*1024*1024)return toast('Choose MP4, WebM or MOV up to 50 MB',true);
+ const button=$('#ucsReplayUploadBtn'),status=$('#ucsReplayUploadStatus');button.disabled=true;status.textContent='Uploading video — keep this page open…';
+ let path='';
+ try{
+  path='replays/'+crypto.randomUUID()+'.'+mime;
+  const {error:uploadError}=await db.storage.from('ucs-fight-replays').upload(path,file,{contentType:file.type,cacheControl:'3600'});
+  if(uploadError)throw uploadError;
+  const url=db.storage.from('ucs-fight-replays').getPublicUrl(path).data.publicUrl;
+  const {error}=await db.from('ucs_fight_replays').insert({title,fighter_a_id:a,fighter_b_id:b,event_name:$('#ucsReplayEventName').value.trim()||null,fought_on:$('#ucsReplayDate').value||null,video_url:url,storage_path:path,published:$('#ucsReplayPublished').checked});
+  if(error)throw error;
+  e.currentTarget.reset();$('#ucsReplayPublished').checked=true;
+  status.textContent='Replay uploaded successfully.';
+  await ucsLoadReplays();toast('FIGHT REPLAY PUBLISHED');
+ }catch(error){status.textContent=error.message||'Upload failed';toast(status.textContent,true);}
+ finally{button.disabled=false;}
+});
+$('#ucsReplayAdminList')?.addEventListener('click',async e=>{
+ const toggle=e.target.closest('[data-replay-toggle]'),del=e.target.closest('[data-replay-delete]');
+ if(!state.isAdmin||!db||(!toggle&&!del))return;
+ const id=(toggle?.dataset.replayToggle||del?.dataset.replayDelete),r=ucsReplayRows.find(x=>x.id===id);if(!r)return;
+ if(del&&!confirm('Permanently delete this replay and its video?'))return;
+ let error;
+ if(toggle){({error}=await db.from('ucs_fight_replays').update({published:!r.published}).eq('id',id));}
+ else{
+  ({error}=await db.from('ucs_fight_replays').delete().eq('id',id));
+  if(!error&&r.storage_path){const removed=await db.storage.from('ucs-fight-replays').remove([r.storage_path]);if(removed.error)toast('Replay removed, but video cleanup failed: '+removed.error.message,true);}
+ }
+ if(error)return toast(error.message,true);
+ if(ucsReplaySelected===id)ucsCloseReplay();
+ await ucsLoadReplays();
+});
+function renderAll(){ ucsRenderTournament(); ucsRenderOpenAdmin(); ucsRenderCommunity(); ucsRenderP4p(); renderTitleHistory(); ucsRenderDivisions(); ucsPopulateGoodWins(); ucsPopulateFightDetails(); ucsRenderEventCards(); renderTaleOfTheTape(); renderHome(); renderRanks($('#fighterSearch')?.value||''); renderBets(); renderEvents(); populateFighterSelects(); populateFighterDetailsEditor(); ucsRenderEarnings(); populateScheduledBoutSelect(); populateConcludeScheduledBoutSelect(); renderAdminRows(); renderNewsTagOptions(); renderNews(); renderPhotoGallery(); renderTopEarners(); ucsReplayFighterOptions(); ucsRenderReplays(); ucsRenderMatchupsPage(); ucsPopulateProfileBannerAdmin(); void ucsPopulateUpcomingPosterAdmin(); updateAccountUI(); }
 
 // Client-side matchup recommender: compares official records and ranking scores.
 // Suggestions are not bookings, predictions, or real fight results.
@@ -1145,6 +1248,7 @@ function openFighterProfile(id){
   if(db)db.from('ucs_fighter_follows').select('follow_clicks').eq('fighter_id',f.id).maybeSingle().then(({data,error})=>{
     if(!error&&followCount&&followBtn?.dataset.fighterId===String(f.id))followCount.textContent=Number(data?.follow_clicks||0).toLocaleString()+' followers';
   });
+  ucsRenderProfileReplays(f.id);
   const modal=$('#fighterModal');
   const debutDates=(state.results||[]).filter(r=>r.winner_id===f.id||r.loser_id===f.id).map(r=>r.event_date).filter(Boolean).sort();
   const debutEl=$('#ucsProfileDebut');
