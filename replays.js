@@ -29,7 +29,7 @@ function render(){
  const grid=$('#ucsReplayCards');if(!grid)return;
  const term=($('#ucsReplaySearch')?.value||'').trim().replace(/^@/,'').toLowerCase(),id=$('#ucsReplayFilter')?.value||'';
  const rows=visible().filter(r=>(!id||r.fighter_a_id===id||r.fighter_b_id===id)&&(!term||[r.title,r.event_name,name(r.fighter_a_id),name(r.fighter_b_id)].some(x=>String(x||'').toLowerCase().includes(term))));
- grid.innerHTML=rows.length?rows.map(r=>'<button class="ucs-rp-card" type="button" data-replay="'+escapeHtml(r.id)+'"><span>▶ UCS FIGHT REPLAY</span><strong>'+escapeHtml(r.title)+'</strong><small>@'+escapeHtml(name(r.fighter_a_id))+' vs @'+escapeHtml(name(r.fighter_b_id))+'</small><small>'+escapeHtml([r.event_name,date(r)].filter(Boolean).join(' · '))+'</small><b>WATCH FIGHT →</b></button>').join(''):'<p>No replays found yet.</p>';
+ grid.innerHTML=rows.length?rows.map(r=>'<button class="ucs-rp-card" type="button" data-replay="'+escapeHtml(r.id)+'"><span>▶ UCS FIGHT REPLAY</span><strong>'+escapeHtml(r.title)+'</strong><small>@'+escapeHtml(name(r.fighter_a_id))+' vs @'+escapeHtml(name(r.fighter_b_id))+'</small><small>'+escapeHtml([r.event_name,date(r)].filter(Boolean).join(' · '))+'</small><b>WATCH FIGHT →</b></button><button type="button" class="ucs-rp-share" data-copy-replay="'+escapeHtml(r.id)+'">🔗 COPY DISCORD LINK</button>').join(''):'<p>No replays found yet.</p>';
  renderAdmin();renderProfile();
 }
 function renderProfile(){
