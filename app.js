@@ -1094,7 +1094,7 @@ async function ucsRenderProfileCallouts(f){
   root.querySelectorAll('[data-ucs-callout]').forEach(el=>el.remove());
   root.querySelectorAll('[data-ucs-signup-poster]').forEach(el=>el.remove());
   await ucsFetchPosterBouts();
-  const signupCards=ucsPosterCache.upcoming.filter(r=>r.source==='signup'&&(r.a===token||r.b===token)&&r.poster).map(r=>{
+  const signupCards=ucsPosterCache.upcoming.filter(r=>(r.source==='signup'||r.source==='scheduled')&&(r.a===token||r.b===token)&&r.poster).map(r=>{
    const opponent=fighterById(r.a===token?r.b:r.a);
    return '<article data-ucs-signup-poster="'+esc(r.id)+'" class="ucs-upcoming-card" style="padding:12px;margin:10px 0"><img src="'+esc(r.poster)+'" alt="Upcoming bout poster" loading="lazy" style="width:100%;max-height:360px;object-fit:cover;border-radius:8px"><strong style="display:block;text-align:center;margin:10px">'+esc(f.name)+' VS '+esc(opponent?.name||'Opponent')+' · '+esc(r.kind.toUpperCase())+' UPCOMING BOUT</strong></article>';
   }).join('');
@@ -2758,14 +2758,16 @@ function ucsOpponentPreFightRecord(opponentId,date){
 const ucsPosterCache={upcoming:[],history:[]};
 async function ucsFetchPosterBouts(){
  if(!db)return;
- const [up,co]=await Promise.all([
+ const [up,co,scheduled]=await Promise.all([
   db.from('ucs_signup_matches').select('id,kind,red_fighter_id,blue_fighter_id,winner_fighter_id,completed_at,created_at,status,profile_poster_url').in('status',['upcoming','completed']).limit(2000),
-  db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,winner_fighter_id,concluded_at,created_at,status,profile_poster_url,profile_banner_url').in('status',['accepted','completed']).limit(2000)
+  db.from('ucs_callouts').select('id,challenger_fighter_id,target_fighter_id,winner_fighter_id,concluded_at,created_at,status,profile_poster_url,profile_banner_url').in('status',['accepted','completed']).limit(2000),
+  db.from('scheduled_bouts').select('id,fighter_a_id,fighter_b_id,bout_date,event_name,belt,status,poster_url').eq('status','scheduled').limit(2000)
  ]);
- if(up.error||co.error){console.warn('Poster bouts:',up.error||co.error);return;}
+ if(up.error||co.error||scheduled.error){console.warn('Poster bouts:',up.error||co.error||scheduled.error);return;}
  const signups=(up.data||[]).map(r=>({source:'signup',id:r.id,status:r.status,kind:r.kind,a:r.red_fighter_id,b:r.blue_fighter_id,winner:r.winner_fighter_id,date:r.completed_at||r.created_at,poster:r.profile_poster_url}));
  const contracts=(co.data||[]).map(r=>({source:'contract',id:r.id,status:r.status,kind:'contract',a:r.challenger_fighter_id,b:r.target_fighter_id,winner:r.winner_fighter_id,date:r.concluded_at||r.created_at,poster:r.status==='completed'?r.profile_banner_url:r.profile_poster_url}));
- ucsPosterCache.upcoming=[...signups.filter(r=>r.status==='upcoming'),...contracts.filter(r=>r.status==='accepted')];
+ const scheduledBouts=(scheduled.data||[]).map(r=>({source:'scheduled',id:r.id,status:r.status,kind:r.belt||r.event_name||'PRO',a:r.fighter_a_id,b:r.fighter_b_id,date:r.bout_date,poster:r.poster_url}));
+ ucsPosterCache.upcoming=[...scheduledBouts,...signups.filter(r=>r.status==='upcoming'),...contracts.filter(r=>r.status==='accepted')];
  ucsPosterCache.history=[...signups.filter(r=>r.status==='completed'&&r.winner),...contracts.filter(r=>r.status==='completed'&&r.winner)];
 }
 function ucsPosterOption(r){
@@ -2803,9 +2805,9 @@ async function ucsSavePoster(e,upcoming){
  const ext={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[file?.type];
  if(!selected||!file||!ext||file.size>10*1024*1024)return toast('Choose a bout and JPG, PNG or WebP under 10MB',true);
  const [source,id]=selected.split(':');
- const table=source==='pro'?'results':source==='contract'?'ucs_callouts':'ucs_signup_matches';
- const column=source==='pro'?'profile_banner_url':source==='contract'&&!upcoming?'profile_banner_url':'profile_poster_url';
- const status=source==='contract'?(upcoming?'accepted':'completed'):(upcoming?'upcoming':'completed');
+ const table=source==='pro'?'results':source==='contract'?'ucs_callouts':source==='scheduled'?'scheduled_bouts':'ucs_signup_matches';
+ const column=source==='scheduled'?'poster_url':source==='pro'?'profile_banner_url':source==='contract'&&!upcoming?'profile_banner_url':'profile_poster_url';
+ const status=source==='scheduled'?'scheduled':source==='contract'?(upcoming?'accepted':'completed'):(upcoming?'upcoming':'completed');
  const button=e.currentTarget.querySelector('[type=submit]');button.disabled=true;
  try{
   const folder=upcoming?'upcoming-bout-posters':'profile-bout-banners';
