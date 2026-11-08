@@ -675,7 +675,7 @@ function renderAll(){ ucsRenderTournament(); ucsRenderOpenAdmin(); ucsRenderComm
 let marqueeMatchups=[];
 let marqueeIndex=0;
 let marqueeSignature='';
-function marqueeRecord(f){return `${Number(f.wins||0)}-${Number(f.losses||0)}-${Number(f.draws||0)}`;}
+function marqueeRecord(f){return ucsAllBoutRecord(f);}
 function marqueePlatformCompatible(a,b){
   const platforms=f=>String(f.platform||'').toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean);
   const aPlatforms=platforms(a),bPlatforms=platforms(b);
@@ -866,6 +866,7 @@ async function ucsLoadLeaderboardOfflineBouts(){
     state.ucsDiscordOfflineByFighter=byFighter;
     ucsLeaderboardOfflineLoadedAt=Date.now();
     renderTopEarners();
+    renderMarquee();
     renderRanks($('#fighterSearch')?.value||'');
     renderEvents();
     renderHome();
